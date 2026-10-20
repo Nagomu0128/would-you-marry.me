@@ -5,8 +5,8 @@ import { DefaultLink, type LinkComponent } from './link'
 export type FooterProps = {
   termsHref: string
   privacyHref: string
-  /** お問い合わせ先のメールアドレス（`mailto:` のリンクにする） */
-  contactEmail: string
+  /** お問い合わせ先のメールアドレス（`mailto:` のリンクにする）。取得前・未設定のときは渡さず、リンクを出さない */
+  contactEmail?: string
   LinkComponent?: LinkComponent
   className?: string
 }
@@ -31,9 +31,11 @@ export function Footer({
         <Link href={privacyHref} className={linkClass}>
           {ja.common.footer.privacy}
         </Link>
-        <a href={`mailto:${contactEmail}`} className={linkClass}>
-          {ja.common.footer.contact}
-        </a>
+        {contactEmail ? (
+          <a href={`mailto:${contactEmail}`} className={linkClass}>
+            {ja.common.footer.contact}
+          </a>
+        ) : null}
       </nav>
     </footer>
   )

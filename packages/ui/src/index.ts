@@ -1,5 +1,6 @@
 export * from './components'
 export * from './messages/ja'
+// テーマ（CSS）は '@wym/ui/theme.css' から読み込む
+export * from './messages/legal'
 export * from './motion'
 export * from './screens'
-// テーマ（CSS）は '@wym/ui/theme.css' から読み込む
