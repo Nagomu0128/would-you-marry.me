@@ -1,6 +1,8 @@
 import type {
   AddCourseMenuImageResponse,
+  AdminGuestListResponse,
   AdminMeResponse,
+  AdminPhotoListResponse,
   AdminTenantDetailResponse,
   AdminTenantListResponse,
   AdminTenantResponse,
@@ -12,6 +14,7 @@ import type {
   IssueCoupleAccessResponse,
   JoinUrlResponse,
   SeatingChartResponse,
+  UpdateGuestRequest,
   UpdateTenantRequest,
 } from '@wym/shared'
 import { isErrorCode } from '@wym/shared'
@@ -179,4 +182,18 @@ export const api = {
     request<CoupleAccessResponse>('GET', `${tenantPath(tenantId)}/couple-access`),
   issueCoupleAccess: (tenantId: string) =>
     request<IssueCoupleAccessResponse>('POST', `${tenantPath(tenantId)}/couple-access`),
+
+  /** プレビューのホームの新着写真（一覧用画像の URL は `urls.thumb`） */
+  listPhotos: (tenantId: string, options: { limit?: number } = {}) =>
+    request<AdminPhotoListResponse>(
+      'GET',
+      `${tenantPath(tenantId)}/photos${options.limit === undefined ? '' : `?limit=${options.limit}`}`,
+    ),
+
+  listGuests: (tenantId: string) =>
+    request<AdminGuestListResponse>('GET', `${tenantPath(tenantId)}/guests`),
+  updateGuest: (tenantId: string, guestId: string, body: UpdateGuestRequest) =>
+    request<unknown>('PATCH', `${tenantPath(tenantId)}/guests/${encodeURIComponent(guestId)}`, {
+      json: body,
+    }),
 }
