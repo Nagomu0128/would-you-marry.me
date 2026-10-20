@@ -1,5 +1,6 @@
 // guest Worker（would-you-marry.me）: ユーザー画面・新郎新婦用ページ・それぞれの API
-// Custom Domains（routes）は T20 で追加する
+// 本番は env.production に書く（`CLOUDFLARE_ENV=production` でビルド・デプロイする。docs/runbook.md）。
+// Wrangler の環境では bindings・vars が継承されないため、本番に必要なものをすべて書き直している
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wym-guest",
@@ -16,7 +17,7 @@
     {
       "binding": "DB",
       "database_name": "wym",
-      // ローカル用の仮の値。本番の ID は T20 で設定する
+      // ローカル用の仮の値。本番の ID は env.production に書く
       "database_id": "00000000-0000-0000-0000-000000000000"
     }
   ],
@@ -40,5 +41,41 @@
   },
   "vars": {
     "CONTACT_EMAIL": "contact@example.com"
+  },
+  "env": {
+    "production": {
+      "name": "wym-guest",
+      // Kyoshidk@gmail.com's Account
+      "account_id": "fadb16b194dd31d1f11d932096752858",
+      "routes": [{ "pattern": "would-you-marry.me", "custom_domain": true }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "wym",
+          // `wrangler d1 create wym` で得た ID に置き換える（docs/runbook.md）
+          "database_id": "673f04af-e30e-4bf4-b3fc-ed4ee152136b"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "BUCKET",
+          "bucket_name": "wym-files"
+        }
+      ],
+      // namespace_id は Cloudflare アカウント内で Worker ごとに一意の整数（ローカル用の 1001 とは分ける）
+      "ratelimits": [
+        {
+          "name": "JOIN_RATE_LIMITER",
+          "namespace_id": "2001",
+          "simple": { "limit": 200, "period": 60 }
+        }
+      ],
+      "observability": {
+        "enabled": true
+      },
+      // CONTACT_EMAIL（画面に表示する問い合わせ先）はシークレットで登録する。
+      // このリポジトリは公開されているため、メールアドレスを設定ファイルに書かない（docs/runbook.md）
+      "vars": {}
+    }
   }
 }

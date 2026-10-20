@@ -63,6 +63,8 @@ pnpm db:migrate:local   # admin の Wrangler 設定から、ローカルの D1�
 | `pnpm format` | Biome で整形と自動修正（`biome check --write .`） |
 | `pnpm db:generate` | Drizzle のマイグレーション SQL を生成 |
 | `pnpm db:migrate:local` | ローカルの D1 にマイグレーションを適用 |
+| `pnpm db:migrate:remote` | 本番の D1 にマイグレーションを適用（[運用手順書](docs/runbook.md)） |
+| `pnpm deploy:guest` / `pnpm deploy:admin` | 本番の環境でビルドして、guest / admin Worker をデプロイ（[運用手順書](docs/runbook.md)） |
 
 各 app で `pnpm --filter @wym/guest cf-typegen` のように実行すると、`wrangler.jsonc` を変えたあとの
 Worker の型（`worker-configuration.d.ts`）を再生成できる。
@@ -75,4 +77,4 @@ Worker の型（`worker-configuration.d.ts`）を再生成できる。
 
 ## シークレット
 
-`.dev.vars.example` に名前だけを書いている。ローカルは `.dev.vars`（git に入れない）、本番は `wrangler secret put` で登録する。
+`.dev.vars.example` に名前だけを書いている。ローカルは `.dev.vars`（git に入れない）、本番は `wrangler secret put` で登録する。本番の構築・デプロイの手順は [docs/runbook.md](docs/runbook.md) にある。

@@ -183,12 +183,19 @@ export const api = {
   issueCoupleAccess: (tenantId: string) =>
     request<IssueCoupleAccessResponse>('POST', `${tenantPath(tenantId)}/couple-access`),
 
-  /** プレビューのホームの新着写真（一覧用画像の URL は `urls.thumb`） */
-  listPhotos: (tenantId: string, options: { limit?: number } = {}) =>
-    request<AdminPhotoListResponse>(
+  /** 写真の一覧（新しい順）。続きは前の応答の `nextCursor` を `cursor` に渡す。一覧用画像の URL は `urls.thumb` */
+  listPhotos: (tenantId: string, options: { limit?: number; cursor?: string } = {}) => {
+    const query = new URLSearchParams()
+    if (options.limit !== undefined) query.set('limit', String(options.limit))
+    if (options.cursor !== undefined) query.set('cursor', options.cursor)
+    const qs = query.toString()
+    return request<AdminPhotoListResponse>(
       'GET',
-      `${tenantPath(tenantId)}/photos${options.limit === undefined ? '' : `?limit=${options.limit}`}`,
-    ),
+      `${tenantPath(tenantId)}/photos${qs === '' ? '' : `?${qs}`}`,
+    )
+  },
+  deletePhoto: (tenantId: string, photoId: string) =>
+    request<void>('DELETE', `${tenantPath(tenantId)}/photos/${encodeURIComponent(photoId)}`),
 
   listGuests: (tenantId: string) =>
     request<AdminGuestListResponse>('GET', `${tenantPath(tenantId)}/guests`),

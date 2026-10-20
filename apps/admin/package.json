@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:production": "CLOUDFLARE_ENV=production vite build",
+    "deploy:production": "pnpm build:production && wrangler deploy",
+    "db:migrate:remote": "wrangler d1 migrations apply wym --remote --env production",
     "preview": "vite preview",
     "cf-typegen": "wrangler types",
     "db:migrate:local": "wrangler d1 migrations apply DB --local --persist-to ../../.wrangler/state",
