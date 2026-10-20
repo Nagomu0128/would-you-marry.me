@@ -2,7 +2,8 @@
 
 docs/ の要件・設計を実装するためのタスク分割と進捗。オーケストレーター（Claude Opus）がタスクを分割・レビュー・マージし、実装は subagent（[.claude/agents/implementer.md](../.claude/agents/implementer.md)、Sonnet）が行う。
 
-- 期限: 2026 年 10 月末の結婚式（D-33）
+- 期限: 2026-10-31（土）の結婚式（D-33）。受付で配る QR コードは 1 週間前（10/24 頃）に印刷するため、**管理面のテナント作成と参加 URL・QR コードの発行（T02・T03・T10・T11・T16・T17 の SA-05・T20）を 10/23 までに本番へ出す**
+- 実機での検証（T19）は検証環境を作らず、本番ドメインで行う
 - 進め方: 1 タスク = 1 ブランチ（git worktree）。実装 → オーケストレーターのレビュー（仕様との突き合わせ、lint・型検査・テスト・ビルド）→ main にマージ
 - 状態: `未着手` / `作業中` / `レビュー中` / `完了`
 
@@ -77,3 +78,5 @@ subagent への指示（[.claude/agents/implementer.md](../.claude/agents/implem
 
 | # | 内容 | 判断 | タスク |
 |---|---|---|---|
+| 1 | Worker のテストのパッケージ | `@cloudflare/vitest-pool-workers` は `@cloudflare/vitest-plugin` に改名され更新終了のため、後者を使う | T01 |
+| 2 | 依存パッケージの公開からの経過日数 | `minimumReleaseAge` を 3 日にし、公開直後のバージョンは使わない | T01 |

@@ -99,7 +99,7 @@ type RankedPhoto = Photo & { rank: number } // 1 から順に振る（同数で�
 5. トークンが有効なものと一致しない → `/error?code=JOIN_TOKEN_INVALID`
 6. 参加者とセッションを作り、`wym_g_{tenantId}` を設定して `/t/:tenantId/nickname` へ
 
-同じ IP アドレスからの参加は 1 分に 20 回まで（仮置き）。超えた場合は `/error?code=RATE_LIMITED`。
+同じ IP アドレスからの参加は 1 分に 200 回まで（D-38）。超えた場合は `/error?code=RATE_LIMITED`。
 
 #### `GET /couple/:tenantId?t={token}`（新郎新婦用 URL、FR-C-01）
 
