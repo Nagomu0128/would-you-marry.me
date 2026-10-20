@@ -10,6 +10,7 @@ import { guestSession, requireNickname } from '../middleware/session'
 import type { GuestEnv } from '../types'
 import { guestContentRoutes } from './guest-content'
 import { guestMeRoutes } from './guest-me'
+import { photoRoutes } from './photos'
 
 export const guestRoutes = new Hono<GuestEnv>()
 
@@ -22,3 +23,4 @@ guestRoutes.route('/me', guestMeRoutes)
 // ここから先は、ニックネーム登録済みの参加者だけ
 guestRoutes.use('*', requireNickname)
 guestRoutes.route('/', guestContentRoutes)
+guestRoutes.route('/photos', photoRoutes)
