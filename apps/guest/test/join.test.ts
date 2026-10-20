@@ -237,15 +237,21 @@ describe('GET /join/:tenantId', () => {
     it('実際のバインディングで、同じ IP から 200 回までは通り、超えると制限される', async () => {
       const ip = { 'CF-Connecting-IP': '192.0.2.200' }
       const missing = '/join/not-a-uuid'
+      // Rate Limiting は 60 秒の窓で数える。テスト中に窓の境目をまたぐと数が 0 に戻るため、
+      // 「ちょうど 205 回目までに制限される」とは言えない。そこで制限されるまで送り続け、
+      // 境目を 1 回またいでも必ず制限に達する回数（200 回 x 3 窓分）を上限にする。
+      // 確かめること: (1) 最初の 200 回は必ず通る (2) いずれ制限される
+      const MAX_REQUESTS = 600
       let limitedAt = -1
-      for (let i = 1; i <= 205; i++) {
+      for (let i = 1; i <= MAX_REQUESTS; i++) {
         const res = await request(missing, { headers: ip })
         if (res.headers.get('location') === '/error?code=RATE_LIMITED') {
           limitedAt = i
           break
         }
       }
-      expect(limitedAt).toBe(201)
+      expect(limitedAt).toBeGreaterThan(0)
+      expect(limitedAt).toBeGreaterThanOrEqual(201)
       // 別の IP は影響を受けない
       const other = await request(missing, { headers: { 'CF-Connecting-IP': '192.0.2.201' } })
       expect(other.headers.get('location')).toBe('/error?code=TENANT_NOT_FOUND')
