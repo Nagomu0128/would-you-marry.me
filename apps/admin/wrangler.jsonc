@@ -1,5 +1,6 @@
 // admin Worker（admin.would-you-marry.me）: 管理面の画面と API、Better Auth、Cron Triggers
-// Custom Domains（routes）は T20 で追加する
+// 本番は env.production に書く（`CLOUDFLARE_ENV=production` でビルド・デプロイする。docs/runbook.md）。
+// Wrangler の環境では bindings・vars が継承されないため、本番に必要なものをすべて書き直している
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wym-admin",
@@ -15,7 +16,7 @@
     {
       "binding": "DB",
       "database_name": "wym",
-      // ローカル用の仮の値。本番の ID は T20 で設定する
+      // ローカル用の仮の値。本番の ID は env.production に書く
       "database_id": "00000000-0000-0000-0000-000000000000",
       // D1 のマイグレーションは 2 つの Worker で共有するので、admin から適用する
       "migrations_dir": "../../packages/db/migrations"
@@ -36,8 +37,42 @@
   },
   "vars": {
     "GUEST_ORIGIN": "http://localhost:5173",
-    // admin 自身のオリジン。Better Auth の baseURL・trustedOrigins になる（本番の値は T20 で設定する）
+    // admin 自身のオリジン。Better Auth の baseURL・trustedOrigins になる
     "ADMIN_ORIGIN": "http://localhost:5174",
     "ADMIN_EMAILS": "admin@example.com"
+  },
+  "env": {
+    "production": {
+      "name": "wym-admin",
+      "routes": [{ "pattern": "admin.would-you-marry.me", "custom_domain": true }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "wym",
+          // `wrangler d1 create wym` で得た ID に置き換える（docs/runbook.md）
+          "database_id": "<D1_DATABASE_ID>",
+          "migrations_dir": "../../packages/db/migrations"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "BUCKET",
+          "bucket_name": "wym-files"
+        }
+      ],
+      "triggers": {
+        // UTC 18:00 = 日本時間 3:00（1 日 1 回、仮置き）
+        "crons": ["0 18 * * *"]
+      },
+      "observability": {
+        "enabled": true
+      },
+      "vars": {
+        "GUEST_ORIGIN": "https://would-you-marry.me",
+        "ADMIN_ORIGIN": "https://admin.would-you-marry.me",
+        // 管理者の許可リスト（カンマ区切りの Google アカウントのメールアドレス）に置き換える
+        "ADMIN_EMAILS": "<ADMIN_EMAILS>"
+      }
+    }
   }
 }

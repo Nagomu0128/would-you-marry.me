@@ -39,6 +39,7 @@
 | 詳細設計 | [spec/design-guide.md](spec/design-guide.md) | 色、文字、部品、モーションのルール | 案 |
 | 決定記録 | [adr/README.md](adr/README.md) | ADR の運用ルールと一覧 | ADR-0001〜0003 承認 |
 | 管理 | [open-questions.md](open-questions.md) | 未決事項・決定済み事項 | 随時更新 |
+| 運用 | [runbook.md](runbook.md) | 本番の構築、デプロイ、マイグレーション、ロールバック、ログの見方 | ドラフト |
 | 管理 | [implementation-plan.md](implementation-plan.md) | 実装のタスク分割と進捗 | 随時更新 |
 
 ## ID の付け方
