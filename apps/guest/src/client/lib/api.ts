@@ -5,6 +5,13 @@
 import {
   type ApiErrorDetail,
   type ConfigResponse,
+  type CoupleLoginRequest,
+  type CoupleLoginResponse,
+  type CoupleLoginStateResponse,
+  type CoupleMeResponse,
+  type CouplePhotoListResponse,
+  type CouplePhotosQuery,
+  type CoupleRankingResponse,
   type CourseMenuResponse,
   type ErrorCode,
   type GuestMeResponse,
@@ -14,6 +21,7 @@ import {
   isErrorCode,
   type LikeResponse,
   type PutNicknameRequest,
+  type UploadersResponse,
 } from '@wym/shared'
 
 /** API が返したエラー（`{ error: { code, message, ... } }`） */
@@ -159,4 +167,41 @@ export async function fetchSeatingChartUrl(tenantId: string): Promise<string | n
     if (error instanceof ApiClientError && error.code === 'NOT_FOUND') return null
     throw error
   }
+}
+
+// --- 新郎新婦向け API（`/api/couple/:tenantId`） ---
+
+const coupleBase = (tenantId: string) => `/api/couple/${encodeURIComponent(tenantId)}`
+
+export function getCoupleLoginState(tenantId: string): Promise<CoupleLoginStateResponse> {
+  return apiRequest<CoupleLoginStateResponse>(`${coupleBase(tenantId)}/login`)
+}
+
+export function postCoupleLogin(
+  tenantId: string,
+  body: CoupleLoginRequest,
+): Promise<CoupleLoginResponse> {
+  return apiRequest<CoupleLoginResponse>(`${coupleBase(tenantId)}/login`, {
+    method: 'POST',
+    body,
+  })
+}
+
+export function getCoupleMe(tenantId: string): Promise<CoupleMeResponse> {
+  return apiRequest<CoupleMeResponse>(`${coupleBase(tenantId)}/me`)
+}
+
+export function getCouplePhotos(
+  tenantId: string,
+  query: CouplePhotosQuery = {},
+): Promise<CouplePhotoListResponse> {
+  return apiRequest<CouplePhotoListResponse>(`${coupleBase(tenantId)}/photos${buildQuery(query)}`)
+}
+
+export function getCoupleRanking(tenantId: string): Promise<CoupleRankingResponse> {
+  return apiRequest<CoupleRankingResponse>(`${coupleBase(tenantId)}/photos/ranking`)
+}
+
+export function getUploaders(tenantId: string): Promise<UploadersResponse> {
+  return apiRequest<UploadersResponse>(`${coupleBase(tenantId)}/uploaders`)
 }
