@@ -44,13 +44,15 @@
   "env": {
     "production": {
       "name": "wym-admin",
+      // Kyoshidk@gmail.com's Account
+      "account_id": "fadb16b194dd31d1f11d932096752858",
       "routes": [{ "pattern": "admin.would-you-marry.me", "custom_domain": true }],
       "d1_databases": [
         {
           "binding": "DB",
           "database_name": "wym",
           // `wrangler d1 create wym` で得た ID に置き換える（docs/runbook.md）
-          "database_id": "<D1_DATABASE_ID>",
+          "database_id": "673f04af-e30e-4bf4-b3fc-ed4ee152136b",
           "migrations_dir": "../../packages/db/migrations"
         }
       ],
@@ -69,9 +71,9 @@
       },
       "vars": {
         "GUEST_ORIGIN": "https://would-you-marry.me",
-        "ADMIN_ORIGIN": "https://admin.would-you-marry.me",
-        // 管理者の許可リスト（カンマ区切りの Google アカウントのメールアドレス）に置き換える
-        "ADMIN_EMAILS": "<ADMIN_EMAILS>"
+        "ADMIN_ORIGIN": "https://admin.would-you-marry.me"
+        // ADMIN_EMAILS（管理者の許可リスト）はシークレットで登録する。
+        // このリポジトリは公開されているため、メールアドレスを設定ファイルに書かない（docs/runbook.md）
       }
     }
   }

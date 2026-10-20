@@ -45,13 +45,15 @@
   "env": {
     "production": {
       "name": "wym-guest",
+      // Kyoshidk@gmail.com's Account
+      "account_id": "fadb16b194dd31d1f11d932096752858",
       "routes": [{ "pattern": "would-you-marry.me", "custom_domain": true }],
       "d1_databases": [
         {
           "binding": "DB",
           "database_name": "wym",
           // `wrangler d1 create wym` で得た ID に置き換える（docs/runbook.md）
-          "database_id": "<D1_DATABASE_ID>"
+          "database_id": "673f04af-e30e-4bf4-b3fc-ed4ee152136b"
         }
       ],
       "r2_buckets": [
@@ -71,10 +73,9 @@
       "observability": {
         "enabled": true
       },
-      "vars": {
-        // 画面に表示する問い合わせ先に置き換える
-        "CONTACT_EMAIL": "<CONTACT_EMAIL>"
-      }
+      // CONTACT_EMAIL（画面に表示する問い合わせ先）はシークレットで登録する。
+      // このリポジトリは公開されているため、メールアドレスを設定ファイルに書かない（docs/runbook.md）
+      "vars": {}
     }
   }
 }
