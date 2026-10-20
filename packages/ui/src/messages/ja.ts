@@ -159,6 +159,8 @@ export const ja = {
       retry: 'もう一度送る',
       another: '続けて投稿する',
       toAlbum: 'アルバムを見る',
+      /** プレビュー画像の代替テキスト（読み上げ用） */
+      previewAlt: '選んだ写真',
     },
   },
 

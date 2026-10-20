@@ -39,7 +39,7 @@ export class NetworkError extends Error {
   }
 }
 
-async function toApiError(response: Response): Promise<ApiClientError> {
+export async function toApiError(response: Response): Promise<ApiClientError> {
   let detail: ApiErrorDetail = { code: 'INTERNAL_ERROR', message: `HTTP ${response.status}` }
   try {
     const body: unknown = await response.json()
