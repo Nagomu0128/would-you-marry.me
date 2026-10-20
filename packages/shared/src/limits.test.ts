@@ -1,0 +1,30 @@
+import { describe, expect, it } from 'vitest'
+import * as limits from './limits'
+
+describe('limits（docs の仮置きを含む値）', () => {
+  it('仕様どおりの値', () => {
+    expect(limits.NICKNAME_MAX_LENGTH).toBe(20)
+    expect(limits.TENANT_NAME_MAX_LENGTH).toBe(50)
+    expect(limits.ORIGINAL_MAX_BYTES).toBe(10 * 1024 * 1024)
+    expect(limits.DISPLAY_MAX_BYTES).toBe(2 * 1024 * 1024)
+    expect(limits.DISPLAY_MAX_EDGE_PX).toBe(1600)
+    expect(limits.THUMB_MAX_BYTES).toBe(512 * 1024)
+    expect(limits.THUMB_MAX_EDGE_PX).toBe(480)
+    expect(limits.PHOTO_LIMIT_PER_GUEST).toBe(100)
+    expect(limits.RANKING_SIZE).toBe(10)
+    expect(limits.LIST_LIMIT_DEFAULT).toBe(30)
+    expect(limits.LIST_LIMIT_MAX).toBe(50)
+    expect(limits.HOME_RECENT_PHOTO_COUNT).toBe(3)
+    expect(limits.SEATING_CHART_MAX_BYTES).toBe(20 * 1024 * 1024)
+    expect(limits.COURSE_MENU_IMAGE_MAX_BYTES).toBe(10 * 1024 * 1024)
+    expect(limits.PASSCODE_LENGTH).toBe(8)
+    expect(limits.PASSCODE_MAX_FAILED_ATTEMPTS).toBe(5)
+    expect(limits.PASSCODE_LOCK_MS).toBe(15 * 60 * 1000)
+    expect(limits.JOIN_RATE_LIMIT_MAX).toBe(200)
+    expect(limits.JOIN_RATE_LIMIT_WINDOW_MS).toBe(60_000)
+    expect(limits.LAST_SEEN_UPDATE_INTERVAL_MS).toBe(10 * 60 * 1000)
+    expect(limits.SESSION_COOKIE_MAX_AGE_SECONDS).toBe(400 * 86400)
+    expect(limits.COUPLE_PENDING_COOKIE_MAX_AGE_SECONDS).toBe(900)
+    expect(limits.TOAST_DURATION_MS).toBe(3000)
+  })
+})
