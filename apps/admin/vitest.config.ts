@@ -16,7 +16,15 @@ export default defineConfig(async () => {
           plugins: [
             cloudflareTest({
               wrangler: { configPath: './wrangler.jsonc' },
-              miniflare: { bindings: { TEST_MIGRATIONS: migrations } },
+              miniflare: {
+                bindings: {
+                  TEST_MIGRATIONS: migrations,
+                  // テスト用のシークレット（本物は wrangler secret / .dev.vars）
+                  BETTER_AUTH_SECRET: 'test-secret-test-secret-test-secret-0123',
+                  GOOGLE_CLIENT_ID: 'test-client-id',
+                  GOOGLE_CLIENT_SECRET: 'test-client-secret',
+                },
+              },
             }),
           ],
           test: {
