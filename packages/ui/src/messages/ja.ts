@@ -312,6 +312,10 @@ export const ja = {
         `「${nickname}」の新しい名前を入力してください`,
       nicknameLabel: 'ニックネーム',
     },
+    // SA-07
+    photos: {
+      empty: 'まだ写真がありません',
+    },
     // SA-06
     monitor: {
       heading: '監視',
