@@ -15,6 +15,7 @@
 | ADR | タイトル | ステータス |
 |---|---|---|
 | [ADR-0001](0001-select-tech-stack.md) | 技術スタックの選定 | 承認 |
+| [ADR-0002](0002-use-motion-for-animation.md) | UI のアニメーションに Motion を使う | 承認 |
 
 ## テンプレート
 

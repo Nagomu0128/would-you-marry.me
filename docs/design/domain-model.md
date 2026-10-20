@@ -84,6 +84,7 @@ erDiagram
         string originalKey "位置情報を除去済み"
         string displayKey "拡大表示用"
         string thumbnailKey "一覧用"
+        int likeCount "いいね数（集計値）"
         datetime createdAt
     }
     LIKE {
@@ -116,7 +117,7 @@ erDiagram
   - (photoId, guestId) の組で一意。1 人の参加者が同じ写真にいいねできるのは 1 回まで。自分の写真にも付けられる（D-15）
   - いいねの取り消しは Like の削除で表す
   - Photo と Guest は同じテナントに属していなければならない
-  - いいね数は Like の件数から求める。表示用の集計値を Photo に持たせるかは技術選定時に決める
+  - Photo にいいね数（集計値）を持たせ、いいね・取り消しのたびに Like の件数から数え直す（[spec/database.md](../spec/database.md)）
 - **データ削除**: 開催日の 6 か月後に、テナントに属するすべてのエンティティとファイルを削除する。Tenant 自体は残し、`dataDeletedAt` を記録する（FR-A-13）。管理者による手動削除（FR-A-15）も同じ。バックアップは取らないため、削除したデータは復元できない（D-31, NFR-22）
 
 ## テナントスコープ
