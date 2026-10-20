@@ -10,7 +10,7 @@ import {
   listRanking,
   listTimeline,
   listUploaders,
-  recordCoupleFailedAttempt,
+  reserveCoupleAttempt,
   recordCoupleTermsAgreement,
   resetCoupleFailedAttempts,
 } from '@wym/db'
@@ -108,20 +108,27 @@ coupleApiRoutes.post('/login', async (c) => {
     throw new ApiError('TERMS_NOT_AGREED', 'agreement to terms is required')
   }
 
-  // 4. 照合
-  if (!(await verifyPasscode(passcode, access.passcodeHash))) {
-    const result = await recordCoupleFailedAttempt(db, tenant.id, access.id, {
-      maxAttempts: PASSCODE_MAX_FAILED_ATTEMPTS,
-      lockMs: PASSCODE_LOCK_MS,
-    })
-    if (!result) throw new ApiError('COUPLE_LINK_INVALID', 'couple link is invalid')
-    if (result.locked && result.lockedUntil !== null) {
+  // 4. 試行を 1 回分予約してから照合する。ロックの判定と回数の加算は 1 つの UPDATE で行うので、
+  //    同時に大量に送られても照合できるのは 5 回まで（照合の結果を待たずに数える）
+  const reservation = await reserveCoupleAttempt(db, tenant.id, access.id, {
+    maxAttempts: PASSCODE_MAX_FAILED_ATTEMPTS,
+    lockMs: PASSCODE_LOCK_MS,
+  })
+  if (!reservation.ok) {
+    if (reservation.reason === 'locked') {
       logEvent('couple_login_locked', { tenantId: tenant.id })
-      throw lockedError(result.lockedUntil)
+      throw lockedError(reservation.lockedUntil)
+    }
+    throw new ApiError('COUPLE_LINK_INVALID', 'couple link is invalid')
+  }
+  if (!(await verifyPasscode(passcode, access.passcodeHash))) {
+    if (reservation.locked && reservation.lockedUntil !== null) {
+      logEvent('couple_login_locked', { tenantId: tenant.id })
+      throw lockedError(reservation.lockedUntil)
     }
     logEvent('couple_login_failed', { tenantId: tenant.id })
     throw new ApiError('PASSCODE_INVALID', 'passcode is invalid', {
-      remainingAttempts: result.remainingAttempts,
+      remainingAttempts: reservation.remainingAttempts,
     })
   }
 

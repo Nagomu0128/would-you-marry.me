@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from 'drizzle-orm'
+import { and, eq, isNull, lte, or, sql } from 'drizzle-orm'
 import type { Db } from '../index'
 import { newId } from '../lib'
 import { type CoupleAccess, coupleAccesses, visitorSessions } from '../schema'
@@ -82,28 +82,29 @@ export async function findActiveCoupleAccessByToken(
   return row
 }
 
-export type FailedAttemptResult = {
-  /** ロックされたか */
-  locked: boolean
-  /** ロックされている場合、入力を受け付けない時刻まで（UNIX ミリ秒） */
-  lockedUntil: number | null
-  /** あと何回失敗できるか（ロックされたときは 0） */
-  remainingAttempts: number
-}
+export type AttemptReservation =
+  /** 照合してよい。この試行が失敗なら、`locked` なら即ロック済み、そうでなければ `remainingAttempts` 回残っている */
+  | { ok: true; locked: boolean; lockedUntil: number | null; remainingAttempts: number }
+  /** ロック中のため照合してはならない */
+  | { ok: false; reason: 'locked'; lockedUntil: number }
+  /** 対象がない（他のテナントのもの、無効化済みなど） */
+  | { ok: false; reason: 'not_found' }
 
 /**
- * パスコードの失敗を記録する。失敗回数を 1 つ増やし、`maxAttempts` 回に達したら
- * `lockMs` の間ロックして、失敗回数を 0 に戻す（ロックが明けたらまた `maxAttempts` 回試せる）。
- * 1 つの UPDATE で行うので、同時に失敗しても数え落とさない。
- * @returns 対象がない（他のテナントのものなど）ときは undefined
+ * パスコードの照合の「前」に、試行を 1 回分予約する。
+ * ロックの判定と失敗回数の加算を 1 つの条件付き UPDATE で行うので、同時に大量に送られても、
+ * 照合まで進める試行は `maxAttempts` 回までになる（照合の結果を待たずに数えるため）。
+ * `maxAttempts` 回目の予約でロックを確定し、失敗回数を 0 に戻す。その試行自体は照合してよい
+ * （正しければ入場でき、`resetCoupleFailedAttempts` でロックも消える）。
+ * ロック中は何も更新しない（ロックの期限を延ばさない）。
  */
-export async function recordCoupleFailedAttempt(
+export async function reserveCoupleAttempt(
   db: Db,
   tenantId: string,
   coupleAccessId: string,
   options: { maxAttempts: number; lockMs: number },
   now: number = Date.now(),
-): Promise<FailedAttemptResult | undefined> {
+): Promise<AttemptReservation> {
   const { maxAttempts, lockMs } = options
   const [row] = await db
     .update(coupleAccesses)
@@ -111,18 +112,42 @@ export async function recordCoupleFailedAttempt(
       failedAttempts: sql`CASE WHEN ${coupleAccesses.failedAttempts} + 1 >= ${maxAttempts} THEN 0 ELSE ${coupleAccesses.failedAttempts} + 1 END`,
       lockedUntil: sql`CASE WHEN ${coupleAccesses.failedAttempts} + 1 >= ${maxAttempts} THEN ${now + lockMs} ELSE ${coupleAccesses.lockedUntil} END`,
     })
-    .where(and(eq(coupleAccesses.id, coupleAccessId), eq(coupleAccesses.tenantId, tenantId)))
+    .where(
+      and(
+        eq(coupleAccesses.id, coupleAccessId),
+        eq(coupleAccesses.tenantId, tenantId),
+        isNull(coupleAccesses.revokedAt),
+        or(isNull(coupleAccesses.lockedUntil), lte(coupleAccesses.lockedUntil, now)),
+      ),
+    )
     .returning({
       failedAttempts: coupleAccesses.failedAttempts,
       lockedUntil: coupleAccesses.lockedUntil,
     })
-  if (!row) return undefined
-  const locked = row.lockedUntil !== null && row.lockedUntil > now
-  return {
-    locked,
-    lockedUntil: locked ? row.lockedUntil : null,
-    remainingAttempts: locked ? 0 : Math.max(0, maxAttempts - row.failedAttempts),
+  if (row) {
+    const locked = row.lockedUntil !== null && row.lockedUntil > now
+    return {
+      ok: true,
+      locked,
+      lockedUntil: locked ? row.lockedUntil : null,
+      remainingAttempts: locked ? 0 : Math.max(0, maxAttempts - row.failedAttempts),
+    }
   }
+  // 更新されなかった: ロック中か、対象がない
+  const [current] = await db
+    .select({ lockedUntil: coupleAccesses.lockedUntil })
+    .from(coupleAccesses)
+    .where(
+      and(
+        eq(coupleAccesses.id, coupleAccessId),
+        eq(coupleAccesses.tenantId, tenantId),
+        isNull(coupleAccesses.revokedAt),
+      ),
+    )
+  if (current?.lockedUntil != null && current.lockedUntil > now) {
+    return { ok: false, reason: 'locked', lockedUntil: current.lockedUntil }
+  }
+  return { ok: false, reason: 'not_found' }
 }
 
 /** パスコードの失敗回数とロックをリセットする（入場に成功したとき） */
