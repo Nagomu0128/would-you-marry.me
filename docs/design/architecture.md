@@ -97,18 +97,75 @@ flowchart LR
 - 2 つの Worker は同じ D1 データベースと R2 バケットを使う
 - Cookie にはドメイン属性を付けず、それぞれのホストだけに送られるようにする。ゲスト用と管理用でログイン状態を共有しない
 
-### リポジトリ構成（案）
+### リポジトリ構成
+
+pnpm workspaces のモノレポ（[ADR-0003](../adr/0003-dev-tools-and-repository-layout.md)）。
 
 ```
-apps/
-  guest/    # guest Worker（React + Hono）
-  admin/    # admin Worker（React + Hono + Better Auth + Cron）
-packages/
-  db/       # Drizzle のスキーマとマイグレーション
-  shared/   # 共通の型、期間の判定、ニックネームのルールなど
-  ui/       # 画面部品とモーショングラフィックス（管理面のプレビューでも使う）
-docs/
+would-you-marry.me/
+├── apps/
+│   ├── guest/                      # guest Worker（would-you-marry.me）
+│   │   ├── wrangler.jsonc          # D1・R2、Custom Domain、静的アセットの設定
+│   │   ├── vite.config.ts          # Cloudflare Vite プラグイン
+│   │   ├── index.html
+│   │   ├── public/                 # favicon など
+│   │   ├── test/                   # Worker の結合テスト
+│   │   └── src/
+│   │       ├── worker/             # サーバー（Hono）
+│   │       │   ├── index.ts        # 入口: /join・/couple・/api の振り分け
+│   │       │   ├── routes/         # guest.ts / couple.ts / join.ts / config.ts
+│   │       │   ├── middleware/     # セッション・テナント・期間の検証、CSRF
+│   │       │   └── lib/            # 位置情報の除去、R2 の読み書き
+│   │       └── client/             # 画面（React の SPA）
+│   │           ├── main.tsx
+│   │           ├── routes/         # SG-02〜07、SG-E1、SC-01・02、規約ページ
+│   │           ├── features/       # アルバム、アップロード、拡大表示など画面をまたぐ機能
+│   │           └── lib/            # API の呼び出し、縮小画像の生成、保存（Web Share）
+│   └── admin/                      # admin Worker（admin.would-you-marry.me）
+│       ├── wrangler.jsonc          # 上記に加えて Cron Triggers、D1 マイグレーションの適用元
+│       ├── vite.config.ts
+│       ├── test/
+│       └── src/
+│           ├── worker/
+│           │   ├── index.ts        # fetch（API）と scheduled（定期処理）の入口
+│           │   ├── auth.ts         # Better Auth の設定、許可リストの確認
+│           │   ├── routes/         # tenants / photos / guests / urls など
+│           │   └── jobs/           # 自動削除
+│           └── client/
+│               ├── routes/         # SA-01〜09
+│               └── lib/            # API の呼び出し、QR コードの生成
+├── packages/
+│   ├── db/                         # Drizzle のスキーマとマイグレーション
+│   │   ├── src/schema/             # 表ごとのファイル。auth.ts は Better Auth の表
+│   │   ├── migrations/             # drizzle-kit が生成する SQL
+│   │   └── drizzle.config.ts
+│   ├── shared/                     # 画面とサーバーの両方で使う処理
+│   │   └── src/
+│   │       ├── periods.ts          # 期間の計算（spec/tenant-periods.md）
+│   │       ├── nickname.ts         # ニックネームのルール
+│   │       ├── limits.ts           # 10MB・100 枚などの上限値
+│   │       ├── errors.ts           # API のエラーコード
+│   │       └── api-types.ts        # API のリクエストとレスポンスの型
+│   └── ui/                         # 画面部品（ゲスト画面と管理面のプレビューで共有）
+│       └── src/
+│           ├── theme/              # デザインガイドの色・文字・余白（Tailwind のテーマ）
+│           ├── components/         # ボタン、タブ、写真グリッド、拡大表示、下部ナビなど
+│           ├── screens/            # ホーム・席次表・料理の表示部品（プレビューでも使う）
+│           ├── motion/             # モーショングラフィックス（ADR-0002）
+│           └── messages/ja.ts      # 画面の文言（spec/messages.md）
+├── docs/
+├── package.json                    # 全体のスクリプト（dev / build / test / deploy）
+├── pnpm-workspace.yaml
+├── tsconfig.base.json
+└── biome.json                      # lint・format の設定
 ```
+
+- 依存は `apps` → `packages` の一方向だけにする
+  - `packages/shared` は他のパッケージに依存せず、ブラウザでも Workers でも動く処理だけを置く
+  - `packages/ui` は `shared` だけに依存する
+  - `packages/db` はサーバー側（`src/worker/`）からだけ使い、画面側（`src/client/`）からは読み込まない
+- 画面とサーバーは HTTP の API だけでやりとりし、型は `packages/shared/src/api-types.ts` で共有する
+- 単体テストはコードの隣（`*.test.ts`）、Worker の結合テストは各 app の `test/` に置く。E2E テストは行わない
 
 ## 採用技術
 
@@ -132,6 +189,10 @@ docs/
 | リポジトリ構成 | pnpm workspaces のモノレポ |
 | ドメイン | Workers Custom Domains |
 | デプロイ | Wrangler |
+| スタイリング | Tailwind CSS v4 |
+| 画面のルーティング | React Router（ライブラリとして使う） |
+| lint・format | Biome |
+| テスト | Vitest（Worker のテストは `@cloudflare/vitest-pool-workers`）。E2E テストは行わない |
 
 ## 主な処理の方式
 
@@ -214,7 +275,7 @@ sequenceDiagram
 |---|---|
 | Worker の設定 | 各 Worker の Wrangler 設定ファイルに、D1・R2 のバインディング、Custom Domains、Cron Triggers（admin のみ）、Workers Logs の有効化を書く |
 | デプロイ | `apps/guest` と `apps/admin` で、それぞれ `wrangler deploy` を実行する |
-| データベースのマイグレーション | Drizzle でマイグレーションの SQL を生成し、`wrangler d1 migrations apply` で適用する |
+| データベースのマイグレーション | Drizzle でマイグレーションの SQL を生成し、`wrangler d1 migrations apply` で適用する。2 つの Worker は同じ D1 を使うので、適用は admin の Wrangler 設定から行う（`migrations_dir` で `packages/db/migrations` を指す） |
 | シークレットの登録 | `wrangler secret put` で登録する（[環境変数・シークレット](#環境変数シークレット)） |
 | ローカル開発 | Cloudflare Vite プラグインの開発サーバーで、D1・R2 をローカルで再現して動かす |
 

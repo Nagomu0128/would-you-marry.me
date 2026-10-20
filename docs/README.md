@@ -37,7 +37,7 @@
 | 詳細設計 | [spec/screen-details.md](spec/screen-details.md) | 画面ごとのワイヤーフレーム・状態・操作 | ドラフト |
 | 詳細設計 | [spec/messages.md](spec/messages.md) | 画面の文言とエラーメッセージ | ドラフト |
 | 詳細設計 | [spec/design-guide.md](spec/design-guide.md) | 色、文字、部品、モーションのルール | 案 |
-| 決定記録 | [adr/README.md](adr/README.md) | ADR の運用ルールと一覧 | ADR-0001・0002 承認 |
+| 決定記録 | [adr/README.md](adr/README.md) | ADR の運用ルールと一覧 | ADR-0001〜0003 承認 |
 | 管理 | [open-questions.md](open-questions.md) | 未決事項・決定済み事項 | 随時更新 |
 
 ## ID の付け方
