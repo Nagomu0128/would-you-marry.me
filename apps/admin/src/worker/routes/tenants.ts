@@ -39,7 +39,8 @@ function toAdminTenant(tenant: Tenant, stats: TenantStats, now: Date): AdminTena
     phase: getTenantPhase(tenant.eventDate, now),
     suspended: tenant.suspended,
     createdAt: new Date(tenant.createdAt).toISOString(),
-    dataDeletedAt: tenant.dataDeletedAt === null ? null : new Date(tenant.dataDeletedAt).toISOString(),
+    dataDeletedAt:
+      tenant.dataDeletedAt === null ? null : new Date(tenant.dataDeletedAt).toISOString(),
     stats,
   }
 }

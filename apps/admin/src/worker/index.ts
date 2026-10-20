@@ -13,7 +13,4 @@ const handler = {
 
 // SENTRY_DSN があるときだけ Sentry に送る（なければ何もしない）。
 // Sentry 11 には sendDefaultPii の設定がなく、個人情報（IP・Cookie など）は既定で送られない
-export default Sentry.withSentry(
-  (env: AppEnv) => ({ dsn: env.SENTRY_DSN || undefined }),
-  handler,
-)
+export default Sentry.withSentry((env: AppEnv) => ({ dsn: env.SENTRY_DSN || undefined }), handler)
