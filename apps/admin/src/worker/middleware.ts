@@ -11,11 +11,19 @@ export const SECURITY_HEADERS: Record<string, string> = {
   'X-Frame-Options': 'DENY',
 }
 
+/** 個人情報を含む JSON の応答 */
+export const API_CACHE_CONTROL = 'private, no-store'
+
 export const securityHeaders = createMiddleware<AppBindings>(async (c, next) => {
   await next()
   // 静的アセットやリダイレクトの Response はヘッダーを変更できないので、作り直して付ける
   const res = new Response(c.res.body, c.res)
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) res.headers.set(name, value)
+  // API の応答（メールアドレスや URL を含む JSON、エラー）は、ブラウザや中間のキャッシュに残さない。
+  // 画像・PDF は自分で Cache-Control を付けるので、付いていないものだけに足す
+  if (c.req.path.startsWith('/api/') && !res.headers.has('Cache-Control')) {
+    res.headers.set('Cache-Control', API_CACHE_CONTROL)
+  }
   c.res = res
 })
 

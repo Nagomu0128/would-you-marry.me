@@ -102,12 +102,14 @@ type RequestOptions = {
   /** Origin ヘッダー。既定は ADMIN_ORIGIN（状態を変えるリクエストのみ付ける） */
   origin?: string | null
   env?: AppEnv
+  /** 追加のヘッダー */
+  headers?: Record<string, string>
 }
 
 /** Worker にリクエストを送る */
 export function request(path: string, options: RequestOptions = {}): Response | Promise<Response> {
   const method = options.method ?? 'GET'
-  const headers = new Headers()
+  const headers = new Headers(options.headers)
   if (options.cookie) headers.set('Cookie', options.cookie)
   const origin = options.origin === undefined ? ORIGIN : options.origin
   if (origin !== null && method !== 'GET') headers.set('Origin', origin)

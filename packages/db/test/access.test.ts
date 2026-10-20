@@ -9,8 +9,8 @@ import {
   issueCoupleAccess,
   issueJoinToken,
   newId,
-  recordCoupleFailedAttempt,
   recordCoupleTermsAgreement,
+  reserveCoupleAttempt,
   resetCoupleFailedAttempts,
   touchVisitorSession,
 } from '../src'
@@ -130,13 +130,15 @@ describe('couple_accesses', () => {
     const now = 1_000_000
 
     for (let i = 1; i <= 4; i++) {
-      expect(await recordCoupleFailedAttempt(db, tenant.id, access.id, opts, now)).toEqual({
+      expect(await reserveCoupleAttempt(db, tenant.id, access.id, opts, now)).toEqual({
+        ok: true,
         locked: false,
         lockedUntil: null,
         remainingAttempts: 5 - i,
       })
     }
-    expect(await recordCoupleFailedAttempt(db, tenant.id, access.id, opts, now)).toEqual({
+    expect(await reserveCoupleAttempt(db, tenant.id, access.id, opts, now)).toEqual({
+      ok: true,
       locked: true,
       lockedUntil: now + opts.lockMs,
       remainingAttempts: 0,
@@ -146,10 +148,61 @@ describe('couple_accesses', () => {
 
     // ロックが明けたあとは、また 5 回試せる
     const later = now + opts.lockMs + 1
-    expect(await recordCoupleFailedAttempt(db, tenant.id, access.id, opts, later)).toEqual({
+    expect(await reserveCoupleAttempt(db, tenant.id, access.id, opts, later)).toEqual({
+      ok: true,
       locked: false,
       lockedUntil: null,
       remainingAttempts: 4,
+    })
+  })
+
+  it('ロック中は予約できず、失敗回数もロックの期限も変わらない', async () => {
+    const tenant = await makeTenant()
+    const access = await issueCoupleAccess(db, tenant.id, {
+      token: `c-${newId()}`,
+      passcodeHash: 'h',
+    })
+    const opts = { maxAttempts: 2, lockMs: 1000 }
+    await reserveCoupleAttempt(db, tenant.id, access.id, opts, 10)
+    await reserveCoupleAttempt(db, tenant.id, access.id, opts, 10)
+    const locked = await getActiveCoupleAccess(db, tenant.id)
+    expect(locked?.lockedUntil).toBe(1010)
+
+    expect(await reserveCoupleAttempt(db, tenant.id, access.id, opts, 500)).toEqual({
+      ok: false,
+      reason: 'locked',
+      lockedUntil: 1010,
+    })
+    expect(await getActiveCoupleAccess(db, tenant.id)).toEqual(locked)
+  })
+
+  it('同時に予約しても、ロックまでに通るのは maxAttempts 回まで', async () => {
+    const tenant = await makeTenant()
+    const access = await issueCoupleAccess(db, tenant.id, {
+      token: `c-${newId()}`,
+      passcodeHash: 'h',
+    })
+    const opts = { maxAttempts: 5, lockMs: 60_000 }
+    const results = await Promise.all(
+      Array.from({ length: 40 }, () => reserveCoupleAttempt(db, tenant.id, access.id, opts, 100)),
+    )
+    expect(results.filter((r) => r.ok)).toHaveLength(5)
+    expect(results.filter((r) => !r.ok && r.reason === 'locked')).toHaveLength(35)
+  })
+
+  it('無効化済み・他のテナントの対象は not_found', async () => {
+    const a = await makeTenant()
+    const b = await makeTenant()
+    const old = await issueCoupleAccess(db, a.id, { token: `c-${newId()}`, passcodeHash: 'h' })
+    const opts = { maxAttempts: 5, lockMs: 1000 }
+    expect(await reserveCoupleAttempt(db, b.id, old.id, opts)).toEqual({
+      ok: false,
+      reason: 'not_found',
+    })
+    await issueCoupleAccess(db, a.id, { token: `c-${newId()}`, passcodeHash: 'h' })
+    expect(await reserveCoupleAttempt(db, a.id, old.id, opts)).toEqual({
+      ok: false,
+      reason: 'not_found',
     })
   })
 
@@ -160,8 +213,8 @@ describe('couple_accesses', () => {
       passcodeHash: 'h',
     })
     const opts = { maxAttempts: 2, lockMs: 1000 }
-    await recordCoupleFailedAttempt(db, tenant.id, access.id, opts, 10)
-    await recordCoupleFailedAttempt(db, tenant.id, access.id, opts, 10)
+    await reserveCoupleAttempt(db, tenant.id, access.id, opts, 10)
+    await reserveCoupleAttempt(db, tenant.id, access.id, opts, 10)
     await resetCoupleFailedAttempts(db, tenant.id, access.id)
     expect(await getActiveCoupleAccess(db, tenant.id)).toMatchObject({
       failedAttempts: 0,
@@ -175,8 +228,11 @@ describe('couple_accesses', () => {
     const access = await issueCoupleAccess(db, a.id, { token: `c-${newId()}`, passcodeHash: 'h' })
     const opts = { maxAttempts: 5, lockMs: 1000 }
 
-    expect(await recordCoupleFailedAttempt(db, b.id, access.id, opts)).toBeUndefined()
-    await recordCoupleFailedAttempt(db, a.id, access.id, opts)
+    expect(await reserveCoupleAttempt(db, b.id, access.id, opts)).toEqual({
+      ok: false,
+      reason: 'not_found',
+    })
+    await reserveCoupleAttempt(db, a.id, access.id, opts)
     await resetCoupleFailedAttempts(db, b.id, access.id)
     await recordCoupleTermsAgreement(db, b.id, access.id, 99)
     expect(await getActiveCoupleAccess(db, a.id)).toMatchObject({
