@@ -1,2 +1,11 @@
-// テーブル定義は T03 で追加する（docs/spec/database.md）
-export {}
+export * from './audit-logs'
+export * from './auth'
+export * from './couple-accesses'
+export * from './course-menu-images'
+export * from './guests'
+export * from './join-tokens'
+export * from './likes'
+export * from './photos'
+export * from './seating-charts'
+export * from './tenants'
+export * from './visitor-sessions'
