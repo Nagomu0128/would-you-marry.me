@@ -1,7 +1,7 @@
 // Vitest（@cloudflare/vitest-pool-workers）用の設定。デプロイには使わない
 {
   "name": "wym-db-test",
-  "compatibility_date": "2026-10-01",
+  "compatibility_date": "2026-10-12",
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {

@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@wym/shared": "workspace:*",
-    "lucide-react": "1.60.0",
-    "motion": "14.4.0",
+    "lucide-react": "1.58.0",
+    "motion": "14.3.0",
     "pdfjs-dist": "6.4.299"
   },
   "devDependencies": {
