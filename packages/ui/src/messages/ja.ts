@@ -180,12 +180,19 @@ export const ja = {
       heading: 'For the Couple',
       description: '管理者からお伝えしたパスコードを入力してください',
       submit: '入る',
+      /** パスコード入力欄のラベル（screen-details.md SC-01 のワイヤーフレーム） */
+      passcodeLabel: 'パスコード',
     },
     // SC-02
     photos: {
       tabs: { all: 'すべての写真', ranking: 'ランキング' },
       uploaderFilter: ({ nickname }: { nickname: string }) => `投稿者: ${nickname}（すべて）`,
       empty: 'まだ写真がありません',
+      /** 投稿者を選んだとき・選ぶ一覧の見出し・件数（screen-details.md SC-02 のワイヤーフレーム） */
+      uploaderSelected: ({ nickname }: { nickname: string }) => `投稿者: ${nickname}`,
+      uploaderAll: 'すべて',
+      uploaderSheetTitle: '投稿者',
+      uploaderPhotoCount: ({ count }: { count: number }) => `${count} 枚`,
     },
   },
 

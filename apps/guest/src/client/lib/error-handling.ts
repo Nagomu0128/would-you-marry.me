@@ -1,5 +1,5 @@
 // API エラーの振り分け（messages.md「表示する場所」）。振り分けはこのファイルの 1 か所だけ。
-//   UNAUTHENTICATED / TENANT_NOT_FOUND / TENANT_SUSPENDED / PERIOD_ENDED → /error?code=...
+//   UNAUTHENTICATED / TENANT_NOT_FOUND / TENANT_SUSPENDED / PERIOD_ENDED / COUPLE_LINK_INVALID → /error?code=...
 //   NICKNAME_REQUIRED → /t/:tenantId/nickname
 //   通信エラー → 画面内に ErrorState（呼び出し側が出す）
 //   それ以外 → トースト
@@ -15,6 +15,7 @@ const REDIRECT_TO_ERROR_PAGE: ReadonlySet<ErrorCode> = new Set([
   'TENANT_NOT_FOUND',
   'TENANT_SUSPENDED',
   'PERIOD_ENDED',
+  'COUPLE_LINK_INVALID',
 ])
 
 export type ApiErrorAction =

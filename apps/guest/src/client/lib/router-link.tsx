@@ -15,6 +15,7 @@ export const paths = {
   menu: (tenantId: string) => `/t/${encodeURIComponent(tenantId)}/menu`,
   album: (tenantId: string) => `/t/${encodeURIComponent(tenantId)}/album`,
   upload: (tenantId: string) => `/t/${encodeURIComponent(tenantId)}/upload`,
+  couplePhotos: (tenantId: string) => `/couple/${encodeURIComponent(tenantId)}/photos`,
   terms: '/terms',
   privacy: '/privacy',
 }
