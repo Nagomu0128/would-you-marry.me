@@ -14,6 +14,18 @@ export type AppEnv = {
 }
 
 /**
+ * 新郎新婦向け API（`/api/couple/:tenantId/*`）の共通処理（middleware/couple-session.ts）を
+ * 通ったあとのルートで使う型。ルートハンドラーは URL ではなく `c.var.tenant.id` を使うこと。
+ */
+export type CoupleEnv = {
+  Bindings: Cloudflare.Env
+  Variables: Omit<AppEnv['Variables'], 'tenantId'> & {
+    tenant: Tenant
+    tenantId: string
+  }
+}
+
+/**
  * 参加者向け API（`/api/t/:tenantId/*`）の共通処理（middleware/session.ts の `guestSession`）を
  * 通ったあとのルートで使う型。ここにある値は検証済みで、`tenant.id === guest.tenantId` が保証されている。
  * ルートハンドラーは URL のテナント ID ではなく、必ず `c.var.tenant.id` を使うこと。
