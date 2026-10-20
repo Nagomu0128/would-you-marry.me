@@ -169,6 +169,8 @@ export const ja = {
       retry: 'もう一度送る',
       another: '続けて投稿する',
       toAlbum: 'アルバムを見る',
+      /** プレビュー画像の代替テキスト（読み上げ用） */
+      previewAlt: '選んだ写真',
     },
   },
 
@@ -299,6 +301,16 @@ export const ja = {
       passcode: 'パスコード',
       termsAgreed: '規約に同意済み',
       termsNotAgreed: '規約は未同意',
+    },
+    // SA-08（タブの名前は common.nav を使う）
+    previewHeading: 'プレビュー',
+    // SA-09
+    guests: {
+      empty: '参加者はまだいません',
+      photoCount: ({ count }: { count: number }) => `${count} 枚`,
+      changeBody: ({ nickname }: { nickname: string }) =>
+        `「${nickname}」の新しい名前を入力してください`,
+      nicknameLabel: 'ニックネーム',
     },
     // SA-06
     monitor: {

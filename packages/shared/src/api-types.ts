@@ -307,9 +307,10 @@ export type AdminPhotosQuery = ListQuery
 /** `GET /api/tenants/:tenantId/photos`（`DELETE .../photos/:photoId` の成功は `204`） */
 export type AdminPhotoListResponse = PhotoListResponse<StaffPhoto>
 
+/** ニックネーム登録済みの参加者だけを返す */
 export type AdminGuest = {
   id: string
-  nickname: string | null
+  nickname: string
   photoCount: number
   createdAt: string
 }
