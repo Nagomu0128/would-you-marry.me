@@ -9,3 +9,21 @@ export function createDb(d1: D1Database) {
 }
 
 export type Db = ReturnType<typeof createDb>
+
+export { isUniqueConstraintError, newId } from './lib'
+export * from './r2'
+export * from './repositories'
+export {
+  AUDIT_ACTIONS,
+  type AuditAction,
+  type AuditLog,
+  type CoupleAccess,
+  type CourseMenuImage,
+  type Guest,
+  type JoinToken,
+  type Like,
+  type Photo,
+  type SeatingChart,
+  type Tenant,
+  type VisitorSession,
+} from './schema'
