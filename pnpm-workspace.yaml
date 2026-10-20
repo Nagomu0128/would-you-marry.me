@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+minimumReleaseAgeExclude:
+  - framer-motion@14.4.0
+  - lucide-react@1.60.0
+  - miniflare@5.20261019.0-beta
+  - motion-dom@14.4.0
+  - motion@14.4.0
+  - react-router@8.5.0
+  - wrangler@4.151.2
+  - '@cloudflare/vitest-plugin@1.4.5'
+allowBuilds:
+  esbuild: true
+  workerd: true
