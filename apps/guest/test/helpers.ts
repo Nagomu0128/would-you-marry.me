@@ -106,6 +106,8 @@ export type RequestOptions = {
   /** 既定は同じオリジン。null で Origin ヘッダーなし */
   origin?: string | null
   json?: unknown
+  /** multipart など。json と同時には使わない */
+  body?: BodyInit
   headers?: Record<string, string>
 }
 
@@ -115,7 +117,7 @@ export function request(path: string, options: RequestOptions = {}): Promise<Res
   if (options.cookie) headers.set('Cookie', options.cookie)
   const origin = options.origin === undefined ? ORIGIN : options.origin
   if (origin !== null) headers.set('Origin', origin)
-  let body: string | undefined
+  let body: BodyInit | undefined = options.body
   if (options.json !== undefined) {
     headers.set('Content-Type', 'application/json')
     body = JSON.stringify(options.json)
