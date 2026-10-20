@@ -70,6 +70,7 @@ function PhotoTile({ photo, onSelect }: { photo: PhotoGridItem; onSelect: () => 
     <button
       type="button"
       onClick={onSelect}
+      data-photo-id={photo.id}
       className="relative block aspect-square w-full overflow-hidden rounded-photo bg-sand/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-champagne"
     >
       <m.img

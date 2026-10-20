@@ -95,6 +95,16 @@ export const ja = {
     skipAnimation: '演出を飛ばす',
     photoAlt: ({ nickname }: { nickname: string }) => `${nickname} さんの写真`,
     likeCount: ({ count }: { count: number }) => `いいね ${count} 件`,
+    /** 投稿者の表示（拡大表示・ランキング。screen-details.md のワイヤーフレーム） */
+    uploader: ({ nickname }: { nickname: string }) => `${nickname} さん`,
+    /** 写真の拡大表示のボタン（保存・削除はワイヤーフレームの語、残りは読み上げ用） */
+    viewer: {
+      close: '閉じる',
+      save: '保存',
+      delete: '削除',
+      like: 'いいね',
+      unlike: 'いいねを取り消す',
+    },
   },
 
   guest: {
@@ -322,6 +332,8 @@ export const ja = {
     saveUnavailable: 'この画面では保存できません。メニューから「ブラウザで開く」を選んでください',
     copied: 'コピーしました',
     saved: '保存しました',
+    /** 写真の保存で、取得は済んだがもう一度タップしないと共有メニューを開けないとき（iPhone の Safari） */
+    savePressAgain: '準備ができました。もう一度「保存」を押してください',
   },
 
   confirms: {
