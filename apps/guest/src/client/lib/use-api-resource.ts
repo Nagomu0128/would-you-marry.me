@@ -1,3 +1,4 @@
+import type { ErrorAudience } from '@wym/ui'
 import { type DependencyList, useCallback, useEffect, useRef, useState } from 'react'
 import { useApiErrorHandler } from './error-handling'
 
@@ -10,15 +11,17 @@ export type ApiResource<T> =
  * 画面を開いたときのデータ取得。読み込み中 → 成功 / 失敗。
  * 失敗の扱いは useApiErrorHandler と同じ（遷移・トースト）。'error' のときは画面内に
  * `<ErrorState onRetry={reload} />` を出す（通信エラー以外でもトーストと合わせて出す）。
+ * 新郎新婦用ページでは `{ audience: 'couple' }` を渡す。
  * `load` は deps が変わったときだけ呼び直す。
  */
 export function useApiResource<T>(
   load: () => Promise<T>,
   deps: DependencyList,
+  options: { audience?: ErrorAudience } = {},
 ): ApiResource<T> & { reload: () => void } {
   const [resource, setResource] = useState<ApiResource<T>>({ state: 'loading' })
   const [attempt, setAttempt] = useState(0)
-  const handleError = useApiErrorHandler()
+  const handleError = useApiErrorHandler(options.audience ? { audience: options.audience } : {})
   const loadRef = useRef(load)
   loadRef.current = load
   const handleRef = useRef(handleError)
