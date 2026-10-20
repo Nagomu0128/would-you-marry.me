@@ -3,7 +3,7 @@
 結婚式当日に参加者が使う、マルチテナントの Web アプリケーションの要件・設計ドキュメント。
 
 - 最終更新: 2026-10-20
-- 段階: 要件定義 + 基本設計。基盤は Cloudflare（D-32）、詳細な技術選定は ADR-0001 で行う
+- 段階: 要件定義 + 基本設計 + 技術選定（[ADR-0001](adr/0001-select-tech-stack.md)、承認済み）
 - 初回の利用: 2026 年 10 月末の結婚式（D-33）
 
 ## 読む順番
@@ -29,8 +29,8 @@
 | 設計 | [design/domain-model.md](design/domain-model.md) | 論理エンティティと関係 | ドラフト |
 | 設計 | [design/auth.md](design/auth.md) | 参加者・新郎新婦・管理者の認証と認可 | ドラフト |
 | 設計 | [design/multi-tenancy.md](design/multi-tenancy.md) | テナント分離の方針 | ドラフト |
-| 設計 | [design/architecture.md](design/architecture.md) | 論理構成と Cloudflare 上での構成候補 | ドラフト（基盤のみ決定） |
-| 決定記録 | [adr/README.md](adr/README.md) | アーキテクチャ決定記録（ADR）の運用 | 運用ルールのみ |
+| 設計 | [design/architecture.md](design/architecture.md) | 論理構成、物理構成、採用技術、主な処理の方式 | ドラフト |
+| 決定記録 | [adr/README.md](adr/README.md) | ADR の運用ルールと一覧 | ADR-0001 承認 |
 | 管理 | [open-questions.md](open-questions.md) | 未決事項・決定済み事項 | 随時更新 |
 
 ## ID の付け方

@@ -14,7 +14,7 @@
 
 | ADR | タイトル | ステータス |
 |---|---|---|
-| ADR-0001 | 技術スタックの選定 | 未作成（[design/architecture.md](../design/architecture.md) の候補比較をもとに作成する） |
+| [ADR-0001](0001-select-tech-stack.md) | 技術スタックの選定 | 承認 |
 
 ## テンプレート
 

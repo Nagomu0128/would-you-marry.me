@@ -12,10 +12,11 @@
 | SeatingChart | 席次表 PDF | あり | ファイルの保存先、登録日時 |
 | CourseMenuImage | 料理のコース表の画像 | あり | ファイルの保存先、表示順 |
 | Guest | 匿名認証で参加した参加者 | あり | ID、ニックネーム |
-| Photo | 参加者が投稿した写真 | あり | 投稿者、オリジナル画像と縮小画像の保存先、投稿日時 |
+| Photo | 参加者が投稿した写真 | あり | 投稿者、オリジナル画像・拡大表示用画像・一覧用画像の保存先、投稿日時 |
 | Like | 写真へのいいね | あり | 写真、いいねした参加者 |
 
-管理者はデータベースに持たず、設定ファイル・環境変数の許可リストで管理する（D-22）。
+管理者の許可リストは設定ファイル・環境変数で管理する（D-22）。管理者のアカウントとログイン状態は、認証ライブラリが管理する表に保存する（[ADR-0001](../adr/0001-select-tech-stack.md)）。
+参加者・新郎新婦のセッションもデータベースに保存するが、実装上の都合なので本書の論理モデルには含めない（[architecture.md](architecture.md)）。
 
 ## 関係
 
@@ -81,7 +82,8 @@ erDiagram
         uuid tenantId FK
         uuid guestId FK "投稿者"
         string originalKey "位置情報を除去済み"
-        string thumbnailKey
+        string displayKey "拡大表示用"
+        string thumbnailKey "一覧用"
         datetime createdAt
     }
     LIKE {
