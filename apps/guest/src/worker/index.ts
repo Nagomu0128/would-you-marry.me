@@ -1,26 +1,29 @@
-import { ApiError, createErrorBody } from '@wym/shared'
-import { Hono } from 'hono'
+// guest Worker の入口: /join・/couple・/api の振り分けは app.ts
+import * as Sentry from '@sentry/cloudflare'
+import { app } from './app'
 
-const app = new Hono<{ Bindings: Cloudflare.Env }>()
-
-// 各ルートは T07 以降で追加する
-
-// API 以外のパスは静的アセット（SPA）を返す。
-// /couple/:tenantId/login などの SPA のパスも、ここから index.html を返す
-app.notFound((c) => {
-  if (new URL(c.req.url).pathname.startsWith('/api/')) {
-    return c.json(createErrorBody('NOT_FOUND', 'not found'), 404)
-  }
-  return c.env.ASSETS.fetch(c.req.raw)
-})
-
-app.onError((err, c) => {
-  if (err instanceof ApiError) {
-    return c.json(err.toBody(), err.status)
-  }
-  // 個人情報を含みうるので、例外の内容ではなく種類だけを記録する
-  console.error(JSON.stringify({ level: 'error', message: 'unhandled error', name: err.name }))
-  return c.json(createErrorBody('INTERNAL_ERROR', 'internal server error'), 500)
-})
-
-export default app
+// SENTRY_DSN が設定されているときだけ有効になる（空なら何も送らない）。
+// Cookie・クエリ文字列（参加トークンを含みうる）・ヘッダー・本文・ユーザー情報（IP アドレスなど）は送らない。
+// （@sentry/cloudflare v11 では `sendDefaultPii` が `dataCollection` に置き換わっている）
+export default Sentry.withSentry(
+  (env: Cloudflare.Env) => ({
+    dsn: env.SENTRY_DSN || undefined,
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpHeaders: false,
+      httpBodies: [],
+      urlQueryParams: false,
+    },
+    beforeSend(event) {
+      // 念のため、URL のクエリ文字列を取り除く
+      if (event.request?.url) event.request.url = event.request.url.split('?')[0]
+      if (event.request) {
+        event.request.cookies = undefined
+        event.request.query_string = undefined
+      }
+      return event
+    },
+  }),
+  app,
+)

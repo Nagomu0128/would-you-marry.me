@@ -12,6 +12,7 @@ describe('guest Worker', () => {
   it('POST でも同じ形式の 404 を返す', async () => {
     const res = await exports.default.fetch('https://would-you-marry.me/api/nope', {
       method: 'POST',
+      headers: { Origin: 'https://would-you-marry.me' },
     })
     expect(res.status).toBe(404)
     const body = await res.json<{ error: { code: string } }>()

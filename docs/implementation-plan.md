@@ -13,38 +13,38 @@ docs/ の要件・設計を実装するためのタスク分割と進捗。オ�
 
 | ID | タスク | 主な範囲 | 依存 | 状態 |
 |---|---|---|---|---|
-| T01 | モノレポの土台 | pnpm workspaces、tsconfig、Biome、Vitest（pool-workers 含む）、Vite + Cloudflare Vite プラグイン + React + Tailwind v4 + React Router、Hono の入口、wrangler 設定（D1・R2・静的アセット、ローカル状態の共有）、CI、依存パッケージの一括導入、`packages/shared/src/errors.ts` | — | 未着手 |
+| T01 | モノレポの土台 | pnpm workspaces、tsconfig、Biome、Vitest（pool-workers 含む）、Vite + Cloudflare Vite プラグイン + React + Tailwind v4 + React Router、Hono の入口、wrangler 設定（D1・R2・静的アセット、ローカル状態の共有）、CI、依存パッケージの一括導入、`packages/shared/src/errors.ts` | — | 完了 |
 
 ### M1 共通ライブラリ
 
 | ID | タスク | 主な範囲 | 依存 | 状態 |
 |---|---|---|---|---|
-| T02 | shared | 期間の計算（spec/tenant-periods.md の全計算例と境界）、ニックネームのルール、上限値、API の型（api.md の全エンドポイント）、トークン・パスコードのハッシュ（Web Crypto） | T01 | 未着手 |
-| T03 | db | Drizzle スキーマ（全表 + Better Auth の `auth_` 表）、部分ユニークインデックス・外部キー、マイグレーション、tenantId 必須のリポジトリ関数（database.md の主なクエリ、削除の手順）とそのテスト | T01 | 未着手 |
-| T04 | ui 基盤 | Tailwind テーマ（デザインガイドの色・文字・余白）、文言ファイル `messages/ja.ts`（messages.md の全文言）、基本部品（ボタン、入力欄、タブ、カード、トースト、確認シート、スケルトン、ヘッダー、フッター、下部ナビ、写真グリッド、空・エラー表示）、Motion の設定（LazyMotion・reducedMotion） | T01 | 未着手 |
-| T05 | モーショングラフィックス | ウェルカム、いいね、アップロード完了、ランキング登場、新郎新婦へのお祝い（`packages/ui/src/motion/`） | T01 | 未着手 |
-| T06 | メタデータ除去 | JPEG（向き・ICC だけ残す）と PNG（eXIf・tEXt・iTXt・zTXt を削除）のメタデータ除去、先頭バイトによる形式判定、10MB での性能確認 | T01 | 未着手 |
+| T02 | shared | 期間の計算（spec/tenant-periods.md の全計算例と境界）、ニックネームのルール、上限値、API の型（api.md の全エンドポイント）、トークン・パスコードのハッシュ（Web Crypto） | T01 | 完了 |
+| T03 | db | Drizzle スキーマ（全表 + Better Auth の `auth_` 表）、部分ユニークインデックス・外部キー、マイグレーション、tenantId 必須のリポジトリ関数（database.md の主なクエリ、削除の手順）とそのテスト | T01 | 完了 |
+| T04 | ui 基盤 | Tailwind テーマ（デザインガイドの色・文字・余白）、文言ファイル `messages/ja.ts`（messages.md の全文言）、基本部品（ボタン、入力欄、タブ、カード、トースト、確認シート、スケルトン、ヘッダー、フッター、下部ナビ、写真グリッド、空・エラー表示）、Motion の設定（LazyMotion・reducedMotion） | T01 | 完了 |
+| T05 | モーショングラフィックス | ウェルカム、いいね、アップロード完了、ランキング登場、新郎新婦へのお祝い（`packages/ui/src/motion/`） | T01 | 完了 |
+| T06 | メタデータ除去 | JPEG（向き・ICC だけ残す）と PNG（eXIf・tEXt・iTXt・zTXt を削除）のメタデータ除去、先頭バイトによる形式判定、10MB での性能確認 | T01 | 完了 |
 
 ### M2 サーバー
 
 | ID | タスク | 主な範囲 | 依存 | 状態 |
 |---|---|---|---|---|
-| T07 | guest Worker 基盤 | セッション・テナント・期間・停止・ニックネームの検証、CSRF、エラー形式、構造化ログ・Sentry、`GET /join`、`GET /couple/:tenantId`、`/api/config`、`/me`・`/me/nickname`、席次表・コース表、参加のレート制限、noindex | T02, T03 | 未着手 |
+| T07 | guest Worker 基盤 | セッション・テナント・期間・停止・ニックネームの検証、CSRF、エラー形式、構造化ログ・Sentry、`GET /join`、`GET /couple/:tenantId`、`/api/config`、`/me`・`/me/nickname`、席次表・コース表、参加のレート制限、noindex | T02, T03 | 作業中 |
 | T08 | guest 写真 API | アップロード（形式・サイズ・上限・メタデータ除去・R2・登録）、タイムライン・自分の投稿、ランキング、いいね・取り消し、自分の写真の削除、画像の配信 | T06, T07 | 未着手 |
 | T09 | 新郎新婦 API | 入場（パスコード・失敗回数・ロック・規約同意）、`/me`、写真一覧（投稿者で絞り込み）、ランキング、投稿者一覧、画像 | T08 | 未着手 |
-| T10 | admin Worker 基盤 | Better Auth（Google のみ・許可リスト）、`/api/me`、テナントの一覧・作成・詳細・変更・停止、利用状況、手動削除、定期処理（自動削除）、監査ログ | T02, T03 | 未着手 |
+| T10 | admin Worker 基盤 | Better Auth（Google のみ・許可リスト）、`/api/me`、テナントの一覧・作成・詳細・変更・停止、利用状況、手動削除、定期処理（自動削除）、監査ログ | T02, T03 | 作業中 |
 | T11 | admin コンテンツ API | 席次表、コース表（追加・削除・並べ替え）、参加 URL・新郎新婦用 URL の発行、写真の一覧・削除・画像、参加者の一覧・ニックネームの変更 | T10 | 未着手 |
 
 ### M3 画面
 
 | ID | タスク | 主な範囲 | 依存 | 状態 |
 |---|---|---|---|---|
-| T12 | ゲスト画面の骨組み | ルーティング、API の呼び出し、エラー時の遷移、SG-02・SG-03（ウェルカム演出）・SG-04（PDF.js）・SG-05・SG-E1、利用規約・プライバシーポリシー。表示部品は `packages/ui/src/screens/`（プレビューで共有） | T04, T05, T07 | 未着手 |
+| T12 | ゲスト画面の骨組み | ルーティング、API の呼び出し、エラー時の遷移、SG-02・SG-03（ウェルカム演出）・SG-04（PDF.js）・SG-05・SG-E1、利用規約・プライバシーポリシー。表示部品は `packages/ui/src/screens/`（プレビューで共有） | T04, T05, T07 | 作業中 |
 | T13 | 共有フォトアルバム | SG-06（タイムライン・自分の投稿・ランキング・引っ張って更新）、拡大表示（いいね・保存・削除）、保存（Web Share・ダウンロード・アプリ内ブラウザの案内） | T12, T08 | 未着手 |
 | T14 | フォトアップロード | SG-07（撮影・選択、形式とサイズの確認、縮小画像の生成、進捗、再試行、完了演出、上限） | T12, T08 | 未着手 |
 | T15 | 新郎新婦用ページ | SC-01（パスコード・同意・残り回数・ロック・お祝い演出）、SC-02（タブ・投稿者の絞り込み・保存）、SC-E1 | T13, T09 | 未着手 |
-| T16 | 管理画面（前半） | SA-01・SA-02・SA-03・SA-04（基本情報・停止・席次表・コース表の編集・利用状況・削除）・SA-06 | T04, T11 | 未着手 |
-| T17 | 管理画面（後半） | SA-05（QR コード）・SA-07・SA-08（プレビュー）・SA-09 | T16, T12 | 未着手 |
+| T16 | 管理画面（前半） | SA-01・SA-02・SA-03・SA-04（基本情報・停止・席次表・コース表の編集・利用状況・削除）・SA-05（QR コード。印刷の期限のため T17 から移した）・SA-06 | T04, T11 | 作業中 |
+| T17 | 管理画面（後半） | SA-07・SA-08（プレビュー）・SA-09 | T16, T12 | 未着手 |
 
 ### M4 仕上げ・リリース
 
@@ -80,3 +80,10 @@ subagent への指示（[.claude/agents/implementer.md](../.claude/agents/implem
 |---|---|---|---|
 | 1 | Worker のテストのパッケージ | `@cloudflare/vitest-pool-workers` は `@cloudflare/vitest-plugin` に改名され更新終了のため、後者を使う | T01 |
 | 2 | 依存パッケージの公開からの経過日数 | `minimumReleaseAge` を 3 日にし、公開直後のバージョンは使わない | T01 |
+| 3 | エラー画面の対象 | 新郎新婦の流れのエラーは `/error?code=...&audience=couple` にし、エラー画面は新郎新婦向けの文言を出す（api.md はエラー画面の URL に対象を持たないため） | T07, T12 |
+| 4 | 画面の文言 | messages.md にない文言のうち、screen-details.md のワイヤーフレームにあるもの（ボタン名・見出しなど）は文言ファイルに追加してよい。追加したものは messages.md に反映する | T12, T16 |
+| 5 | 管理者のログインの約束 | `signIn.social({ provider: 'google', callbackURL: '/', errorCallbackURL: '/login?error=denied' })`。`GET /api/me` はセッションなしで 401、許可リスト外で 403 | T10, T16 |
+| 6 | パスコードのロック | 5 回目の失敗で 15 分ロックし、失敗回数を 0 に戻す。ロックが明けたら再び 5 回試せる | T03 |
+| 7 | 席次表・コース表などの未登録 | API は NOT_FOUND を返し、画面は準備中の表示にする | T07, T12 |
+| 8 | 演出を飛ばすボタン | 全画面の演出には読み上げ用の「演出を飛ばす」を付ける（messages.md に追加） | T05 |
+| 9 | 写真の型 | 参加者向けは `GuestPhoto`（投稿者の ID なし）、新郎新婦・管理者向けは `StaffPhoto` | T02 |
