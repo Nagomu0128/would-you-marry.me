@@ -1,0 +1,35 @@
+// guest Worker（would-you-marry.me）: ユーザー画面・新郎新婦用ページ・それぞれの API
+// Custom Domains（routes）は T20 で追加する
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wym-guest",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-10-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // /api と、サーバー側で処理するページ遷移は Worker が先に受ける
+    "run_worker_first": ["/api/*", "/join/*", "/couple/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wym",
+      // ローカル用の仮の値。本番の ID は T20 で設定する
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "wym-files"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "CONTACT_EMAIL": "contact@example.com"
+  }
+}

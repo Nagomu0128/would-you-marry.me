@@ -1,0 +1,6 @@
+# ローカル開発用のシークレット。コピーして .dev.vars を作る（.dev.vars は git に入れない）
+# 本番は `wrangler secret put <名前>` で登録する
+BETTER_AUTH_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+SENTRY_DSN=
