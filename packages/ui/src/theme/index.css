@@ -1,1 +1,123 @@
-/* デザインガイドの色・文字・余白（Tailwind v4 のテーマ）は T04 で定義する */
+/* デザインガイド（docs/spec/design-guide.md）の色・文字・余白・形。Tailwind v4 のテーマ */
+
+@theme {
+  /* 色 */
+  --color-ivory: #fbf8f3;
+  --color-surface: #ffffff;
+  --color-charcoal: #2b2725;
+  --color-warm-gray: #6f6660;
+  --color-sand: #e8e1d6;
+  --color-champagne: #b8935a;
+  --color-deep-gold: #8a6a35;
+  --color-rose: #d14d5a;
+  --color-error: #b3261e;
+  --color-success: #3c7a57;
+  --color-viewer: #111111;
+
+  /* フォント */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --font-accent: "Cormorant Garamond", "Times New Roman", serif;
+
+  /* 文字サイズ（サイズ・行間・太さ） */
+  --text-heading-lg: 24px;
+  --text-heading-lg--line-height: 1.4;
+  --text-heading-lg--font-weight: 600;
+  --text-heading-md: 20px;
+  --text-heading-md--line-height: 1.4;
+  --text-heading-md--font-weight: 600;
+  --text-body: 16px;
+  --text-body--line-height: 1.7;
+  --text-body--font-weight: 400;
+  --text-sub: 14px;
+  --text-sub--line-height: 1.6;
+  --text-sub--font-weight: 400;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.5;
+  --text-caption--font-weight: 400;
+
+  /* 角丸 */
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-photo: 4px;
+
+  /* 影（カードだけ） */
+  --shadow-card: 0 2px 8px rgba(43, 39, 37, 0.06);
+
+  /* 余白（4px 単位）。画面の左右は 16px */
+  --spacing-gutter: 16px;
+  --spacing-control: 48px;
+  --spacing-tap: 44px;
+  --spacing-nav: 64px;
+
+  /* 最大幅 */
+  --container-guest: 560px;
+  --container-admin: 960px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+}
+
+/* 画面の高さ（アドレスバーの伸縮に追従する） */
+@utility screen-h {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* セーフエリア（切り欠き・ホームバー）を避ける */
+@utility safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility safe-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* 画面の左右の余白 16px。セーフエリアの左右が大きいときはそちらを使う */
+@utility px-screen {
+  padding-left: max(var(--spacing-gutter), env(safe-area-inset-left));
+  padding-right: max(var(--spacing-gutter), env(safe-area-inset-right));
+}
+
+/* PC では中央に寄せる。ユーザー画面・新郎新婦用ページ 560px、管理面 960px */
+@utility layout-guest {
+  width: 100%;
+  max-width: var(--container-guest);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@utility layout-admin {
+  width: 100%;
+  max-width: var(--container-admin);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 読み上げ専用のテキスト */
+@utility sr-only-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
