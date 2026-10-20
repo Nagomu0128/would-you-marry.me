@@ -198,6 +198,108 @@ export const ja = {
     passcodeNotice: 'パスコードはこの画面を離れると再表示できません',
     // SA-08
     previewNickname: 'プレビュー',
+
+    // --- 管理面（前半、T16）。messages.md にない文言はワイヤーフレームの語と最小限のラベル ---
+    logout: 'ログアウト',
+    loginTitle: 'would-you-marry.me 管理',
+    cancel: 'キャンセル',
+    save: '保存する',
+    add: '追加',
+    remove: '削除',
+    copy: 'コピー',
+    moveUp: '上へ',
+    moveDown: '下へ',
+    // SA-02
+    tenants: {
+      heading: 'テナント',
+      create: '＋ 作成',
+      monitor: '監視',
+      empty: 'テナントはまだありません',
+      stats: ({ guests, photos }: { guests: string; photos: string }) =>
+        `参加者 ${guests} / 写真 ${photos}`,
+    },
+    // SA-03
+    create: {
+      heading: 'テナントの作成',
+      name: 'テナント名',
+      eventDate: '開催日',
+      submit: '作成する',
+    },
+    // SA-04
+    detail: {
+      period: ({ label }: { label: string }) => `期間: ${label}`,
+      periodUntil: ({ label, until }: { label: string; until: string }) =>
+        `期間: ${label}（${until} まで）`,
+      suspend: '停止する',
+      resume: '再開する',
+      basic: '基本情報',
+      edit: '編集',
+      done: '完了',
+      name: 'テナント名',
+      eventDate: '開催日',
+      seating: '席次表 PDF',
+      seatingRegister: '登録',
+      seatingReplace: '差し替え',
+      seatingCheck: '確認',
+      seatingNone: '未登録',
+      course: 'コース表の画像',
+      courseCount: ({ count }: { count: number }) => `${count} 枚`,
+      urls: 'URL の発行',
+      photos: '写真管理',
+      guests: '参加者管理',
+      preview: '参加者画面のプレビュー',
+      usage: '利用状況',
+      usageLine: ({
+        guests,
+        photos,
+        likes,
+        storage,
+      }: {
+        guests: string
+        photos: string
+        likes: string
+        storage: string
+      }) => `参加者 ${guests} / 写真 ${photos} / いいね ${likes} / ${storage}`,
+      delete: 'このテナントを削除する',
+      deleteConfirmLabel: 'テナント名',
+      courseImageAlt: ({ index }: { index: number }) => `コース表の画像 ${index}`,
+      courseImageDelete: {
+        body: 'この画像を削除しますか？削除すると元に戻せません',
+        confirm: '削除する',
+        cancel: 'キャンセル',
+      },
+      seatingTooLarge: 'PDF のサイズが大きすぎます（20MB まで）',
+      seatingUnsupported: 'PDF ファイルを選んでください',
+      courseTooLarge: '画像のサイズが大きすぎます（10MB まで）',
+      courseUnsupported: '画像は JPEG・PNG を選んでください',
+    },
+    // SA-05
+    urls: {
+      heading: 'URL の発行',
+      joinTitle: '参加 URL（QR コード）',
+      joinNone: '参加 URL はまだ発行されていません',
+      joinPeriod: ({ from, to }: { from: string; to: string }) =>
+        `参加できる期間: ${from} 〜 ${to}`,
+      qrAlt: '参加 URL の QR コード',
+      qrSave: 'QR コードを保存',
+      reissue: '再発行',
+      issue: '発行',
+      coupleTitle: '新郎新婦用 URL',
+      coupleNone: '新郎新婦用 URL はまだ発行されていません',
+      passcode: 'パスコード',
+      termsAgreed: '規約に同意済み',
+      termsNotAgreed: '規約は未同意',
+    },
+    // SA-06
+    monitor: {
+      heading: '監視',
+      tenant: 'テナント',
+      guests: '参加者',
+      photos: '写真',
+      likes: 'いいね',
+      storage: '容量',
+      openTool: '外部の監視ツールを開く',
+    },
   },
 
   toasts: {
