@@ -36,6 +36,8 @@
   },
   "vars": {
     "GUEST_ORIGIN": "http://localhost:5173",
+    // admin 自身のオリジン。Better Auth の baseURL・trustedOrigins になる（本番の値は T20 で設定する）
+    "ADMIN_ORIGIN": "http://localhost:5174",
     "ADMIN_EMAILS": "admin@example.com"
   }
 }

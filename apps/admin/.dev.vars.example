@@ -1,6 +1,10 @@
 # ローカル開発用のシークレット。コピーして .dev.vars を作る（.dev.vars は git に入れない）
 # 本番は `wrangler secret put <名前>` で登録する
+# vars（ADMIN_ORIGIN・ADMIN_EMAILS・GUEST_ORIGIN）は wrangler.jsonc にある
+# BETTER_AUTH_SECRET: 32 文字以上のランダムな値（例: openssl rand -base64 32）
 BETTER_AUTH_SECRET=
+# Google Cloud の OAuth クライアント。承認済みのリダイレクト URI: {ADMIN_ORIGIN}/api/auth/callback/google
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+# 空ならエラーを Sentry に送らない
 SENTRY_DSN=
