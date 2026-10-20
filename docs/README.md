@@ -3,7 +3,8 @@
 結婚式当日に参加者が使う、マルチテナントの Web アプリケーションの要件・設計ドキュメント。
 
 - 最終更新: 2026-10-20
-- 段階: 要件定義 + 基本設計（技術スタックは未選定）
+- 段階: 要件定義 + 基本設計。基盤は Cloudflare（D-32）、詳細な技術選定は ADR-0001 で行う
+- 初回の利用: 2026 年 10 月末の結婚式（D-33）
 
 ## 読む順番
 
@@ -28,7 +29,7 @@
 | 設計 | [design/domain-model.md](design/domain-model.md) | 論理エンティティと関係 | ドラフト |
 | 設計 | [design/auth.md](design/auth.md) | 参加者・新郎新婦・管理者の認証と認可 | ドラフト |
 | 設計 | [design/multi-tenancy.md](design/multi-tenancy.md) | テナント分離の方針 | ドラフト |
-| 設計 | [design/architecture.md](design/architecture.md) | 論理構成と技術選定の候補比較 | ドラフト（技術未選定） |
+| 設計 | [design/architecture.md](design/architecture.md) | 論理構成と Cloudflare 上での構成候補 | ドラフト（基盤のみ決定） |
 | 決定記録 | [adr/README.md](adr/README.md) | アーキテクチャ決定記録（ADR）の運用 | 運用ルールのみ |
 | 管理 | [open-questions.md](open-questions.md) | 未決事項・決定済み事項 | 随時更新 |
 
@@ -48,6 +49,6 @@
 
 - プロダクトオーナーが決めていない内容は「仮置き」と書く。判断が必要な論点は `OQ-xx` として [open-questions.md](open-questions.md) に挙げる
 - 決定済みの内容には、根拠として `D-xx` を添える
-- 特定の技術・サービス名は [design/architecture.md](design/architecture.md) と [adr/](adr/README.md) 以外では使わない（技術選定前のため）
+- 特定の技術・サービス名は [design/architecture.md](design/architecture.md)、[adr/](adr/README.md)、決定済み事項以外では使わない（要件を技術から独立させるため）
 - 図は Mermaid で書く
 - 未決事項が決まったら [open-questions.md](open-questions.md) で「決定済み」に移し、影響するドキュメントを更新する

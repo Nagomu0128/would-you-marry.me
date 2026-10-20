@@ -52,6 +52,7 @@ erDiagram
         uuid tenantId FK
         string token "推測困難なランダム値"
         string passcodeHash
+        datetime termsAgreedAt "利用規約への同意日時"
         datetime createdAt
         datetime revokedAt "再発行で無効化"
     }
@@ -71,6 +72,7 @@ erDiagram
         uuid id PK
         uuid tenantId FK
         string nickname "テナント内で一意・登録前は空"
+        datetime termsAgreedAt "利用規約への同意日時"
         datetime createdAt
         datetime lastSeenAt
     }
@@ -102,7 +104,8 @@ erDiagram
 - **Guest**:
   - 1 つのブラウザのセッションが 1 人の Guest に対応する
   - 同じ人が別の結婚式に参加しても、テナントごとに別の Guest として扱う
-  - ニックネームは登録前は空。登録後は同じテナント内で一意（D-10）
+  - ニックネームは登録前は空。登録後は同じテナント内で一意（D-10）。管理者も変更できる（FR-A-16）
+  - 利用規約への同意日時を記録する（FR-G-14）
 - **Photo**:
   - 投稿者の Guest と同じテナントに属する
   - オリジナル画像は位置情報などのメタデータを取り除いてから保存する（D-25）
@@ -112,7 +115,7 @@ erDiagram
   - いいねの取り消しは Like の削除で表す
   - Photo と Guest は同じテナントに属していなければならない
   - いいね数は Like の件数から求める。表示用の集計値を Photo に持たせるかは技術選定時に決める
-- **データ削除**: 開催日の 6 か月後に、テナントに属するすべてのエンティティとファイルを削除する。Tenant 自体は残し、`dataDeletedAt` を記録する（FR-A-13）
+- **データ削除**: 開催日の 6 か月後に、テナントに属するすべてのエンティティとファイルを削除する。Tenant 自体は残し、`dataDeletedAt` を記録する（FR-A-13）。管理者による手動削除（FR-A-15）も同じ。バックアップは取らないため、削除したデータは復元できない（D-31, NFR-22）
 
 ## テナントスコープ
 
