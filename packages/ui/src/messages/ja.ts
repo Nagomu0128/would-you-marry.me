@@ -116,6 +116,10 @@ export const ja = {
     // SG-03
     home: {
       greeting: ({ nickname }: { nickname: string }) => `こんにちは、${nickname} さん`,
+      /** ニックネームの変更へのリンク（screen-details.md SG-03 のワイヤーフレーム） */
+      change: '変更',
+      /** アルバムのカードの新着写真の見出し（同上） */
+      recent: '新着',
       cards: {
         seating: '席次表',
         course: '料理のコース',
