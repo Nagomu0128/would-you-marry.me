@@ -290,6 +290,16 @@ export const ja = {
       termsAgreed: '規約に同意済み',
       termsNotAgreed: '規約は未同意',
     },
+    // SA-08（タブの名前は common.nav を使う）
+    previewHeading: 'プレビュー',
+    // SA-09
+    guests: {
+      empty: '参加者はまだいません',
+      photoCount: ({ count }: { count: number }) => `${count} 枚`,
+      changeBody: ({ nickname }: { nickname: string }) =>
+        `「${nickname}」の新しい名前を入力してください`,
+      nicknameLabel: 'ニックネーム',
+    },
     // SA-06
     monitor: {
       heading: '監視',
