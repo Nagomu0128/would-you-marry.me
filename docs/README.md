@@ -41,6 +41,7 @@
 | 管理 | [open-questions.md](open-questions.md) | 未決事項・決定済み事項 | 随時更新 |
 | 運用 | [runbook.md](runbook.md) | 本番の構築、デプロイ、マイグレーション、ロールバック、ログの見方 | ドラフト |
 | 管理 | [implementation-plan.md](implementation-plan.md) | 実装のタスク分割と進捗 | 随時更新 |
+| 管理 | [device-check.md](device-check.md) | 実機での確認の手順と項目 | ドラフト |
 
 ## ID の付け方
 
