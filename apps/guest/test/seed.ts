@@ -47,7 +47,9 @@ export async function seedPhoto(tenantId: string, guestId: string, png = false) 
 
 export async function seedSeatingChart(tenantId: string) {
   const key = seatingChartKey(tenantId, newId())
-  await env.BUCKET.put(key, '%PDF-1.4 seating', { httpMetadata: { contentType: 'application/pdf' } })
+  await env.BUCKET.put(key, '%PDF-1.4 seating', {
+    httpMetadata: { contentType: 'application/pdf' },
+  })
   await upsertSeatingChart(db, tenantId, { r2Key: key, sizeBytes: 16 })
   return { key }
 }

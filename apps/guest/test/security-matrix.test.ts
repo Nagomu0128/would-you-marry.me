@@ -1,12 +1,13 @@
 // 全エンドポイントの認可の表（T18）。ルートの一覧は Hono の登録から作り、
 // 新しいルートが増えたら ROUTES への追加を忘れないよう、一覧の一致を確かめる。
-import { describe, expect, it } from 'vitest'
+
 import { newId } from '@wym/db'
+import { describe, expect, it } from 'vitest'
 import { app } from '../src/worker/app'
 import {
   EVENT,
-  eventDateOffset,
   errorCode,
+  eventDateOffset,
   makeCoupleAccess,
   makeCoupleSession,
   makeGuestSession,
@@ -23,7 +24,14 @@ import { setTenant } from './seed'
  * public: 認証なし
  * page-join / page-couple: サーバー側のページ遷移（リダイレクトで答える）
  */
-type Kind = 'guest' | 'guest-me' | 'couple' | 'couple-login' | 'public' | 'page-join' | 'page-couple'
+type Kind =
+  | 'guest'
+  | 'guest-me'
+  | 'couple'
+  | 'couple-login'
+  | 'public'
+  | 'page-join'
+  | 'page-couple'
 
 const ROUTES: Record<string, Kind> = {
   'GET /join/:tenantId': 'page-join',
@@ -92,14 +100,17 @@ describe('(a) 認証なし', () => {
     expect(await errorCode(res)).toBe('UNAUTHENTICATED')
   })
 
-  it.each(entries('couple-login'))('%s は pending Cookie がなければ COUPLE_LINK_INVALID', async (key) => {
-    const { method, pattern } = parse(key)
-    const tenant = await makeTenant()
-    await makeCoupleAccess(tenant.id)
-    const res = await request(fill(pattern, tenant.id), { method, json: bodyFor(method) })
-    expect(res.status).toBe(403)
-    expect(await errorCode(res)).toBe('COUPLE_LINK_INVALID')
-  })
+  it.each(entries('couple-login'))(
+    '%s は pending Cookie がなければ COUPLE_LINK_INVALID',
+    async (key) => {
+      const { method, pattern } = parse(key)
+      const tenant = await makeTenant()
+      await makeCoupleAccess(tenant.id)
+      const res = await request(fill(pattern, tenant.id), { method, json: bodyFor(method) })
+      expect(res.status).toBe(403)
+      expect(await errorCode(res)).toBe('COUPLE_LINK_INVALID')
+    },
+  )
 
   it('参加 URL は参加トークンがなければエラー画面へ（セッションを作らない）', async () => {
     const tenant = await makeTenant()
@@ -124,24 +135,27 @@ describe('(a) 認証なし', () => {
 
 describe('(b) 他テナントのセッション', () => {
   // A のセッションの Cookie を、B の URL に向けて送る。Cookie 名を B のものに偽装した場合も含む
-  it.each(entries('guest', 'guest-me'))('%s: 参加者 A のセッションで B の API は使えない', async (key) => {
-    const { method, pattern } = parse(key)
-    const a = await makeTenant()
-    const b = await makeTenant()
-    const session = await makeGuestSession(a.id, 'たろう')
-    await makeGuestSession(b.id, 'はなこ')
+  it.each(entries('guest', 'guest-me'))(
+    '%s: 参加者 A のセッションで B の API は使えない',
+    async (key) => {
+      const { method, pattern } = parse(key)
+      const a = await makeTenant()
+      const b = await makeTenant()
+      const session = await makeGuestSession(a.id, 'たろう')
+      await makeGuestSession(b.id, 'はなこ')
 
-    const natural = await request(fill(pattern, b.id), { method, cookie: session.cookie })
-    expect(natural.status).toBe(401)
-    expect(await errorCode(natural)).toBe('UNAUTHENTICATED')
+      const natural = await request(fill(pattern, b.id), { method, cookie: session.cookie })
+      expect(natural.status).toBe(401)
+      expect(await errorCode(natural)).toBe('UNAUTHENTICATED')
 
-    const forged = await request(fill(pattern, b.id), {
-      method,
-      cookie: `wym_g_${b.id}=${session.sessionId}`,
-    })
-    expect(forged.status).toBe(401)
-    expect(await errorCode(forged)).toBe('UNAUTHENTICATED')
-  })
+      const forged = await request(fill(pattern, b.id), {
+        method,
+        cookie: `wym_g_${b.id}=${session.sessionId}`,
+      })
+      expect(forged.status).toBe(401)
+      expect(await errorCode(forged)).toBe('UNAUTHENTICATED')
+    },
+  )
 
   it.each(entries('couple'))('%s: 新郎新婦 A のセッションで B の API は使えない', async (key) => {
     const { method, pattern } = parse(key)
@@ -161,20 +175,23 @@ describe('(b) 他テナントのセッション', () => {
     expect(await errorCode(forged)).toBe('UNAUTHENTICATED')
   })
 
-  it.each(entries('couple-login'))('%s: A のトークンの pending Cookie で B の入場はできない', async (key) => {
-    const { method, pattern } = parse(key)
-    const a = await makeTenant()
-    const b = await makeTenant()
-    const accessA = await makeCoupleAccess(a.id)
-    await makeCoupleAccess(b.id)
-    const res = await request(fill(pattern, b.id), {
-      method,
-      cookie: `wym_couple_pending=${accessA.token}`,
-      json: bodyFor(method),
-    })
-    expect(res.status).toBe(403)
-    expect(await errorCode(res)).toBe('COUPLE_LINK_INVALID')
-  })
+  it.each(entries('couple-login'))(
+    '%s: A のトークンの pending Cookie で B の入場はできない',
+    async (key) => {
+      const { method, pattern } = parse(key)
+      const a = await makeTenant()
+      const b = await makeTenant()
+      const accessA = await makeCoupleAccess(a.id)
+      await makeCoupleAccess(b.id)
+      const res = await request(fill(pattern, b.id), {
+        method,
+        cookie: `wym_couple_pending=${accessA.token}`,
+        json: bodyFor(method),
+      })
+      expect(res.status).toBe(403)
+      expect(await errorCode(res)).toBe('COUPLE_LINK_INVALID')
+    },
+  )
 
   it('A の参加トークンで B の参加 URL から参加できない', async () => {
     const { makeJoinToken } = await import('./helpers')
@@ -213,7 +230,9 @@ describe('(b) 他テナントのセッション', () => {
     expect(asCouple.status).toBe(401)
     // 本来の組み合わせなら通る
     expect((await request(`/api/t/${tenant.id}/me`, { cookie: guest.cookie })).status).toBe(200)
-    expect((await request(`/api/couple/${tenant.id}/me`, { cookie: couple.cookie })).status).toBe(200)
+    expect((await request(`/api/couple/${tenant.id}/me`, { cookie: couple.cookie })).status).toBe(
+      200,
+    )
   })
 
   it('UUID でないテナント ID・存在しないテナント ID でも情報を漏らさない', async () => {
@@ -229,7 +248,11 @@ describe('(b) 他テナントのセッション', () => {
 describe('(c) 期間外・停止中・削除済み', () => {
   const guestCases = [
     ['停止中', { suspended: true }, 'TENANT_SUSPENDED'],
-    ['閲覧期間の後（新郎新婦閲覧期間）', { eventDate: eventDateOffset(EVENT.coupleOnly) }, 'PERIOD_ENDED'],
+    [
+      '閲覧期間の後（新郎新婦閲覧期間）',
+      { eventDate: eventDateOffset(EVENT.coupleOnly) },
+      'PERIOD_ENDED',
+    ],
     ['期限切れ', { eventDate: eventDateOffset(EVENT.expired) }, 'PERIOD_ENDED'],
     ['準備期間', { eventDate: eventDateOffset(EVENT.preparation) }, 'PERIOD_ENDED'],
     ['データ削除済み', { deleted: true }, 'TENANT_NOT_FOUND'],
@@ -344,26 +367,34 @@ describe('(d) CSRF（状態を変えるリクエスト）', () => {
     expect(mutating.length).toBeGreaterThanOrEqual(6)
   })
 
-  it.each(mutating)('%s は Origin がない・別オリジンなら FORBIDDEN（有効なセッションがあっても）', async (key, kind) => {
-    const { method, pattern } = parse(key)
-    const tenant = await makeTenant()
-    let cookie: string | undefined
-    if (kind === 'guest' || kind === 'guest-me') {
-      cookie = (await makeGuestSession(tenant.id, 'たろう')).cookie
-    } else if (kind === 'couple-login') {
-      cookie = `wym_couple_pending=${(await makeCoupleAccess(tenant.id)).token}`
-    }
-    for (const origin of [null, EVIL, 'http://would-you-marry.me', `${EVIL}/https://would-you-marry.me`]) {
-      const res = await request(fill(pattern, tenant.id), {
-        method,
-        cookie,
-        origin,
-        json: { nickname: 'へんこう', passcode: 'AB12CD34', agreeToTerms: true },
-      })
-      expect(res.status, `${key} origin=${origin}`).toBe(403)
-      expect(await errorCode(res)).toBe('FORBIDDEN')
-    }
-  })
+  it.each(mutating)(
+    '%s は Origin がない・別オリジンなら FORBIDDEN（有効なセッションがあっても）',
+    async (key, kind) => {
+      const { method, pattern } = parse(key)
+      const tenant = await makeTenant()
+      let cookie: string | undefined
+      if (kind === 'guest' || kind === 'guest-me') {
+        cookie = (await makeGuestSession(tenant.id, 'たろう')).cookie
+      } else if (kind === 'couple-login') {
+        cookie = `wym_couple_pending=${(await makeCoupleAccess(tenant.id)).token}`
+      }
+      for (const origin of [
+        null,
+        EVIL,
+        'http://would-you-marry.me',
+        `${EVIL}/https://would-you-marry.me`,
+      ]) {
+        const res = await request(fill(pattern, tenant.id), {
+          method,
+          cookie,
+          origin,
+          json: { nickname: 'へんこう', passcode: 'AB12CD34', agreeToTerms: true },
+        })
+        expect(res.status, `${key} origin=${origin}`).toBe(403)
+        expect(await errorCode(res)).toBe('FORBIDDEN')
+      }
+    },
+  )
 
   it('別オリジンからの変更は実際に反映されない（ニックネーム）', async () => {
     const tenant = await makeTenant()

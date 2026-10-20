@@ -10,8 +10,8 @@ import {
   listRanking,
   listTimeline,
   listUploaders,
-  reserveCoupleAttempt,
   recordCoupleTermsAgreement,
+  reserveCoupleAttempt,
   resetCoupleFailedAttempts,
 } from '@wym/db'
 import {

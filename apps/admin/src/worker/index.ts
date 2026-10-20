@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/cloudflare'
 import { app } from './app'
-import { scrubEvent } from './lib/sentry'
 import { deleteExpiredTenants } from './jobs/delete-expired-tenants'
+import { scrubEvent } from './lib/sentry'
 import type { AppEnv } from './types'
 
 const handler = {

@@ -9,8 +9,8 @@ import {
   issueCoupleAccess,
   issueJoinToken,
   newId,
-  reserveCoupleAttempt,
   recordCoupleTermsAgreement,
+  reserveCoupleAttempt,
   resetCoupleFailedAttempts,
   touchVisitorSession,
 } from '../src'

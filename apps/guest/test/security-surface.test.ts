@@ -80,7 +80,9 @@ describe('Cookie の属性', () => {
 
     const pending = cookies.find((c) => c.name === 'wym_couple_pending')
     expect(pending?.value).toBe('')
-    expect(pending?.attrs).toEqual(expect.arrayContaining(['Secure', 'Path=/api/couple', 'Max-Age=0']))
+    expect(pending?.attrs).toEqual(
+      expect.arrayContaining(['Secure', 'Path=/api/couple', 'Max-Age=0']),
+    )
     expectNoDomain(pending?.attrs ?? [])
   })
 
@@ -93,7 +95,13 @@ describe('Cookie の属性', () => {
     const { name, attrs } = attrsOf(cookies[0] ?? '')
     expect(name).toBe('wym_couple_pending')
     expect(attrs).toEqual(
-      expect.arrayContaining(['HttpOnly', 'Secure', 'SameSite=Lax', 'Path=/api/couple', 'Max-Age=900']),
+      expect.arrayContaining([
+        'HttpOnly',
+        'Secure',
+        'SameSite=Lax',
+        'Path=/api/couple',
+        'Max-Age=900',
+      ]),
     )
     expectNoDomain(attrs)
   })
@@ -142,16 +150,35 @@ describe('すべての応答にセキュリティヘッダーが付く', () => {
       ['GET /api/config', () => request('/api/config')],
       ['me 200', () => request(`${base}/me`, { cookie: guest.cookie })],
       ['me 401', () => request(`${base}/me`)],
-      ['403 CSRF', () => request(`${base}/me/nickname`, { method: 'PUT', origin: null, cookie: guest.cookie })],
+      [
+        '403 CSRF',
+        () => request(`${base}/me/nickname`, { method: 'PUT', origin: null, cookie: guest.cookie }),
+      ],
       ['api 404', () => request('/api/nothing')],
-      ['photo 404', () => request(`${base}/photos/${crypto.randomUUID()}/thumb`, { cookie: guest.cookie })],
+      [
+        'photo 404',
+        () => request(`${base}/photos/${crypto.randomUUID()}/thumb`, { cookie: guest.cookie }),
+      ],
       ['thumb', () => request(`${base}/photos/${photo.id}/thumb`, { cookie: guest.cookie })],
       ['display', () => request(`${base}/photos/${photo.id}/display`, { cookie: guest.cookie })],
-      ['original', () => request(`${base}/photos/${photo.id}/original?download=1`, { cookie: guest.cookie })],
+      [
+        'original',
+        () => request(`${base}/photos/${photo.id}/original?download=1`, { cookie: guest.cookie }),
+      ],
       ['pdf', () => request(`${base}/seating-chart`, { cookie: guest.cookie })],
-      ['menu image', () => request(`${base}/course-menu/images/${menu.id}`, { cookie: guest.cookie })],
-      ['couple photos', () => request(`/api/couple/${tenant.id}/photos`, { cookie: couple.cookie })],
-      ['couple image', () => request(`/api/couple/${tenant.id}/photos/${photo.id}/thumb`, { cookie: couple.cookie })],
+      [
+        'menu image',
+        () => request(`${base}/course-menu/images/${menu.id}`, { cookie: guest.cookie }),
+      ],
+      [
+        'couple photos',
+        () => request(`/api/couple/${tenant.id}/photos`, { cookie: couple.cookie }),
+      ],
+      [
+        'couple image',
+        () =>
+          request(`/api/couple/${tenant.id}/photos/${photo.id}/thumb`, { cookie: couple.cookie }),
+      ],
       ['join redirect', () => request(`/join/${tenant.id}?t=${joinToken}`)],
       ['join error redirect', () => request(`/join/${tenant.id}?t=wrong`)],
       ['couple redirect', () => request(`/couple/${tenant.id}?t=${coupleToken}`)],
@@ -297,8 +324,10 @@ describe('画像・PDF の配信（Worker 経由のみ。URL を流用しても�
 
   it('有効なセッションなら見られる（基準）', async () => {
     const { guest, couple, guestUrls, coupleUrls } = await setup()
-    for (const url of guestUrls) expect((await request(url, { cookie: guest.cookie })).status, url).toBe(200)
-    for (const url of coupleUrls) expect((await request(url, { cookie: couple.cookie })).status, url).toBe(200)
+    for (const url of guestUrls)
+      expect((await request(url, { cookie: guest.cookie })).status, url).toBe(200)
+    for (const url of coupleUrls)
+      expect((await request(url, { cookie: couple.cookie })).status, url).toBe(200)
   })
 
   it('セッションがなければ拒否される（If-None-Match を付けても 304 にならない）', async () => {
@@ -371,10 +400,14 @@ describe('画像・PDF の配信（Worker 経由のみ。URL を流用しても�
     const { tenant, guest, couple, guestUrls, coupleUrls } = await setup()
     await setTenant(tenant.id, { suspended: true })
     for (const url of guestUrls) {
-      expect(await errorCode(await request(url, { cookie: guest.cookie })), url).toBe('TENANT_SUSPENDED')
+      expect(await errorCode(await request(url, { cookie: guest.cookie })), url).toBe(
+        'TENANT_SUSPENDED',
+      )
     }
     for (const url of coupleUrls) {
-      expect(await errorCode(await request(url, { cookie: couple.cookie })), url).toBe('TENANT_SUSPENDED')
+      expect(await errorCode(await request(url, { cookie: couple.cookie })), url).toBe(
+        'TENANT_SUSPENDED',
+      )
     }
     await setTenant(tenant.id, { suspended: false })
     expect((await request(guestUrls[0] ?? '', { cookie: guest.cookie })).status).toBe(200)
@@ -387,7 +420,9 @@ describe('画像・PDF の配信（Worker 経由のみ。URL を流用しても�
       cookie: guest.cookie,
     })
     expect(del.status).toBe(204)
-    const res = await request(`/api/t/${tenant.id}/photos/${photo.id}/original`, { cookie: guest.cookie })
+    const res = await request(`/api/t/${tenant.id}/photos/${photo.id}/original`, {
+      cookie: guest.cookie,
+    })
     expect(res.status).toBe(404)
   })
 
@@ -434,17 +469,24 @@ describe('画像・PDF の配信（Worker 経由のみ。URL を流用しても�
       [png, 'png'],
       [jpeg, 'jpg'],
     ] as const) {
-      const res = await request(`/api/t/${tenant.id}/photos/${photo.id}/original?download=1&filename=evil.html`, {
-        cookie: guest.cookie,
-      })
+      const res = await request(
+        `/api/t/${tenant.id}/photos/${photo.id}/original?download=1&filename=evil.html`,
+        {
+          cookie: guest.cookie,
+        },
+      )
       expect(res.headers.get('content-disposition')).toBe(
         `attachment; filename="wedding-photo-${photo.id}.${ext}"`,
       )
     }
     // ダウンロード指定のない配信、display・thumb には Content-Disposition を付けない
-    const inline = await request(`/api/t/${tenant.id}/photos/${png.id}/original`, { cookie: guest.cookie })
+    const inline = await request(`/api/t/${tenant.id}/photos/${png.id}/original`, {
+      cookie: guest.cookie,
+    })
     expect(inline.headers.get('content-disposition')).toBeNull()
-    const thumb = await request(`/api/t/${tenant.id}/photos/${png.id}/thumb?download=1`, { cookie: guest.cookie })
+    const thumb = await request(`/api/t/${tenant.id}/photos/${png.id}/thumb?download=1`, {
+      cookie: guest.cookie,
+    })
     expect(thumb.headers.get('content-disposition')).toBeNull()
   })
 })
@@ -471,7 +513,9 @@ describe('ログに個人情報を出さない', () => {
     const nickname = 'ひみつのなまえ'
 
     // 参加 → ニックネーム登録 → 変更
-    const joined = await request(`/join/${tenant.id}?t=${joinToken}`, { headers: { 'CF-Connecting-IP': ip } })
+    const joined = await request(`/join/${tenant.id}?t=${joinToken}`, {
+      headers: { 'CF-Connecting-IP': ip },
+    })
     const sessionCookie = joined.headers.getSetCookie()[0] ?? ''
     const sessionId = attrsOf(sessionCookie).value
     const cookie = `wym_g_${tenant.id}=${sessionId}`
@@ -562,7 +606,17 @@ describe('ログに個人情報を出さない', () => {
     const tenant = await makeTenant()
     const guest = await makeGuestSession(tenant.id, 'たろう')
     await request(`/api/t/${tenant.id}/me`, { cookie: guest.cookie })
-    const allowed = new Set(['level', 'event', 'tenantId', 'code', 'status', 'method', 'path', 'durationMs', 'errorName'])
+    const allowed = new Set([
+      'level',
+      'event',
+      'tenantId',
+      'code',
+      'status',
+      'method',
+      'path',
+      'durationMs',
+      'errorName',
+    ])
     expect(lines.length).toBeGreaterThan(0)
     for (const line of lines) {
       for (const key of Object.keys(JSON.parse(line))) expect(allowed.has(key), key).toBe(true)
