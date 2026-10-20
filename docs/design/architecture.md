@@ -192,7 +192,7 @@ would-you-marry.me/
 | スタイリング | Tailwind CSS v4 |
 | 画面のルーティング | React Router（ライブラリとして使う） |
 | lint・format | Biome |
-| テスト | Vitest（Worker のテストは `@cloudflare/vitest-pool-workers`）。E2E テストは行わない |
+| テスト | Vitest（Worker のテストは `@cloudflare/vitest-plugin`。旧名 `@cloudflare/vitest-pool-workers`）。E2E テストは行わない |
 
 ## 主な処理の方式
 
