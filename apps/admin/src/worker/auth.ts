@@ -16,15 +16,15 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
 
-/** `ADMIN_EMAILS`（カンマ区切り）を正規化した配列にする */
-export function parseAllowlist(value: string): string[] {
-  return value
+/** `ADMIN_EMAILS`（カンマ区切り）を正規化した配列にする。未登録なら空（誰もログインできない） */
+export function parseAllowlist(value: string | undefined): string[] {
+  return (value ?? '')
     .split(',')
     .map(normalizeEmail)
     .filter((email) => email !== '')
 }
 
-export function isAllowedEmail(allowlist: string, email: string): boolean {
+export function isAllowedEmail(allowlist: string | undefined, email: string): boolean {
   return parseAllowlist(allowlist).includes(normalizeEmail(email))
 }
 

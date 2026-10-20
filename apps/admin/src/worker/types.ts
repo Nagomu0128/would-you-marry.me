@@ -3,7 +3,8 @@
  * 値を文字列として扱う項目は広げておく（テストで値を差し替えられる）
  */
 export type AppEnv = Omit<Cloudflare.Env, 'ADMIN_EMAILS' | 'ADMIN_ORIGIN' | 'GUEST_ORIGIN'> & {
-  ADMIN_EMAILS: string
+  /** 本番ではシークレットで登録する。未登録なら誰もログインできない */
+  ADMIN_EMAILS?: string
   ADMIN_ORIGIN: string
   GUEST_ORIGIN: string
 }

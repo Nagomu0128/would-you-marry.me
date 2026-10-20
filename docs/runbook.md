@@ -51,9 +51,10 @@ pnpm --filter @wym/admin exec wrangler r2 bucket create wym-files
 | ファイル | キー | 置き換える値 |
 |---|---|---|
 | `apps/guest/wrangler.jsonc` の `env.production` | `d1_databases[0].database_id` | `<D1_DATABASE_ID>` → 手順 3 の `database_id` |
-| 同上 | `vars.CONTACT_EMAIL` | `<CONTACT_EMAIL>` → 画面に表示する問い合わせ先（FR-G-15） |
 | `apps/admin/wrangler.jsonc` の `env.production` | `d1_databases[0].database_id` | `<D1_DATABASE_ID>` → 手順 3 の `database_id` |
-| 同上 | `vars.ADMIN_EMAILS` | `<ADMIN_EMAILS>` → 管理者の Google アカウントのメールアドレス（複数ならカンマ区切り。D-22） |
+| 両方の `env.production` | `account_id` | 本番の Cloudflare アカウントの ID |
+
+- 管理者の許可リスト（`ADMIN_EMAILS`）と問い合わせ先（`CONTACT_EMAIL`）は、このリポジトリが公開されているため設定ファイルに書かず、手順 6 でシークレットとして登録する
 
 - `database_id` は秘密ではないので、書き換えたファイルはコミットしてよい
 - `<...>` のまま残っていないことを確認する: `grep -n "<[A-Z_]*>" apps/*/wrangler.jsonc`
@@ -79,6 +80,10 @@ openssl rand -base64 32
 pnpm --filter @wym/admin exec wrangler secret put BETTER_AUTH_SECRET --env production
 pnpm --filter @wym/admin exec wrangler secret put GOOGLE_CLIENT_ID --env production
 pnpm --filter @wym/admin exec wrangler secret put GOOGLE_CLIENT_SECRET --env production
+# 管理者の許可リスト（カンマ区切りの Google アカウントのメールアドレス。D-22）
+pnpm --filter @wym/admin exec wrangler secret put ADMIN_EMAILS --env production
+# 画面に表示する問い合わせ先（FR-G-15）
+pnpm --filter @wym/guest exec wrangler secret put CONTACT_EMAIL --env production
 pnpm --filter @wym/admin exec wrangler secret put SENTRY_DSN --env production
 pnpm --filter @wym/guest exec wrangler secret put SENTRY_DSN --env production
 ```
@@ -86,6 +91,7 @@ pnpm --filter @wym/guest exec wrangler secret put SENTRY_DSN --env production
 - 値はプロンプトに貼り付ける（コマンドラインに書かない）
 - `BETTER_AUTH_SECRET` を変えると、管理者のログイン状態がすべて無効になる
 - Sentry を使わないうちは `SENTRY_DSN` の登録を省ける（空なら送信しない）
+- `ADMIN_EMAILS` を登録するまでは誰も管理面にログインできない。`CONTACT_EMAIL` を登録するまでは問い合わせ先が表示されない
 
 ### 7. クライアントのビルド時の変数を用意する
 
