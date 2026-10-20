@@ -26,6 +26,15 @@
       "bucket_name": "wym-files"
     }
   ],
+  // 参加 URL のレート制限（D-38: 同じ IP アドレスから 1 分に 200 回）。
+  // simple.limit / period は packages/shared の JOIN_RATE_LIMIT_MAX / JOIN_RATE_LIMIT_WINDOW_MS と揃える
+  "ratelimits": [
+    {
+      "name": "JOIN_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 200, "period": 60 }
+    }
+  ],
   "observability": {
     "enabled": true
   },
