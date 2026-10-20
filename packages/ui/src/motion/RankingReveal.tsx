@@ -1,23 +1,95 @@
 import { m, useReducedMotion } from 'motion/react'
-import { type ReactNode, useEffect } from 'react'
+import {
+  type CSSProperties,
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react'
 import { RANKING_ITEM_DURATION, RANKING_STEP } from './durations'
 import { useCompleteOnce } from './use-complete-once'
 
-export type RankingRevealProps = {
-  /** 1 位から順の項目（写真カードなど） */
-  items: ReactNode[]
-  onComplete?: () => void
-}
-
 const TOP = 3
 
+type RevealContextValue = { topCount: number; restDelay: number; reduced: boolean }
+
+const RevealContext = createContext<RevealContextValue | null>(null)
+
+export type RankingRevealProps = {
+  /** 項目の数（登場の時間の計算に使う） */
+  count: number
+  onComplete?: () => void
+  className?: string
+  as?: 'ol' | 'div'
+  /** 配置は呼び出し側が決める。各項目は RankingRevealItem で包む */
+  children: ReactNode
+}
+
+// ランキングの登場演出のコンテナ。3 位 → 2 位 → 1 位（王冠）→ 4 位以下の順に登場させる
+export function RankingReveal({
+  count,
+  onComplete,
+  className,
+  as: Tag = 'div',
+  children,
+}: RankingRevealProps) {
+  const reduced = !!useReducedMotion()
+  const { complete } = useCompleteOnce(onComplete)
+
+  const topCount = Math.min(TOP, count)
+  const restDelay = topCount * RANKING_STEP + 0.1
+  const total = restDelay + RANKING_ITEM_DURATION
+
+  useEffect(() => {
+    if (reduced) {
+      complete()
+      return
+    }
+    const timer = setTimeout(complete, total * 1000)
+    return () => clearTimeout(timer)
+  }, [reduced, total, complete])
+
+  const value = useMemo(() => ({ topCount, restDelay, reduced }), [topCount, restDelay, reduced])
+
+  return (
+    <RevealContext.Provider value={value}>
+      <Tag data-testid="ranking-reveal" className={className}>
+        {children}
+      </Tag>
+    </RevealContext.Provider>
+  )
+}
+
+export type RankingRevealItemProps = {
+  /** 順位（1 始まり） */
+  rank: number
+  className?: string
+  as?: 'li' | 'div'
+  /** 1 位の王冠の位置の調整 */
+  crownClassName?: string
+  crownStyle?: CSSProperties
+  children: ReactNode
+}
+
 // 1 位の項目に載る王冠。登場のあとに上から降りる
-function Crown({ reduced, delay }: { reduced: boolean; delay: number }) {
+function Crown({
+  reduced,
+  delay,
+  className,
+  style,
+}: {
+  reduced: boolean
+  delay: number
+  className?: string
+  style?: CSSProperties
+}) {
   return (
     <m.div
       data-testid="crown"
       aria-hidden="true"
-      style={{ position: 'absolute', top: -18, left: 8, zIndex: 1 }}
+      className={className}
+      style={{ position: 'absolute', top: -18, left: 8, zIndex: 1, ...style }}
       initial={reduced ? { opacity: 0 } : { y: -16, opacity: 0 }}
       animate={reduced ? { opacity: 1 } : { y: 0, opacity: 1 }}
       transition={{
@@ -41,61 +113,40 @@ function Crown({ reduced, delay }: { reduced: boolean; delay: number }) {
   )
 }
 
-// ランキングの登場演出。3 位 → 2 位 → 1 位（王冠）→ 4 位以下の順
-export function RankingReveal({ items, onComplete }: RankingRevealProps) {
-  const reduced = !!useReducedMotion()
-  const { complete } = useCompleteOnce(onComplete)
+// 順位から登場の遅延が決まる。どこに置いても順番は変わらない
+export function RankingRevealItem({
+  rank,
+  className,
+  as = 'div',
+  crownClassName,
+  crownStyle,
+  children,
+}: RankingRevealItemProps) {
+  const ctx = useContext(RevealContext)
+  if (!ctx) throw new Error('RankingRevealItem は RankingReveal の中に置いてください')
+  const { topCount, restDelay, reduced } = ctx
 
-  const topCount = Math.min(TOP, items.length)
-  const restDelay = topCount * RANKING_STEP + 0.1
-  const total = restDelay + RANKING_ITEM_DURATION
-
-  useEffect(() => {
-    if (reduced) {
-      complete()
-      return
-    }
-    const timer = setTimeout(complete, total * 1000)
-    return () => clearTimeout(timer)
-  }, [reduced, total, complete])
+  const delay = reduced ? 0 : rank <= TOP ? (topCount - rank) * RANKING_STEP : restDelay
+  const Item = as === 'li' ? m.li : m.div
 
   return (
-    <ol
-      data-testid="ranking-reveal"
-      style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 16 }}
+    <Item
+      data-testid="ranking-item"
+      data-delay={delay}
+      className={className}
+      style={{ position: 'relative' }}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
+      animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        delay,
+        duration: reduced ? 0.2 : RANKING_ITEM_DURATION,
+        ease: 'easeOut',
+      }}
     >
-      {items.map((item, index) => {
-        // 3 位が最初、1 位が最後。4 位以下はそのあとまとめて
-        const delay = reduced ? 0 : index < TOP ? (topCount - 1 - index) * RANKING_STEP : restDelay
-        return (
-          <m.li
-            // biome-ignore lint/suspicious/noArrayIndexKey: 順位が識別子
-            key={index}
-            data-testid="ranking-item"
-            style={{ position: 'relative' }}
-            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
-            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-            transition={{
-              delay,
-              duration: reduced ? 0.2 : RANKING_ITEM_DURATION,
-              ease: 'easeOut',
-            }}
-          >
-            <span
-              aria-hidden="true"
-              style={{
-                fontFamily: 'var(--font-accent)',
-                fontSize: 20,
-                color: 'var(--color-deep-gold)',
-              }}
-            >
-              {index + 1}
-            </span>
-            {index === 0 && <Crown reduced={reduced} delay={delay} />}
-            {item}
-          </m.li>
-        )
-      })}
-    </ol>
+      {rank === 1 && (
+        <Crown reduced={reduced} delay={delay} className={crownClassName} style={crownStyle} />
+      )}
+      {children}
+    </Item>
   )
 }

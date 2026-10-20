@@ -7,7 +7,7 @@ export type FullscreenStageProps = {
   duration: number
   onComplete: () => void
   /** 飛ばすための操作の読み上げ用ラベル（文言は呼び出し側が messages から渡す） */
-  skipLabel?: string
+  skipLabel: string
   children: ReactNode
 }
 

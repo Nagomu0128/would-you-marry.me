@@ -7,7 +7,7 @@ export type WelcomeAnimationProps = {
   tenantName: string
   onComplete: () => void
   /** タップで飛ばせることを伝える読み上げ用ラベル */
-  skipLabel?: string
+  skipLabel: string
 }
 
 // ニックネーム登録直後のホームで再生するウェルカム演出（2〜3 秒）

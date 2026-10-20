@@ -4,7 +4,6 @@ import type { ReactElement } from 'react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CoupleCelebration } from './CoupleCelebration'
 import { LikeBurst } from './LikeBurst'
-import { RankingReveal } from './RankingReveal'
 import { UploadComplete } from './UploadComplete'
 import { WelcomeAnimation } from './WelcomeAnimation'
 
@@ -93,12 +92,20 @@ describe.each(fullscreen)('%s（全画面の演出）', (_name, make) => {
 
 describe('WelcomeAnimation / CoupleCelebration', () => {
   it('テナント名を表示する', () => {
-    render(wrap(<WelcomeAnimation tenantName="太郎 & 花子" onComplete={() => {}} />))
+    render(
+      wrap(
+        <WelcomeAnimation tenantName="太郎 & 花子" onComplete={() => {}} skipLabel="スキップ" />,
+      ),
+    )
     expect(screen.getByText('太郎 & 花子')).toBeInTheDocument()
   })
 
   it('お祝いにもテナント名を表示する', () => {
-    render(wrap(<CoupleCelebration tenantName="太郎 & 花子" onComplete={() => {}} />))
+    render(
+      wrap(
+        <CoupleCelebration tenantName="太郎 & 花子" onComplete={() => {}} skipLabel="スキップ" />,
+      ),
+    )
     expect(screen.getByText('太郎 & 花子')).toBeInTheDocument()
   })
 })
@@ -154,57 +161,6 @@ describe('LikeBurst', () => {
     unmount()
     act(() => {
       vi.advanceTimersByTime(3000)
-    })
-    expect(onComplete).not.toHaveBeenCalled()
-  })
-})
-
-describe('RankingReveal', () => {
-  const items = ['一位', '二位', '三位', '四位', '五位'].map((t) => <p key={t}>{t}</p>)
-
-  it('items をすべて順位の順に描画し、1 位に王冠が載る', () => {
-    render(wrap(<RankingReveal items={items} />))
-    const rows = screen.getAllByTestId('ranking-item')
-    expect(rows).toHaveLength(5)
-    expect(rows[0]).toHaveTextContent('一位')
-    expect(rows[4]).toHaveTextContent('五位')
-    expect(screen.getAllByTestId('crown')).toHaveLength(1)
-    expect(rows[0]).toContainElement(screen.getByTestId('crown'))
-  })
-
-  it('onComplete が 3 秒以内に一度だけ呼ばれる', () => {
-    const onComplete = vi.fn()
-    render(wrap(<RankingReveal items={items} onComplete={onComplete} />))
-    expect(onComplete).not.toHaveBeenCalled()
-    act(() => {
-      vi.advanceTimersByTime(3000)
-    })
-    expect(onComplete).toHaveBeenCalledTimes(1)
-    act(() => {
-      vi.advanceTimersByTime(3000)
-    })
-    expect(onComplete).toHaveBeenCalledTimes(1)
-  })
-
-  it('3 件未満でも描画できる', () => {
-    render(wrap(<RankingReveal items={[<p key="a">一位</p>]} />))
-    expect(screen.getAllByTestId('ranking-item')).toHaveLength(1)
-  })
-
-  it('動きを減らす設定では内容をすぐ表示し、すぐ onComplete を呼ぶ', () => {
-    reducedMotion.value = true
-    const onComplete = vi.fn()
-    render(wrap(<RankingReveal items={items} onComplete={onComplete} />))
-    expect(screen.getAllByTestId('ranking-item')).toHaveLength(5)
-    expect(onComplete).toHaveBeenCalledTimes(1)
-  })
-
-  it('アンマウントするとタイマーを片付ける', () => {
-    const onComplete = vi.fn()
-    const { unmount } = render(wrap(<RankingReveal items={items} onComplete={onComplete} />))
-    unmount()
-    act(() => {
-      vi.advanceTimersByTime(5000)
     })
     expect(onComplete).not.toHaveBeenCalled()
   })

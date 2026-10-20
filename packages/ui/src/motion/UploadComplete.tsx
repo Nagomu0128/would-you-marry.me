@@ -7,7 +7,7 @@ import { Confetti } from './particles'
 export type UploadCompleteProps = {
   onComplete: () => void
   /** タップで飛ばせることを伝える読み上げ用ラベル */
-  skipLabel?: string
+  skipLabel: string
 }
 
 const stroke: CSSProperties = {
