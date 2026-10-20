@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "@wym/ui/theme.css";
+
+/* packages/ui のソースで使うクラスも生成する */
+@source "../../../../packages/ui/src";

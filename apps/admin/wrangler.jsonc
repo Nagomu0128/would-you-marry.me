@@ -1,0 +1,41 @@
+// admin Worker（admin.would-you-marry.me）: 管理面の画面と API、Better Auth、Cron Triggers
+// Custom Domains（routes）は T20 で追加する
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wym-admin",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-10-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wym",
+      // ローカル用の仮の値。本番の ID は T20 で設定する
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      // D1 のマイグレーションは 2 つの Worker で共有するので、admin から適用する
+      "migrations_dir": "../../packages/db/migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "wym-files"
+    }
+  ],
+  "triggers": {
+    // UTC 18:00 = 日本時間 3:00（1 日 1 回、仮置き）
+    "crons": ["0 18 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "GUEST_ORIGIN": "http://localhost:5173",
+    "ADMIN_EMAILS": "admin@example.com"
+  }
+}
