@@ -1,2 +1,6 @@
-// Motion の設定とモーショングラフィックスは T04・T05 で追加する（ADR-0002）
-export {}
+// モーショングラフィックス（T05）。MotionProvider は T04 が追記する
+export { CoupleCelebration } from './CoupleCelebration'
+export { LikeBurst } from './LikeBurst'
+export { RankingReveal } from './RankingReveal'
+export { UploadComplete } from './UploadComplete'
+export { WelcomeAnimation } from './WelcomeAnimation'
