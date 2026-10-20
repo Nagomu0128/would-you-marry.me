@@ -11,6 +11,10 @@ export type PinchZoomProps = {
   className?: string
   /** 中身を包む要素のクラス。枠いっぱいに広げて中央に置くときなどに使う */
   contentClassName?: string
+  /** 拡大中かどうかが変わったとき（拡大中は左右のスワイプを呼び出し側で無効にするなど） */
+  onZoomChange?: (zoomed: boolean) => void
+  /** 倍率 1 のときの `touch-action`（既定 `pan-y`）。全画面の表示などでスクロールさせないときは `none` */
+  idleTouchAction?: 'pan-y' | 'none'
 }
 
 export const DEFAULT_MAX_SCALE = 4
@@ -74,9 +78,13 @@ export function PinchZoom({
   doubleTapScale = DEFAULT_DOUBLE_TAP_SCALE,
   className,
   contentClassName,
+  onZoomChange,
+  idleTouchAction = 'pan-y',
 }: PinchZoomProps) {
   const frameRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const onZoomChangeRef = useRef(onZoomChange)
+  onZoomChangeRef.current = onZoomChange
 
   useEffect(() => {
     const frame = frameRef.current
@@ -88,6 +96,7 @@ export function PinchZoom({
     let pinch: { distance: number; start: Transform; mid: Point } | null = null
     let lastTap: { time: number; point: Point } | null = null
     let moved = false
+    let zoomed = false
 
     const size = () => ({ width: frame.clientWidth, height: frame.clientHeight })
 
@@ -100,7 +109,11 @@ export function PinchZoom({
           ? 'none'
           : `translate3d(${current.x}px, ${current.y}px, 0) scale(${current.scale})`
       // 拡大中は移動を自分で扱う。1 倍のときは縦のスクロールをブラウザに任せる
-      frame.style.touchAction = current.scale > 1 ? 'none' : 'pan-y'
+      frame.style.touchAction = current.scale > 1 ? 'none' : idleTouchAction
+      if (zoomed !== current.scale > 1) {
+        zoomed = current.scale > 1
+        onZoomChangeRef.current?.(zoomed)
+      }
     }
 
     const local = (event: { clientX: number; clientY: number }): Point => {
@@ -213,13 +226,13 @@ export function PinchZoom({
       frame.removeEventListener('pointercancel', onPointerEnd)
       frame.removeEventListener('wheel', onWheel)
     }
-  }, [maxScale, doubleTapScale])
+  }, [maxScale, doubleTapScale, idleTouchAction])
 
   return (
     <div
       ref={frameRef}
       className={cn('relative select-none overflow-hidden', className)}
-      style={{ touchAction: 'pan-y' }}
+      style={{ touchAction: idleTouchAction }}
     >
       <div
         ref={contentRef}

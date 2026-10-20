@@ -7,6 +7,7 @@ import { dbMiddleware } from './middleware/db'
 import { requestLog, securityHeaders } from './middleware/headers'
 import { configRoutes } from './routes/config'
 import { couplePageRoutes } from './routes/couple'
+import { coupleApiRoutes } from './routes/couple-api'
 import { guestRoutes } from './routes/guest'
 import { joinRoutes } from './routes/join'
 import type { AppEnv } from './types'
@@ -27,7 +28,7 @@ app.route('/couple', couplePageRoutes)
 // API
 app.route('/api/config', configRoutes)
 app.route('/api/t/:tenantId', guestRoutes)
-// /api/couple/:tenantId/* は T09 で足す
+app.route('/api/couple/:tenantId', coupleApiRoutes)
 
 // API 以外のパスは静的アセット（SPA）を返す。
 // /couple/:tenantId/login などの SPA のパスも、ここから index.html を返す
