@@ -1,0 +1,41 @@
+/* 小さな演出（いいね・ランキング・画面遷移・読み込み）。担当: micro */
+@layer components {
+  .wedding-like {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    color: var(--color-accent, #a64d3c);
+  }
+
+  .wedding-like-ray {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 0.35rem;
+    background: currentColor;
+  }
+
+  .wedding-like-heart {
+    fill: currentColor;
+  }
+
+  .wedding-rosette {
+    position: absolute;
+    inset-block-start: -1rem;
+    inset-inline-start: 0.625rem;
+    z-index: 1;
+    color: var(--color-accent, #a64d3c);
+  }
+
+  .wedding-rosette svg {
+    display: block;
+    overflow: visible;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wedding-like {
+      display: none;
+    }
+  }
+}

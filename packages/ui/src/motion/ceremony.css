@@ -1,3 +1,4 @@
+/* 全画面の演出（ウェルカム・新郎新婦の入室・投稿完了）と水引の印。担当: ceremony */
 @layer components {
   .wedding-mark {
     display: block;
@@ -134,42 +135,8 @@
     inset-inline-end: 0.75rem;
   }
 
-  .wedding-like {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    pointer-events: none;
-    color: var(--color-accent, #a64d3c);
-  }
-
-  .wedding-like-ray {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 0.35rem;
-    background: currentColor;
-  }
-
-  .wedding-like-heart {
-    fill: currentColor;
-  }
-
-  .wedding-rosette {
-    position: absolute;
-    inset-block-start: -1rem;
-    inset-inline-start: 0.625rem;
-    z-index: 1;
-    color: var(--color-accent, #a64d3c);
-  }
-
-  .wedding-rosette svg {
-    display: block;
-    overflow: visible;
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .wedding-stage,
-    .wedding-like {
+    .wedding-stage {
       display: none;
     }
   }

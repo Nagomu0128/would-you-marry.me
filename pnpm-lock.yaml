@@ -218,6 +218,18 @@ importers:
 
   packages/ui:
     dependencies:
+      '@fontsource-variable/bodoni-moda':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/shippori-mincho-b1':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/yuji-syuku':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/zen-kaku-gothic-new':
+        specifier: 5.3.0
+        version: 5.3.0
       '@wym/shared':
         specifier: workspace:*
         version: link:../shared
@@ -925,6 +937,18 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource-variable/bodoni-moda@5.3.0':
+    resolution: {integrity: sha512-yTDXk4+/J8I20KjtkHBbXDQNeE5PR3BZa0gv/YRza+kyxsz+mmg0la/n/hsr6+WvSfVP7Lc8lRTjHGIYwBW43A==}
+
+  '@fontsource/shippori-mincho-b1@5.3.0':
+    resolution: {integrity: sha512-H4NvSJntaViHN8LjwmPTzZgJ8pyWcNetaJMHT4kfg6n1VR60QO2cYl/KDEIP4z2SR83//nlZb5gfQyZUpeNVNA==}
+
+  '@fontsource/yuji-syuku@5.3.0':
+    resolution: {integrity: sha512-f3NZC2hVWB/Feo7PzhEXrGbgJxwxNMQYxld/uBPmGAmjaPvfCEI9hc/xcMytFEBbOh+imRkW5Se68em1sSIGOA==}
+
+  '@fontsource/zen-kaku-gothic-new@5.3.0':
+    resolution: {integrity: sha512-2t88gAaUkqIAFARfO8GkT1x57QBRx8A0pWeB0CIrIahnzdanWjcV4thPCSv9BJmpeRndq6qbFx1KYglHykiPhw==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2933,6 +2957,14 @@ snapshots:
 
   '@esbuild/win32-x64@0.28.2':
     optional: true
+
+  '@fontsource-variable/bodoni-moda@5.3.0': {}
+
+  '@fontsource/shippori-mincho-b1@5.3.0': {}
+
+  '@fontsource/yuji-syuku@5.3.0': {}
+
+  '@fontsource/zen-kaku-gothic-new@5.3.0': {}
 
   '@img/colour@1.1.0': {}
 

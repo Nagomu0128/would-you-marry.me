@@ -1,0 +1,11 @@
+/*
+ * Web フォント（自前配信）。日本語は unicode-range で分割され、画面で使う文字の分だけ読み込む。
+ * どれも font-display: swap。フォントを待たずに端末のフォントで表示し、届いたら差し替える。
+ * ウェイトを増やすときは docs/spec/design-guide.md「文字」を先に更新する。
+ */
+@import "@fontsource/shippori-mincho-b1/500.css";
+@import "@fontsource/shippori-mincho-b1/800.css";
+@import "@fontsource/zen-kaku-gothic-new/400.css";
+@import "@fontsource/zen-kaku-gothic-new/700.css";
+@import "@fontsource/yuji-syuku/400.css";
+@import "@fontsource-variable/bodoni-moda/opsz.css";
