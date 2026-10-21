@@ -55,6 +55,21 @@ export function joinPeriodLabels(joiningStart: string, joiningEnd: string) {
   }
 }
 
+/** 開催日（`YYYY-MM-DD`）を「2026.10.31」にする */
+export function formatEventDate(eventDate: string): string {
+  return eventDate.replaceAll('-', '.')
+}
+
+const weekdayFormat = new Intl.DateTimeFormat('ja-JP', { weekday: 'short', timeZone: 'UTC' })
+
+/** 開催日を、帳面の日付の欄（年・月・日・曜日）に分ける。曜日は Intl の日本語の短い表記 */
+export function eventDateParts(eventDate: string) {
+  const [year = '', month = '', day = ''] = eventDate.split('-')
+  const date = new Date(`${eventDate}T00:00:00Z`)
+  const weekday = Number.isNaN(date.getTime()) ? '' : weekdayFormat.format(date)
+  return { year, month, day, weekday }
+}
+
 const numberFormat = new Intl.NumberFormat('ja-JP')
 export function formatCount(n: number): string {
   return numberFormat.format(n)

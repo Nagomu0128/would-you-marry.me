@@ -1,358 +1,1559 @@
+/*
+ * 管理画面「準備帳」。担当: admin-ui。docs/spec/design-guide.md「管理画面は準備帳」
+ * 和紙の頁に墨の明朝の見出しとゴシックの本文。罫で区切り、数字は Bodoni、金は細罫と小さな印だけ、
+ * 紅は選択と危険な操作の強調に使う。共通部品の見た目を変えるときは .admin-shell の内側に限る
+ * （プレビューの枠の中の参加者画面には効かせない）。
+ */
 @layer components {
   .admin-shell {
-    min-block-size: 100dvh;
-    max-inline-size: var(--container-admin);
-    margin-inline: auto;
+    /* 数字だけ Bodoni、和文はゴシックで組む（「参加者 52 / 写真 830」のような一行に使う） */
+    --admin-figures: "Bodoni Moda Variable", var(--font-gothic);
+    --admin-gutter: var(--spacing-gutter);
+    --admin-gold-rule: color-mix(in srgb, var(--color-gold) 55%, transparent);
+    position: relative;
+    background-color: var(--color-surface);
+    background-image: var(--washi-fiber);
   }
 
-  .admin-rail {
-    padding: 1rem var(--spacing-gutter);
+  /* ---- 背表紙（狭い画面では上の帯） ---- */
+  .admin-spine {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand brand"
+      "nav foot";
+    align-items: center;
+    gap: 0 1rem;
+    padding: max(0.5rem, env(safe-area-inset-top)) var(--admin-gutter) 0;
+    background-color: var(--color-tint);
+    background-image: var(--washi-fiber);
     border-block-end: 1px solid var(--color-rule);
   }
 
-  .admin-rail-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .admin-nav {
-    display: flex;
-    gap: 0.5rem;
-    margin-block-start: 1rem;
-  }
-
-  .admin-nav a {
+  .admin-spine-brand {
+    grid-area: brand;
+    justify-self: start;
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
-    min-block-size: 2.75rem;
-    padding: 0.5rem 0.875rem;
-    border-radius: var(--radius-control);
-    font-size: 0.8125rem;
-  }
-
-  .admin-nav a[aria-current="page"] {
-    background: var(--color-ink);
-    color: var(--color-paper);
-  }
-
-  .admin-rail-note {
-    display: none;
-  }
-
-  .admin-content {
+    min-block-size: var(--spacing-tap);
     min-inline-size: 0;
   }
 
-  .admin-header {
-    padding: 1.5rem var(--spacing-gutter);
+  .admin-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-inline-size: 0;
   }
 
-  .admin-header-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-block-start: 1rem;
+  .admin-mark-knot {
+    inline-size: 2.25rem;
+    --knot-gap: var(--color-tint);
   }
 
-  .admin-header h1 {
-    font-family: var(--font-editorial);
-    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2rem);
-    line-height: 1.6;
-  }
-
-  .admin-main {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 0 var(--spacing-gutter) 3rem;
-  }
-
-  .admin-overview {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-block: 1px solid var(--color-rule);
-    padding-block: 1.25rem;
-  }
-
-  .admin-stat {
-    padding-inline: 0.75rem;
-  }
-
-  .admin-stat:not(:first-child) {
-    border-inline-start: 1px solid var(--color-rule);
-  }
-
-  .admin-stat dt {
-    font-size: 0.6875rem;
-    color: var(--color-muted);
-  }
-
-  .admin-stat dd {
-    margin-block-start: 0.25rem;
-    font-family: var(--font-accent);
-    font-size: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
-    line-height: 1.2;
+  .admin-mark-name {
+    font-family: var(--font-numeral);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0.03em;
+    /* 「管理」の途中で折り返さない（折り返すならサイト名との間で） */
+    word-break: keep-all;
     overflow-wrap: anywhere;
   }
 
-  .admin-section-title {
+  .admin-spine-foot {
+    grid-area: foot;
     display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    padding-block-end: 0.5rem;
-    border-block-end: 1px solid var(--color-rule);
-    font-family: var(--font-editorial);
-    font-size: 1.125rem;
-  }
-
-  .admin-section-title span {
-    font-family: var(--font-accent);
-    color: var(--color-accent);
-    font-style: italic;
-  }
-
-  .tenant-list {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .tenant-entry {
-    display: grid;
-    grid-template-columns: 3rem minmax(0, 1fr) auto;
     align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 0;
-    border-block-end: 1px solid var(--color-rule);
   }
 
-  .tenant-date {
-    font-family: var(--font-accent);
-    text-align: center;
-    border-inline-end: 1px solid var(--color-rule);
-    padding-inline-end: 0.75rem;
+  .admin-account {
+    display: none;
   }
 
-  .tenant-date span {
-    display: block;
-    font-size: 1.75rem;
-    line-height: 1;
+  .admin-shell .ui-button.admin-logout {
+    min-inline-size: var(--spacing-tap);
+    padding-inline: 0.5rem;
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    text-decoration: underline;
+    text-decoration-color: var(--admin-gold-rule);
+    text-underline-offset: 0.4em;
   }
 
-  .tenant-date small {
-    font-family: var(--font-sans);
-    font-size: 0.5625rem;
-    letter-spacing: 0.08em;
+  .admin-nav {
+    grid-area: nav;
   }
 
-  .tenant-entry h2 {
-    font-family: var(--font-editorial);
-    font-size: 1.0625rem;
-    margin-block-end: 0.5rem;
-  }
-
-  .tenant-meta {
+  .admin-nav ul {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 0.75rem;
+    gap: 1.75rem;
+  }
+
+  .admin-nav a {
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    font-size: 0.6875rem;
+    gap: 0.5rem;
+    min-block-size: 3rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
   }
 
-  .badge {
+  /* 選択中: 紅の菱・太字・下線（色だけに頼らない） */
+  .admin-nav a::before {
+    content: "";
+    flex: none;
+    inline-size: 0.375rem;
+    block-size: 0.375rem;
+    border: 1px solid currentColor;
+    transform: rotate(45deg);
+    opacity: 0.45;
+  }
+
+  .admin-nav a[aria-current] {
+    color: var(--color-ink);
+    font-weight: 700;
+  }
+
+  .admin-nav a[aria-current]::before {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    opacity: 1;
+  }
+
+  .admin-nav a[aria-current]::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: -1px;
+    block-size: 2px;
+    background: var(--color-enji);
+  }
+
+  /* 四つ目綴じ。背表紙と頁の境に、綴じ穴と臙脂の糸を描く（広い画面だけ） */
+  .admin-binding {
+    display: none;
+  }
+
+  /* ---- 頁 ---- */
+  .admin-page {
+    container: admin-page / inline-size;
+    min-inline-size: 0;
+    padding: 1.75rem var(--admin-gutter) 4rem;
+    outline: none;
+  }
+
+  .admin-header,
+  .admin-body,
+  .admin-screen-loading {
+    max-inline-size: 60rem;
+  }
+
+  .admin-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding-block-end: 1.5rem;
+    margin-block-end: 0.5rem;
+    border-block-end: 1px solid var(--admin-gold-rule);
+  }
+
+  .admin-back {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.2rem 0.5rem;
-    background: var(--color-tint);
-    color: var(--color-ink);
-    font-size: 0.625rem;
-    border-radius: 2px;
+    gap: 0.625rem;
+    align-self: flex-start;
+    min-block-size: var(--spacing-tap);
+    margin-block: -0.5rem -0.25rem;
+    padding-inline-end: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
   }
 
-  .badge::before {
+  .admin-back::before {
     content: "";
-    inline-size: 4px;
-    block-size: 4px;
-    border-radius: 50%;
-    background: currentColor;
+    inline-size: 0.4375rem;
+    block-size: 0.4375rem;
+    border-inline-start: 1.5px solid currentColor;
+    border-block-end: 1.5px solid currentColor;
+    transform: rotate(45deg);
   }
 
-  .badge[data-tone="warn"] {
-    background: #f4e6df;
+  .admin-lead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+
+  .admin-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+  }
+
+  /* 和文の名前・見出しは、対応するブラウザでは文節で折り返す */
+  :is(
+    .admin-title,
+    .admin-entry-name,
+    .admin-facts-name,
+    .admin-table-name,
+    .admin-ledger-head h2,
+    .admin-guest-name
+  ) {
+    word-break: auto-phrase;
+  }
+
+  .admin-title {
+    flex: 1 1 16rem;
+    min-inline-size: 0;
+    font-size: clamp(1.625rem, 1.3rem + 1.4vw, 2.25rem);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-wa);
+  }
+
+  .admin-title-skeleton {
+    inline-size: min(24rem, 75%);
+    block-size: 2.5rem;
+  }
+
+  .admin-title-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* 別のタブで開く印（右上への矢印） */
+  .admin-external-mark {
+    position: relative;
+    flex: none;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-block-start: 1.5px solid currentColor;
+    border-inline-end: 1.5px solid currentColor;
+  }
+
+  .admin-external-mark::after {
+    content: "";
+    position: absolute;
+    inset-block-start: -1.5px;
+    inset-inline-end: -1.5px;
+    inline-size: 0.6875rem;
+    block-size: 1.5px;
+    background: currentColor;
+    transform: rotate(-45deg);
+    transform-origin: right center;
+  }
+
+  .admin-note {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  /* 開催日の一行（2026.10.31 土） */
+  .admin-date-line {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--font-numeral);
+    font-size: 1.125rem;
+    line-height: 1.5;
+    letter-spacing: 0.06em;
+    font-variant-numeric: lining-nums;
+  }
+
+  .admin-date-weekday {
+    font-family: var(--font-mincho);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  /* ---- 期間の札。印のような小さな札で、菱の印と文言で区別する ---- */
+  .admin-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    padding: 0.0625rem 0.5rem 0.0625rem 0.4375rem;
+    border: 1px solid currentColor;
+    border-radius: 0.125rem;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.7;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .admin-tag::before {
+    content: "";
+    flex: none;
+    inline-size: 0.3125rem;
+    block-size: 0.3125rem;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+
+  .admin-tag[data-period="joining"] {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .admin-tag[data-period="joining"]::before {
+    background: var(--color-gold-light);
+  }
+
+  .admin-tag[data-period="viewing"] {
+    color: var(--color-gold-deep);
+  }
+
+  .admin-tag[data-period="couple_only"] {
+    color: var(--color-enji);
+  }
+
+  .admin-tag[data-period="expired"] {
+    border-style: dashed;
+  }
+
+  .admin-tag[data-period="expired"]::before {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px currentColor;
+  }
+
+  .admin-tag[data-period="suspended"] {
+    background: #f7e8e3;
     color: var(--color-error);
   }
 
-  .detail-summary {
+  /* ---- テナント一覧: 帳面の一行 ---- */
+  .admin-entry {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.75rem minmax(0, 1fr) 0.75rem;
+    grid-template-areas:
+      "date main mark"
+      "date stats mark";
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 1.25rem 0.75rem;
+    margin-inline: -0.75rem;
+    border-block-end: 1px solid var(--color-rule);
+    transition: background-color 180ms var(--ease-wa);
+  }
+
+  .admin-entry-date {
+    grid-area: date;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-inline-end: 0.875rem;
+    border-inline-end: 1px solid var(--color-rule);
+    font-family: var(--font-numeral);
+    line-height: 1.15;
+    text-align: center;
+    font-variant-numeric: lining-nums;
+  }
+
+  .admin-entry-month {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+  }
+
+  .admin-entry-day {
+    font-size: 2.25rem;
+    line-height: 1.05;
+    margin-block: 0.125rem 0.0625rem;
+  }
+
+  .admin-entry-weekday {
+    font-family: var(--font-mincho);
+    font-size: 0.75rem;
+    color: var(--color-muted);
+  }
+
+  .admin-entry-main {
+    grid-area: main;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    min-inline-size: 0;
+  }
+
+  .admin-entry-name {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    letter-spacing: 0.06em;
+  }
+
+  /* 行のどこを押しても詳細へ。リンクの名前はテナント名だけにする */
+  .admin-entry-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .admin-entry-link:focus-visible {
+    outline: none;
+  }
+
+  .admin-entry:has(.admin-entry-link:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  .admin-entry-stats {
+    grid-area: stats;
+    font-family: var(--admin-figures);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    font-variant-numeric: lining-nums;
+  }
+
+  .admin-entry-mark {
+    grid-area: mark;
+    justify-self: center;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-block-start: 1.5px solid var(--color-gold);
+    border-inline-end: 1.5px solid var(--color-gold);
+    transform: rotate(45deg);
+    translate: -0.125rem 0;
+  }
+
+  .admin-entry[data-period="expired"] :is(.admin-entry-name, .admin-entry-day) {
+    color: var(--color-muted);
+  }
+
+  /* ---- 帳面の一段 ---- */
+  .admin-ledger {
+    display: grid;
+    gap: 1rem;
+    padding-block: 1.75rem;
+    border-block-end: 1px solid var(--color-rule);
+  }
+
+  .admin-ledger-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+  }
+
+  .admin-ledger-head h2 {
+    font-size: 1.1875rem;
+    line-height: 1.6;
+    letter-spacing: var(--tracking-wa);
+  }
+
+  .admin-ledger-body {
+    display: grid;
+    gap: 1rem;
+    min-inline-size: 0;
+  }
+
+  .admin-ledger[data-tone="danger"] {
+    margin-block-start: 2rem;
+    border-block: 1px solid color-mix(in srgb, var(--color-error) 45%, transparent);
+  }
+
+  .admin-ledger[data-tone="danger"] .admin-ledger-head h2 {
+    color: var(--color-error);
+  }
+
+  /* 期間と削除予定日。付箋のように、金の縁を左に付けた薄い面 */
+  .admin-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    margin-block: 1.25rem 0.5rem;
+    padding: 1rem 1.25rem;
+    border-inline-start: 3px solid var(--color-gold);
+    background: color-mix(in srgb, var(--color-tint) 80%, transparent);
+  }
+
+  .admin-status[data-suspended] {
+    border-inline-start-color: var(--color-error);
+    background: #f7e8e3;
+  }
+
+  .admin-status-text {
+    display: grid;
+    gap: 0.125rem;
+    min-inline-size: 0;
+  }
+
+  .admin-status-period {
+    font-weight: 700;
+  }
+
+  .admin-status-deletion {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  /* 基本情報 */
+  .admin-facts {
+    display: grid;
+  }
+
+  .admin-facts > div {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 0.75rem;
+    border-block-end: 1px dotted var(--color-rule);
+  }
+
+  .admin-facts > div:first-child {
+    padding-block-start: 0;
+  }
+
+  .admin-facts > div:last-child {
+    border-block-end: 0;
+    padding-block-end: 0;
+  }
+
+  .admin-facts dt {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .admin-facts-name {
+    font-family: var(--font-mincho);
+    font-size: 1.0625rem;
+    letter-spacing: 0.06em;
+    overflow-wrap: anywhere;
+  }
+
+  /* 当日の資料（席次表・コース表）の行 */
+  .admin-rows {
+    display: grid;
+  }
+
+  .admin-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title actions"
+      "state actions"
+      "wide wide"
+      "error error";
+    align-items: center;
+    gap: 0.125rem 1rem;
+    padding-block: 1rem;
+    border-block-end: 1px dotted var(--color-rule);
+  }
+
+  .admin-row:first-child {
+    padding-block-start: 0;
+  }
+
+  .admin-row:last-child {
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+
+  .admin-row-title {
+    grid-area: title;
+    font-size: 1.0625rem;
+    letter-spacing: 0.08em;
+  }
+
+  .admin-row-state {
+    grid-area: state;
+    font-family: var(--admin-figures);
+    font-size: 0.875rem;
+  }
+
+  .admin-row-state[data-empty] {
+    color: var(--color-muted);
+  }
+
+  .admin-row-actions {
+    grid-area: actions;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .admin-row-wide {
+    grid-area: wide;
+    margin-block-start: 1rem;
+    min-inline-size: 0;
+  }
+
+  .admin-row-error {
+    grid-area: error;
+    margin-block-start: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-error);
+  }
+
+  /* 参加者と写真への目次。点線のリーダーでつなぐ */
+  .admin-index {
+    display: grid;
+    column-gap: 2.5rem;
+  }
+
+  .admin-index-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-block-size: 3.5rem;
+    border-block-end: 1px solid var(--color-rule);
+    transition: color 180ms var(--ease-wa);
+  }
+
+  .admin-index li:first-child .admin-index-link {
+    border-block-start: 1px solid var(--color-rule);
+  }
+
+  .admin-index-title {
+    font-family: var(--font-mincho);
+    font-size: 1.0625rem;
+    letter-spacing: 0.06em;
+  }
+
+  .admin-index-leader {
+    flex: 1;
+    min-inline-size: 1rem;
+    block-size: 0;
+    border-block-end: 2px dotted color-mix(in srgb, var(--color-gold) 60%, transparent);
+    translate: 0 0.25em;
+  }
+
+  .admin-index-mark {
+    flex: none;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-block-start: 1.5px solid var(--color-gold);
+    border-inline-end: 1.5px solid var(--color-gold);
+    transform: rotate(45deg);
+    margin-inline-end: 0.25rem;
+  }
+
+  /* 利用状況: 帳面の集計欄 */
+  .admin-tally {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 1.5rem;
+  }
+
+  .admin-tally > div {
+    min-inline-size: 0;
+    padding-block-start: 0.5rem;
+    border-block-start: 1px solid var(--admin-gold-rule);
+  }
+
+  .admin-tally dt {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .admin-tally dd {
+    font-family: var(--font-numeral);
+    font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+    line-height: 1.25;
+    font-variant-numeric: lining-nums;
+    overflow-wrap: anywhere;
+  }
+
+  /* 危険な操作（停止・削除・再発行）。罫も文字も紅に寄せて、ほかのボタンと区別する */
+  .admin-shell .ui-button.admin-danger {
+    border-color: color-mix(in srgb, var(--color-error) 55%, transparent);
+    background: var(--color-surface);
+    color: var(--color-error);
+  }
+
+  .admin-shell .ui-button.admin-danger-text {
+    color: var(--color-error);
+  }
+
+  .admin-shell .ui-button.admin-quiet {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--admin-gold-rule);
+    text-underline-offset: 0.4em;
+  }
+
+  /* ---- 入力 ---- */
+  .admin-form {
+    display: grid;
+    gap: 1.5rem;
+    max-inline-size: 34rem;
+    padding-block-start: 1.5rem;
+  }
+
+  .admin-form-inline {
+    padding-block-start: 0;
+  }
+
+  .admin-shell .admin-field .field-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .admin-shell .admin-field-date .field-input {
+    max-inline-size: 15rem;
+    font-family: var(--admin-figures);
+  }
+
+  .admin-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-block-start: 0.25rem;
+  }
+
+  /* ---- URL の発行 ---- */
+  .admin-unissued {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     padding: 1.25rem;
-    background: var(--color-ink);
-    color: var(--color-paper);
-    border-radius: var(--radius-card);
+    background: color-mix(in srgb, var(--color-tint) 70%, transparent);
   }
 
-  .detail-summary-note {
-    color: var(--color-rule);
+  .admin-unissued p,
+  .admin-unissued-text {
+    color: var(--color-muted);
   }
 
-  .detail-links {
+  .admin-join {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 1.5rem;
+    gap: 1.5rem;
   }
 
-  .detail-links .ui-list-title {
-    font-family: var(--font-sans);
-    font-size: 0.8125rem;
+  /* 受付に置く札のように、QR コードを白い紙に載せる */
+  .admin-qr {
+    justify-self: center;
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid var(--admin-gold-rule);
+    border-radius: 0.125rem;
+    box-shadow: var(--shadow-card);
   }
 
-  .editor-row {
+  .admin-qr-code {
+    display: block;
+    inline-size: 13rem;
+    block-size: auto;
+    max-inline-size: 100%;
+  }
+
+  .admin-join-detail {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    min-inline-size: 0;
+  }
+
+  .admin-url {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    background: var(--color-paper);
-    border: 1px solid var(--color-rule);
+    gap: 0.5rem 0.75rem;
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    background: color-mix(in srgb, var(--color-tint) 70%, transparent);
     border-radius: var(--radius-control);
   }
 
-  .editor-row img {
-    inline-size: 3rem;
-    block-size: 4rem;
-    object-fit: cover;
+  .admin-url-text {
+    flex: 1 1 12rem;
+    min-inline-size: 0;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    word-break: break-all;
   }
 
-  .editor-row .ui-button {
-    padding-inline: 0.5rem;
-    font-size: 0.75rem;
+  .admin-join-period {
+    font-family: var(--admin-figures);
   }
 
-  .admin-form {
+  .admin-actions {
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-inline-size: 36rem;
-    padding: 1.5rem;
-    border: 1px solid var(--color-rule);
-    background: var(--color-surface);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .admin-terms {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .admin-terms::before {
+    content: "";
+    flex: none;
+    inline-size: 0.375rem;
+    block-size: 0.375rem;
+    border: 1px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  .admin-terms[data-agreed] {
+    color: var(--color-success);
+  }
+
+  .admin-terms[data-agreed]::before {
+    background: currentColor;
+  }
+
+  /* 発行した直後だけのパスコード。二度と表示できないので紅の枠で目立たせる */
+  .admin-passcode {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-card);
+    background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface));
+  }
+
+  .admin-passcode-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .admin-passcode-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+
+  .admin-passcode-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.2em;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-passcode-notice {
+    font-size: 0.875rem;
+    color: var(--color-error);
+  }
+
+  /* ---- 写真管理 ---- */
+  .admin-photos {
+    margin-block-start: 1rem;
+  }
+
+  /* ---- 参加者管理: 芳名帳 ---- */
+  .admin-guests {
+    margin-block-start: 0.5rem;
+  }
+
+  .admin-guest {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "no name change"
+      "no count change";
+    align-items: center;
+    gap: 0 1rem;
+    padding-block: 0.75rem;
+    border-block-end: 1px solid var(--color-rule);
+    break-inside: avoid;
+  }
+
+  .admin-guest-no {
+    grid-area: no;
+    align-self: start;
+    padding-block-start: 0.375rem;
+    font-family: var(--font-numeral);
+    font-size: 1rem;
+    color: var(--color-gold-deep);
+    text-align: end;
+    font-variant-numeric: lining-nums;
+  }
+
+  .admin-guest-name {
+    grid-area: name;
+    font-family: var(--font-brush);
+    font-size: 1.375rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-guest-count {
+    grid-area: count;
+    font-family: var(--admin-figures);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .admin-guest-change {
+    grid-area: change;
+  }
+
+  /* ---- プレビュー: スマートフォンの枠 ---- */
+  .admin-preview {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    padding-block-start: 1.25rem;
+  }
+
+  .admin-preview .admin-note {
+    text-align: center;
+  }
+
+  .admin-preview-tabs {
+    inline-size: min(100%, 23.4375rem);
+  }
+
+  .admin-device {
+    position: relative;
+    inline-size: min(100%, 25.1875rem);
+    padding: 2.25rem 0.875rem 1.5rem;
+    border-radius: 3rem;
+    background: var(--color-urushi);
+    box-shadow:
+      var(--shadow-lift),
+      inset 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  .admin-device-slot {
+    position: absolute;
+    inset-block-start: 0.9375rem;
+    inset-inline-start: 50%;
+    inline-size: 4.5rem;
+    block-size: 0.375rem;
+    border-radius: 1rem;
+    background: rgb(255 255 255 / 14%);
+    translate: -50% 0;
   }
 
   .preview-frame {
-    inline-size: 23.4375rem;
-    max-inline-size: 100%;
-    block-size: 42rem;
-    margin-inline: auto;
+    inline-size: 100%;
+    block-size: 46rem;
+    max-block-size: 72dvh;
     overflow-y: auto;
     overscroll-behavior: contain;
-    border: 6px solid var(--color-ink);
     border-radius: 2rem;
     background: var(--color-paper);
     container-type: inline-size;
   }
 
-  .guest-row {
+  .preview-frame:focus-visible {
+    outline-color: var(--color-gold-light);
+  }
+
+  .admin-device-screen {
+    min-block-size: 100%;
+  }
+
+  /* ---- 利用状況の表。読みやすさを優先し、はみ出す分は表の中だけで横に送る ---- */
+  .admin-table-scroll {
+    max-inline-size: 100%;
+    margin-block-start: 1.5rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .admin-table {
+    inline-size: 100%;
+    min-inline-size: 36rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .admin-table caption {
+    padding-block-end: 0.75rem;
+    font-family: var(--font-mincho);
+    font-size: 1.0625rem;
+    letter-spacing: var(--tracking-wa);
+    text-align: start;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.875rem 0.875rem;
+    border-block-end: 1px solid var(--color-rule);
+    vertical-align: middle;
+  }
+
+  .admin-table thead th {
+    padding-block: 0.5rem;
+    border-block: 1px solid var(--color-gold);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-muted);
+    text-align: end;
+    white-space: nowrap;
+  }
+
+  .admin-table thead th:first-child,
+  .admin-table tbody th {
+    padding-inline-start: 0;
+    text-align: start;
+  }
+
+  .admin-table thead th:not(:first-child) {
+    inline-size: 6.5rem;
+  }
+
+  .admin-table tbody th {
+    min-inline-size: 11rem;
+    font-weight: 400;
+  }
+
+  .admin-table td {
+    font-family: var(--font-numeral);
+    font-size: 1.125rem;
+    text-align: end;
+    white-space: nowrap;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .admin-table-name {
+    font-family: var(--font-mincho);
+    letter-spacing: 0.04em;
+    overflow-wrap: anywhere;
+    text-decoration: underline;
+    text-decoration-color: var(--admin-gold-rule);
+    text-underline-offset: 0.35em;
+  }
+
+  .admin-table-date {
+    display: block;
+    margin-block-start: 0.125rem;
+    font-family: var(--font-numeral);
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  /* ---- コース表の画像の編集 ---- */
+  .admin-course {
     display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr) auto;
-    gap: 0.75rem;
+    gap: 1rem;
+  }
+
+  .admin-course-list {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .admin-course-item {
+    display: grid;
+    grid-template-columns: 1.5rem 3rem minmax(0, 1fr) auto;
     align-items: center;
-    padding-block: 1rem;
+    gap: 0.75rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    cursor: grab;
+  }
+
+  .admin-course-no {
+    font-family: var(--font-numeral);
+    font-size: 1.25rem;
+    color: var(--color-gold-deep);
+    text-align: center;
+    font-variant-numeric: lining-nums;
+  }
+
+  .admin-course-thumb {
+    inline-size: 3rem;
+    block-size: 4.25rem;
+    border-radius: var(--radius-photo);
+    object-fit: cover;
+    box-shadow: 0 0 0 1px var(--color-rule);
+  }
+
+  /* つまんで動かせる印（6 つの点） */
+  .admin-course-grip {
+    inline-size: 0.625rem;
+    block-size: 1rem;
+    background-image: radial-gradient(circle, var(--color-muted) 1px, transparent 1.5px);
+    background-size: 0.3125rem 0.3333rem;
+    opacity: 0.6;
+  }
+
+  .admin-course-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .admin-shell .admin-course-actions .ui-button {
+    padding-inline: 0.625rem;
+    color: var(--color-ink);
+  }
+
+  .admin-shell .admin-course-actions .ui-button.admin-danger-text {
+    color: var(--color-error);
+  }
+
+  .admin-course-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* ---- 読み込み中・空・失敗 ---- */
+  .admin-skeleton {
+    margin-block-start: 0.5rem;
+  }
+
+  .admin-skeleton-row {
+    display: grid;
+    grid-template-columns: 3.75rem minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 1.25rem;
     border-block-end: 1px solid var(--color-rule);
   }
 
-  .guest-avatar {
+  .admin-skeleton-date {
+    block-size: 3.75rem;
+  }
+
+  .admin-skeleton-lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.625rem;
+  }
+
+  .admin-screen-loading {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .admin-shell .admin-state {
+    gap: 1.25rem;
+    margin: 0;
+    padding: 2.5rem 1rem;
+    border: 0;
+    border-block-end: 1px solid var(--color-rule);
+  }
+
+  /* 空: まだ何も書かれていない頁。水引の下に文言と、白紙の罫を三本 */
+  .admin-shell .admin-empty {
+    padding-block: 3rem 2.5rem;
+    border-block-end: 0;
+  }
+
+  .admin-shell .admin-empty p {
+    max-inline-size: none;
+    font-family: var(--font-mincho);
+    font-size: 1.0625rem;
+    letter-spacing: 0.08em;
+    color: var(--color-ink);
+  }
+
+  .admin-shell .admin-empty::after {
+    content: "";
+    inline-size: min(100%, 22rem);
+    block-size: 6rem;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(2rem - 1px),
+      var(--color-rule) calc(2rem - 1px) 2rem
+    );
+  }
+
+  .admin-shell .admin-empty svg.admin-empty-knot {
+    inline-size: 3rem;
+    block-size: auto;
+    --knot-gap: var(--color-surface);
+  }
+
+  /* ---- 一枚の紙（ログイン・確認中・拒否） ---- */
+  .admin-desk {
     display: grid;
     place-items: center;
-    inline-size: 2rem;
-    block-size: 2rem;
+    padding: max(2rem, env(safe-area-inset-top)) var(--spacing-gutter)
+      max(2rem, env(safe-area-inset-bottom));
+  }
+
+  .admin-sheet {
+    display: grid;
+    justify-items: center;
+    gap: 1.25rem;
+    inline-size: min(100%, 26rem);
+    padding: 3rem 2rem 2.5rem;
     border: 1px solid var(--color-rule);
-    border-radius: 50%;
-    font-family: var(--font-editorial);
-    font-size: 0.8125rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface);
+    background-image: var(--washi-fiber);
+    box-shadow: var(--shadow-lift);
+    text-align: center;
+    outline: none;
   }
 
-  .monitor-table {
-    inline-size: 100%;
-    table-layout: fixed;
-    font-size: 0.8125rem;
+  .admin-sheet > :not(.admin-sheet-knot, .admin-sheet-title) {
+    justify-self: stretch;
   }
 
-  .monitor-table th,
-  .monitor-table td {
-    padding: 1rem 0.375rem;
-    border-block-end: 1px solid var(--color-rule);
-    overflow-wrap: anywhere;
+  .admin-sheet-knot {
+    inline-size: 5.5rem;
+    margin-block-end: 0.25rem;
+    --knot-gap: var(--color-surface);
   }
 
-  .monitor-table thead {
-    background: var(--color-tint);
-    font-size: 0.625rem;
+  .admin-sheet-title {
+    font-family: var(--font-numeral);
+    font-size: 1.375rem;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
   }
 
+  .admin-sheet-rule {
+    margin-block: -0.25rem 0.25rem;
+  }
+
+  .admin-sheet-rule i {
+    flex: none;
+    inline-size: 0.375rem;
+    block-size: 0.375rem;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+
+  .admin-sheet-note {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .admin-sheet-alert {
+    font-size: 0.875rem;
+    color: var(--color-error);
+  }
+
+  .admin-sheet-wait {
+    display: grid;
+    justify-items: center;
+    gap: 1.25rem;
+  }
+
+  .admin-desk .admin-sheet .admin-state {
+    padding: 0;
+    border: 0;
+  }
+
+  /* ---- 頁の幅に応じた組み替え ---- */
+  @container admin-page (min-width: 30rem) {
+    .admin-tally {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @container admin-page (min-width: 40rem) {
+    .admin-entry {
+      grid-template-columns: 4.5rem minmax(0, 1fr) auto 0.75rem;
+      grid-template-areas: "date main stats mark";
+      gap: 1.25rem;
+      padding-block: 1.5rem;
+    }
+    .admin-entry-stats {
+      text-align: end;
+    }
+    .admin-join {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
+      gap: 2rem;
+    }
+    .admin-shell .admin-photos .photo-grid {
+      grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+      gap: 0.375rem;
+    }
+  }
+
+  @container admin-page (min-width: 46rem) {
+    .admin-ledger {
+      grid-template-columns: 11rem minmax(0, 1fr);
+      column-gap: 2.5rem;
+      align-items: start;
+    }
+    .admin-ledger-head {
+      flex-direction: column;
+      align-items: flex-start;
+      padding-block-start: 0.125rem;
+    }
+    .admin-index {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .admin-index li:nth-child(2) .admin-index-link {
+      border-block-start: 1px solid var(--color-rule);
+    }
+    .admin-guests {
+      columns: 2;
+      column-gap: 3rem;
+      column-rule: 1px solid var(--color-rule);
+    }
+  }
+
+  /* 表が頁に収まらない幅では、テナント名の列を左に留めて数字だけを横に送る */
+  @container admin-page (max-width: 38rem) {
+    .admin-table {
+      min-inline-size: 32rem;
+    }
+    .admin-table thead th:first-child,
+    .admin-table tbody th {
+      position: sticky;
+      inset-inline-start: 0;
+      z-index: 1;
+      inline-size: 9.5rem;
+      min-inline-size: 9.5rem;
+      padding-inline-end: 0.75rem;
+      background-color: var(--color-surface);
+      box-shadow: 1px 0 0 var(--color-rule);
+    }
+    .admin-table thead th:not(:first-child) {
+      inline-size: 5.5rem;
+    }
+    .admin-table-name {
+      font-size: 0.9375rem;
+    }
+  }
+
+  @container admin-page (max-width: 26rem) {
+    .admin-row {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "title"
+        "state"
+        "actions"
+        "wide"
+        "error";
+    }
+    .admin-row-actions {
+      justify-content: flex-start;
+      margin-block-start: 0.625rem;
+    }
+    .admin-course-item {
+      grid-template-columns: 1.5rem 3rem minmax(0, 1fr);
+    }
+    .admin-course-actions {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+    }
+    .admin-guest {
+      grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+      gap: 0 0.75rem;
+    }
+  }
+
+  /* ---- 広い画面: 背表紙を左に置き、机の上の帳面にする ---- */
   @media (min-width: 64rem) {
     .admin-shell {
       display: grid;
-      grid-template-columns: 14rem minmax(0, 1fr);
+      grid-template-columns: 15rem minmax(0, 1fr);
+      max-inline-size: var(--container-admin);
+      margin-inline: auto;
+      /* 背表紙の列は、頁が長くても下まで同じ色にする */
+      background-image:
+        linear-gradient(to right, var(--color-tint) 15rem, transparent 15rem), var(--washi-fiber);
     }
-    .admin-rail {
+    .admin-spine {
       position: sticky;
       inset-block-start: 0;
       display: flex;
       flex-direction: column;
+      align-items: stretch;
       block-size: 100dvh;
-      padding: 2.5rem 1.5rem;
+      padding: 2.5rem 2.25rem 2rem 1.75rem;
       border-block-end: 0;
       border-inline-end: 1px solid var(--color-rule);
+      box-shadow: inset -14px 0 18px -16px rgb(42 32 28 / 30%);
     }
-    .admin-rail-top {
-      align-items: start;
+    .admin-spine-brand {
+      align-self: flex-start;
+    }
+    .admin-mark {
       flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .admin-mark-knot {
+      inline-size: 3.25rem;
     }
     .admin-nav {
-      flex-direction: column;
       margin-block-start: 3rem;
+      padding-block-start: 1.25rem;
+      border-block-start: 1px solid var(--admin-gold-rule);
     }
-    .admin-rail-note {
-      display: block;
+    .admin-nav ul {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .admin-nav a {
+      display: flex;
+      gap: 0.875rem;
+      padding-inline: 0.875rem 0.75rem;
+      margin-inline-start: -0.875rem;
+      border-radius: var(--radius-control);
+    }
+    /* 選択中は、頁の紙を切り出した見出し紙と臙脂の栞 */
+    .admin-nav a[aria-current] {
+      background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+      box-shadow: inset 3px 0 0 var(--color-enji);
+    }
+    .admin-nav a[aria-current]::after {
+      content: none;
+    }
+    .admin-spine-foot {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
       margin-block-start: auto;
+      padding-block-start: 1.25rem;
       border-block-start: 1px solid var(--color-rule);
-      padding-block-start: 1.5rem;
-      font-family: var(--font-accent);
-      font-style: italic;
-      font-size: 1.25rem;
     }
-    .admin-header {
-      padding: 2.5rem 2.5rem 2rem;
+    .admin-account {
+      display: block;
+      max-inline-size: 100%;
+      font-size: 0.75rem;
+      color: var(--color-muted);
+      overflow-wrap: anywhere;
     }
-    .admin-main {
-      padding-inline: 2.5rem;
+    .admin-shell .ui-button.admin-logout {
+      margin-inline-start: -0.5rem;
+    }
+    .admin-binding {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: 0;
+      display: block;
+      inline-size: 1.125rem;
+      pointer-events: none;
+    }
+    .admin-binding::before {
+      content: "";
+      position: absolute;
+      inset-block: 12%;
+      inset-inline-start: 0.375rem;
+      inline-size: 1.5px;
+      background: color-mix(in srgb, var(--color-enji) 70%, transparent);
+    }
+    .admin-binding i {
+      position: absolute;
+      inset-inline-start: calc(0.375rem - 2.5px);
+      inline-size: 6.5px;
+      block-size: 6.5px;
+      border-radius: 50%;
+      background: #8c7a63;
+      box-shadow: inset 0 1px 1.5px rgb(27 19 20 / 55%);
+      translate: 0 -50%;
+    }
+    .admin-binding i::after {
+      content: "";
+      position: absolute;
+      inset-block-start: calc(50% - 0.75px);
+      inset-inline-start: 3px;
+      inline-size: 0.875rem;
+      block-size: 1.5px;
+      background: color-mix(in srgb, var(--color-enji) 70%, transparent);
+    }
+    .admin-binding i:nth-child(1) {
+      inset-block-start: 12%;
+    }
+    .admin-binding i:nth-child(2) {
+      inset-block-start: 37.33%;
+    }
+    .admin-binding i:nth-child(3) {
+      inset-block-start: 62.67%;
+    }
+    .admin-binding i:nth-child(4) {
+      inset-block-start: 88%;
+    }
+    .admin-page {
+      padding: 3rem clamp(2rem, 4vw, 4.5rem) 5rem;
+      box-shadow: inset 14px 0 18px -18px rgb(42 32 28 / 28%);
+    }
+  }
+
+  /* 机（和紙の地）が見える幅では、帳面に薄い影を落とす */
+  @media (min-width: 77rem) {
+    .admin-shell {
+      box-shadow:
+        0 0 0 1px var(--color-rule),
+        0 30px 60px -36px rgb(42 32 28 / 40%);
     }
   }
 
   @media (max-width: 22rem) {
     .admin-shell {
-      --spacing-gutter: 1rem;
+      --admin-gutter: 1rem;
     }
-    .detail-links {
-      grid-template-columns: minmax(0, 1fr);
+    .admin-sheet {
+      padding: 2.5rem 1.25rem 2rem;
     }
-    .tenant-entry {
-      gap: 0.625rem;
+    .admin-device {
+      padding: 1.75rem 0.375rem 0.75rem;
+      border-radius: 2rem;
+    }
+    .admin-device-slot {
+      inset-block-start: 0.6875rem;
+    }
+    .preview-frame {
+      border-radius: 1.5rem;
+    }
+  }
+
+  @media (hover: hover) {
+    .admin-entry:hover {
+      background: color-mix(in srgb, var(--color-tint) 55%, transparent);
+    }
+    .admin-index-link:hover {
+      color: var(--color-accent);
+    }
+    .admin-nav a:hover {
+      color: var(--color-ink);
+    }
+    .admin-back:hover {
+      color: var(--color-ink);
+    }
+    .admin-shell .ui-button.admin-danger:hover:not(:disabled) {
+      border-color: var(--color-error);
+      background: var(--color-error);
+      color: var(--color-surface);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .admin-entry,
+    .admin-index-link {
+      transition: none;
     }
   }
 
   @media (forced-colors: active) {
-    .badge {
-      border: 1px solid ButtonText;
+    .admin-tag {
+      border-color: CanvasText;
+    }
+    .admin-nav a[aria-current] {
+      text-decoration: underline;
+    }
+    .admin-status,
+    .admin-passcode {
+      border: 1px solid CanvasText;
     }
   }
 }

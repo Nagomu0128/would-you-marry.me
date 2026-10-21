@@ -35,7 +35,17 @@ describe('テナント詳細（SA-04）', () => {
     renderApp(`/tenants/${TENANT_ID}`)
     expect(await screen.findByText('期間: 参加受付中（11/1 まで）')).toBeInTheDocument()
     expect(screen.getByText('データの削除予定日: 2027-05-01')).toBeInTheDocument()
-    expect(screen.getByText('参加者 52 / 写真 830 / いいね 2,140 / 3.2GB')).toBeInTheDocument()
+    // 利用状況は集計欄（項目名と数の組）で並べる
+    const usage = screen.getByRole('region', { name: '利用状況' })
+    for (const [label, value] of [
+      ['参加者', '52'],
+      ['写真', '830'],
+      ['いいね', '2,140'],
+      ['容量', '3.2GB'],
+    ] as const) {
+      const term = within(usage).getByText(label, { selector: 'dt' })
+      expect(term.nextElementSibling).toHaveTextContent(value)
+    }
     expect(await screen.findByText('3 枚')).toBeInTheDocument()
   })
 

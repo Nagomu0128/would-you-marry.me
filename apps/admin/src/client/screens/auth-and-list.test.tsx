@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { error, ME, mockFetch, renderApp, tenant } from '../test-utils'
@@ -84,6 +84,42 @@ describe('テナント一覧（SA-02）', () => {
     await userEvent.click(retry)
     await waitFor(() => expect(screen.getByText('テナントはまだありません')).toBeInTheDocument())
     expect(fn).toHaveBeenCalled()
+  })
+})
+
+describe('管理面の外枠', () => {
+  it('管理メニューで今いる画面を示し、ログイン中の管理者とログアウトを出す', async () => {
+    mockFetch({
+      'GET /api/me': () => ME,
+      'GET /api/tenants': () => ({ json: { tenants: [tenant({ name: 'A家' })] } }),
+    })
+    renderApp('/')
+    await screen.findByText('A家')
+    const nav = screen.getByRole('navigation', { name: '管理メニュー' })
+    expect(within(nav).getByRole('link', { name: 'テナント' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(within(nav).getByRole('link', { name: '監視' })).not.toHaveAttribute('aria-current')
+    expect(screen.getByText('a@example.com')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'ログアウト' }))
+    expect(signOut).toHaveBeenCalled()
+    expect(await screen.findByRole('button', { name: 'Google でログイン' })).toBeInTheDocument()
+  })
+
+  it('テナントの下の画面では、一覧の項目を「この中」として示す', async () => {
+    mockFetch({
+      'GET /api/me': () => ME,
+      'GET /api/tenants/x/guests': () => ({ json: { guests: [] } }),
+    })
+    renderApp('/tenants/x/guests')
+    await screen.findByText('参加者はまだいません')
+    const nav = screen.getByRole('navigation', { name: '管理メニュー' })
+    expect(within(nav).getByRole('link', { name: 'テナント' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    )
   })
 })
 

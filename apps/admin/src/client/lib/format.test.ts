@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { BOUNDARIES } from '../test-utils'
 import {
   deletionDateLabel,
+  eventDateParts,
   formatBytes,
+  formatEventDate,
   joinPeriodLabels,
   periodEndLabel,
   periodLabel,
@@ -44,6 +46,18 @@ describe('日付の表示', () => {
       from: '10/31 0:00',
       to: '11/1 23:59',
     })
+  })
+
+  it('開催日を帳面の日付の欄に分け、曜日を添える', () => {
+    expect(formatEventDate('2026-10-31')).toBe('2026.10.31')
+    expect(eventDateParts('2026-10-31')).toEqual({
+      year: '2026',
+      month: '10',
+      day: '31',
+      weekday: '土',
+    })
+    expect(eventDateParts('2026-11-01').weekday).toBe('日')
+    expect(eventDateParts('not-a-date').weekday).toBe('')
   })
 
   it('容量を GB などに整形する', () => {
