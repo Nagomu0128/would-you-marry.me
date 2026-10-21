@@ -29,6 +29,9 @@ export function JoinUrls() {
 
   return (
     <Screen title={ja.admin.urls.heading} backHref={`/tenants/${tenantId}`}>
+      <p className="text-sub text-muted">
+        ゲストには受付のQRコードを、おふたりには専用のアルバムを。
+      </p>
       {state.status === 'loading' ? <LoadingBlocks /> : null}
       {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
       {state.status === 'ready' ? (
@@ -71,7 +74,7 @@ function QrView({ matrix }: { matrix: QrMatrix }) {
       aria-label={ja.admin.urls.qrAlt}
       viewBox={`0 0 ${total} ${total}`}
       shapeRendering="crispEdges"
-      className="size-64 max-w-full rounded-control border border-sand"
+      className="size-64 max-w-full rounded-control border border-rule"
     >
       <rect width={total} height={total} fill="#ffffff" />
       <path d={path} fill="#000000" />
@@ -115,10 +118,11 @@ function JoinSection({ tenantId, initial }: { tenantId: string; initial: JoinUrl
   const reissue = ja.confirms.reissueJoinUrl
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="text-heading-md">{t.joinTitle}</h2>
+      <p className="eyebrow text-accent">01 / For our guests</p>
+      <h2 className="font-editorial text-heading-md">{t.joinTitle}</h2>
       {join.url === null || matrix === null ? (
         <>
-          <p className="text-sub text-warm-gray">{t.joinNone}</p>
+          <p className="text-sub text-muted">{t.joinNone}</p>
           <div>
             <Button loading={busy} onClick={() => void issue()}>
               {t.issue}
@@ -127,7 +131,12 @@ function JoinSection({ tenantId, initial }: { tenantId: string; initial: JoinUrl
         </>
       ) : (
         <>
-          <QrView matrix={matrix} />
+          <div className="my-2 border border-rule bg-paper p-6 self-center">
+            <QrView matrix={matrix} />
+            <p className="mt-3 text-center text-caption text-muted">
+              カメラで読み取って、ご参加ください
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <p className="min-w-0 flex-1 break-all text-sub">{join.url}</p>
             <Button variant="secondary" onClick={() => void copy(join.url ?? '')}>
@@ -189,9 +198,10 @@ function CoupleSection({ tenantId, initial }: { tenantId: string; initial: Coupl
   const issued = couple.url !== null
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="text-heading-md">{t.coupleTitle}</h2>
+      <p className="eyebrow text-accent">02 / For the couple</p>
+      <h2 className="font-editorial text-heading-md">{t.coupleTitle}</h2>
       {couple.url === null ? (
-        <p className="text-sub text-warm-gray">{t.coupleNone}</p>
+        <p className="text-sub text-muted">{t.coupleNone}</p>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2">
@@ -200,7 +210,7 @@ function CoupleSection({ tenantId, initial }: { tenantId: string; initial: Coupl
               {ja.admin.copy}
             </Button>
           </div>
-          <p className="text-sub text-warm-gray">
+          <p className="text-sub text-muted">
             {couple.termsAgreedAt ? t.termsAgreed : t.termsNotAgreed}
           </p>
         </>

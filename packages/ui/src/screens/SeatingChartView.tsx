@@ -130,6 +130,8 @@ function Pages({
         const canvas = canvasRefs.current[n - 1]
         if (cancelled || !canvas) return
         const page = await doc.getPage(n)
+        // Strict Mode or a resize can cancel this pass while getPage is pending.
+        if (cancelled) return
         const base = page.getViewport({ scale: 1 })
         const viewport = page.getViewport({ scale: targetWidth / base.width })
         canvas.width = Math.floor(viewport.width)
@@ -158,9 +160,11 @@ function Pages({
       {aspects.map((aspect, index) => (
         // ページは並び替わらないので、番号を key にしてよい
         // biome-ignore lint/suspicious/noArrayIndexKey: PDF のページ番号
-        <PinchZoom key={index} className="bg-surface shadow-card">
+        <PinchZoom key={index} className="document-sheet">
           <div className="relative" style={{ aspectRatio: `1 / ${aspect}` }}>
             <canvas
+              role="img"
+              aria-label={`席次表 ${index + 1} ページ目`}
               ref={(node) => {
                 canvasRefs.current[index] = node
               }}

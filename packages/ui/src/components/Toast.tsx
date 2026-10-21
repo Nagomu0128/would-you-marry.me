@@ -91,7 +91,7 @@ export function ToastProvider({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: DURATION.normal, ease: 'easeOut' }}
-                className="pointer-events-auto max-w-[calc(var(--container-guest)-32px)] rounded-control bg-charcoal px-4 py-3 text-sub text-white shadow-card"
+                className="pointer-events-auto max-w-[calc(var(--container-guest)-32px)] rounded-control bg-ink px-4 py-3 text-sub text-white shadow-card"
               >
                 {toast.message}
               </m.p>

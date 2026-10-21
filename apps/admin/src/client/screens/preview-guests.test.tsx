@@ -40,7 +40,7 @@ describe('参加者画面のプレビュー（SA-08）', () => {
     expect(within(frame).getByText('2026.10.31')).toBeInTheDocument()
     expect(within(frame).getByText('こんにちは、プレビュー さん')).toBeInTheDocument()
     expect(within(frame).getByAltText('たろう さんの写真')).toHaveAttribute('src', '/t/p1')
-    expect(frame).toHaveClass('w-[375px]')
+    expect(frame).toHaveClass('preview-frame')
   })
 
   it('タブで席次表（未登録）と料理に切り替わる', async () => {

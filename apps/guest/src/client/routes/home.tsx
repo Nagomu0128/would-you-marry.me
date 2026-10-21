@@ -1,6 +1,6 @@
 import { HOME_RECENT_PHOTO_COUNT } from '@wym/shared'
 import { ErrorState, HomeScreen, ja, ScreenHeader, Skeleton, WelcomeAnimation } from '@wym/ui'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router'
 import { getMe, getPhotos } from '../lib/api'
 import { paths, RouterLink } from '../lib/router-link'
@@ -10,10 +10,23 @@ import { hasPlayedWelcome, markWelcomePlayed } from '../lib/welcome-storage'
 // SG-03 ホーム
 export function HomeRoute() {
   const { tenantId = '' } = useParams()
-  const resource = useApiResource(
-    () => Promise.all([getMe(tenantId), getPhotos(tenantId, { limit: HOME_RECENT_PHOTO_COUNT })]),
-    [tenantId],
-  )
+  const resource = useApiResource(() => getMe(tenantId), [tenantId])
+  const [photos, setPhotos] = useState<Awaited<ReturnType<typeof getPhotos>>['photos']>([])
+  useEffect(() => {
+    let active = true
+    setPhotos([])
+    getPhotos(tenantId, { limit: HOME_RECENT_PHOTO_COUNT }).then(
+      (result) => {
+        if (active) setPhotos(result.photos)
+      },
+      () => {
+        /* Recent photos are optional; the invitation stays usable on a slow connection. */
+      },
+    )
+    return () => {
+      active = false
+    }
+  }, [tenantId])
   const [welcomeDone, setWelcomeDone] = useState(false)
 
   if (resource.state === 'loading') {
@@ -33,7 +46,7 @@ export function HomeRoute() {
   }
   if (resource.state === 'error') return <ErrorState onRetry={resource.reload} />
 
-  const [me, photos] = resource.data
+  const me = resource.data
   if (me.me.nickname === null) return <Navigate to={paths.nickname(tenantId)} replace />
 
   const showWelcome = !welcomeDone && !hasPlayedWelcome(tenantId)
@@ -44,7 +57,7 @@ export function HomeRoute() {
         tenantName={me.tenant.name}
         eventDate={me.tenant.eventDate}
         nickname={me.me.nickname}
-        recentPhotos={photos.photos.map((photo) => ({
+        recentPhotos={photos.map((photo) => ({
           id: photo.id,
           src: photo.urls.thumb,
           nickname: photo.uploader.nickname,

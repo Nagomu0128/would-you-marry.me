@@ -1,5 +1,14 @@
 import type { CoupleLoginStateResponse } from '@wym/shared'
-import { Button, Checkbox, CoupleCelebration, ErrorState, ja, Skeleton, TextField } from '@wym/ui'
+import {
+  Button,
+  Checkbox,
+  CoupleCelebration,
+  ErrorState,
+  ja,
+  Skeleton,
+  TextField,
+  WeddingMark,
+} from '@wym/ui'
 import { type FormEvent, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiClientError, getCoupleLoginState, postCoupleLogin } from '../lib/api'
@@ -114,12 +123,23 @@ function CoupleLoginForm({
 
   return (
     <div>
-      <form onSubmit={submit} className="flex flex-col gap-6 px-screen py-8">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="font-accent text-heading-lg">{ja.couple.entry.heading}</h1>
-          <p className="text-body text-warm-gray">{initial.tenantName}</p>
-        </div>
-        <p className="text-body text-charcoal">{ja.couple.entry.description}</p>
+      <section className="invitation">
+        <WeddingMark className="wedding-mark" />
+        <p className="eyebrow text-muted" lang="en">
+          A keepsake for two
+        </p>
+        <h1 className="invitation-title" lang="en">
+          For<em>the couple.</em>
+        </h1>
+        <p className="invitation-name">{initial.tenantName}</p>
+        <p className="invitation-note">
+          みなさまのまなざしで綴る、
+          <br />
+          おふたりの一日。
+        </p>
+      </section>
+      <form onSubmit={submit} className="entry-form">
+        <p className="entry-form-description">{ja.couple.entry.description}</p>
         <TextField
           label={ja.couple.entry.passcodeLabel}
           value={passcode}
@@ -142,11 +162,11 @@ function CoupleLoginForm({
             error={termsError}
             label={
               <>
-                <Link to={paths.terms} target="_blank" className="text-deep-gold underline">
+                <Link to={paths.terms} target="_blank" className="text-accent underline">
                   {ja.guest.nickname.agree.terms}
                 </Link>
                 {ja.guest.nickname.agree.between}
-                <Link to={paths.privacy} target="_blank" className="text-deep-gold underline">
+                <Link to={paths.privacy} target="_blank" className="text-accent underline">
                   {ja.guest.nickname.agree.privacy}
                 </Link>
                 {ja.guest.nickname.agree.after}

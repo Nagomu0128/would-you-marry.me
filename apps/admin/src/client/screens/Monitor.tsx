@@ -17,21 +17,32 @@ export function Monitor() {
       {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
       {state.status === 'ready' ? (
         // 横スクロールさせないよう、列の幅を固定して名前を折り返す
-        <table className="w-full table-fixed text-sub">
+        <table className="monitor-table">
+          <caption className="sr-only">結婚式ごとの利用状況</caption>
           <thead>
-            <tr className="border-b border-sand text-left text-caption text-warm-gray">
-              <th className="w-[34%] py-2 pr-1 font-normal">{m.tenant}</th>
-              <th className="py-2 pr-1 text-right font-normal">{m.guests}</th>
-              <th className="py-2 pr-1 text-right font-normal">{m.photos}</th>
-              <th className="py-2 pr-1 text-right font-normal">{m.likes}</th>
-              <th className="py-2 text-right font-normal">{m.storage}</th>
+            <tr className="border-b border-rule text-left text-caption text-muted">
+              <th scope="col" className="w-[34%] py-2 pr-1 font-normal">
+                {m.tenant}
+              </th>
+              <th scope="col" className="py-2 pr-1 text-right font-normal">
+                {m.guests}
+              </th>
+              <th scope="col" className="py-2 pr-1 text-right font-normal">
+                {m.photos}
+              </th>
+              <th scope="col" className="py-2 pr-1 text-right font-normal">
+                {m.likes}
+              </th>
+              <th scope="col" className="py-2 text-right font-normal">
+                {m.storage}
+              </th>
             </tr>
           </thead>
           <tbody>
             {state.data.tenants.map((t) => (
-              <tr key={t.id} className="border-b border-sand align-top">
+              <tr key={t.id} className="border-b border-rule align-top">
                 <th scope="row" className="py-2 pr-1 text-left font-normal break-words">
-                  <Link to={`/tenants/${t.id}`} className="text-deep-gold underline">
+                  <Link to={`/tenants/${t.id}`} className="text-accent underline">
                     {t.name}
                   </Link>
                 </th>

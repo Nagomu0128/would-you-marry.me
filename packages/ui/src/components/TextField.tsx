@@ -38,12 +38,12 @@ export function TextField({
       .join(' ') || undefined
 
   return (
-    <div className={cn('flex flex-col gap-1', className)}>
-      <label htmlFor={inputId} className="text-sub font-semibold text-charcoal">
+    <div className={cn('field', className)}>
+      <label htmlFor={inputId} className="field-label">
         {label}
       </label>
       {hint ? (
-        <p id={hintId} className="text-caption text-warm-gray">
+        <p id={hintId} className="text-caption text-muted">
           {hint}
         </p>
       ) : null}
@@ -51,11 +51,7 @@ export function TextField({
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={cn(
-          'h-control w-full rounded-control border bg-surface px-3 text-body text-charcoal',
-          'placeholder:text-warm-gray focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-champagne',
-          error ? 'border-error' : 'border-sand',
-        )}
+        className="field-input"
         {...rest}
       />
       {error || showCount ? (
@@ -64,7 +60,7 @@ export function TextField({
             {error}
           </p>
           {showCount ? (
-            <p id={countId} className="ml-auto shrink-0 text-caption text-warm-gray">
+            <p id={countId} className="ml-auto shrink-0 text-caption text-muted">
               {count} / {max}
             </p>
           ) : null}

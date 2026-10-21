@@ -1,18 +1,32 @@
 import { MotionProvider, ToastProvider } from '@wym/ui'
+import { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { NavLayout, PlainLayout } from './layouts'
 import { ConfigProvider } from './lib/config'
 import { errorPagePath } from './lib/error-handling'
-import { AlbumRoute } from './routes/album'
-import { CoupleLoginRoute } from './routes/couple-login'
-import { CouplePhotosRoute } from './routes/couple-photos'
 import { ErrorRoute } from './routes/error'
 import { HomeRoute } from './routes/home'
 import { LegalRoute } from './routes/legal'
-import { MenuRoute } from './routes/menu'
 import { NicknameRoute } from './routes/nickname'
-import { SeatingRoute } from './routes/seating'
-import { UploadRoute } from './routes/upload'
+
+const AlbumRoute = lazy(() =>
+  import('./routes/album').then((module) => ({ default: module.AlbumRoute })),
+)
+const CoupleLoginRoute = lazy(() =>
+  import('./routes/couple-login').then((module) => ({ default: module.CoupleLoginRoute })),
+)
+const CouplePhotosRoute = lazy(() =>
+  import('./routes/couple-photos').then((module) => ({ default: module.CouplePhotosRoute })),
+)
+const MenuRoute = lazy(() =>
+  import('./routes/menu').then((module) => ({ default: module.MenuRoute })),
+)
+const SeatingRoute = lazy(() =>
+  import('./routes/seating').then((module) => ({ default: module.SeatingRoute })),
+)
+const UploadRoute = lazy(() =>
+  import('./routes/upload').then((module) => ({ default: module.UploadRoute })),
+)
 
 // 画面のルート（docs/spec/api.md「画面のルート（SPA）」）。
 // 下部ナビゲーションがあるのは NavLayout の中（SG-03〜SG-07）だけ。

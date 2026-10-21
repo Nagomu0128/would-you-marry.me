@@ -11,9 +11,6 @@ export type FooterProps = {
   className?: string
 }
 
-const linkClass =
-  'inline-flex min-h-tap items-center px-2 text-caption text-warm-gray underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-champagne'
-
 /** ページの末尾に置く。利用規約 / プライバシーポリシー / お問い合わせ。 */
 export function Footer({
   termsHref,
@@ -23,19 +20,14 @@ export function Footer({
   className,
 }: FooterProps) {
   return (
-    <footer className={cn('px-screen py-6', className)}>
-      <nav className="flex flex-wrap items-center justify-center gap-x-2">
-        <Link href={termsHref} className={linkClass}>
-          {ja.common.footer.terms}
-        </Link>
-        <Link href={privacyHref} className={linkClass}>
-          {ja.common.footer.privacy}
-        </Link>
-        {contactEmail ? (
-          <a href={`mailto:${contactEmail}`} className={linkClass}>
-            {ja.common.footer.contact}
-          </a>
-        ) : null}
+    <footer className={cn('app-footer px-screen', className)}>
+      <p className="footer-signature" lang="en">
+        With love, for this day.
+      </p>
+      <nav className="footer-links" aria-label="ご利用について">
+        <Link href={termsHref}>{ja.common.footer.terms}</Link>
+        <Link href={privacyHref}>{ja.common.footer.privacy}</Link>
+        {contactEmail ? <a href={`mailto:${contactEmail}`}>{ja.common.footer.contact}</a> : null}
       </nav>
     </footer>
   )

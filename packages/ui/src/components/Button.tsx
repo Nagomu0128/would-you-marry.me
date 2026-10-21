@@ -17,13 +17,7 @@ export type ButtonProps = Omit<HTMLMotionProps<'button'>, 'children' | 'ref'> & 
   children?: ReactNode
 }
 
-const variantClass: Record<ButtonVariant, string> = {
-  primary: 'bg-charcoal text-white',
-  secondary: 'border border-charcoal bg-transparent text-charcoal',
-  text: 'bg-transparent text-deep-gold',
-}
-
-/** 高さ 48px。押すと少し縮む。 */
+/** 最小高 3.25rem。文字拡大時は内容に合わせて伸びる。 */
 export function Button({
   variant = 'primary',
   loading = false,
@@ -41,16 +35,10 @@ export function Button({
       type={type}
       disabled={inactive}
       aria-busy={loading || undefined}
-      whileTap={inactive ? undefined : { scale: 0.97 }}
-      className={cn(
-        'inline-flex h-control min-w-tap items-center justify-center gap-2 rounded-control px-6 text-body font-semibold',
-        'transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne',
-        variant === 'primary' && danger ? 'bg-error text-white' : variantClass[variant],
-        fullWidth && 'w-full',
-        disabled && 'cursor-not-allowed opacity-40',
-        loading && 'animate-pulse cursor-progress motion-reduce:animate-none',
-        className,
-      )}
+      whileTap={inactive ? undefined : { scale: 0.985 }}
+      data-variant={variant}
+      data-danger={danger || undefined}
+      className={cn('ui-button', fullWidth && 'w-full', className)}
       {...rest}
     >
       {children}

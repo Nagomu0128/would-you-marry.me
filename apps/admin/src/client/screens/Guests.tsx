@@ -1,5 +1,5 @@
 import { type AdminGuest, validateNickname } from '@wym/shared'
-import { Button, Card, ConfirmSheet, EmptyState, ja, useToast } from '@wym/ui'
+import { Button, ConfirmSheet, EmptyState, ja, useToast } from '@wym/ui'
 import { useState } from 'react'
 import { useParams } from 'react-router'
 import { LoadError, LoadingBlocks, Screen } from '../components/shell'
@@ -71,6 +71,7 @@ export function Guests() {
 
   return (
     <Screen title={ja.admin.detail.guests} backHref={`/tenants/${tenantId}`}>
+      <p className="text-sub text-muted">この一日を、ともに過ごすみなさま。</p>
       {state.status === 'loading' ? <LoadingBlocks /> : null}
       {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
       {state.status === 'ready' && guests.length === 0 ? (
@@ -80,15 +81,20 @@ export function Guests() {
         <ul className="flex flex-col gap-2">
           {guests.map((guest) => (
             <li key={guest.id}>
-              <Card className="flex items-center gap-3">
-                <span className="min-w-0 flex-1 break-words text-body">{guest.nickname}</span>
-                <span className="shrink-0 text-sub text-warm-gray">
-                  {ja.admin.guests.photoCount({ count: guest.photoCount })}
+              <div className="guest-row">
+                <span className="guest-avatar" aria-hidden="true">
+                  {Array.from(guest.nickname ?? '')[0]}
                 </span>
+                <div className="min-w-0">
+                  <p className="break-words text-body">{guest.nickname}</p>
+                  <p className="text-caption text-muted">
+                    {ja.admin.guests.photoCount({ count: guest.photoCount })}
+                  </p>
+                </div>
                 <Button variant="secondary" onClick={() => open(guest)}>
                   {ja.guest.home.change}
                 </Button>
-              </Card>
+              </div>
             </li>
           ))}
         </ul>

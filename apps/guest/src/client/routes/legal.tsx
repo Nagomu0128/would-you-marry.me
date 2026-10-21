@@ -10,14 +10,18 @@ export function LegalRoute({ kind }: { kind: 'terms' | 'privacy' }) {
 
   return (
     <div>
-      <ScreenHeader title={doc.title} {...(canGoBack ? { onBack: () => navigate(-1) } : {})} />
-      <article className="flex flex-col gap-6 px-screen pb-8">
+      <ScreenHeader
+        title={doc.title}
+        eyebrow="Our promise"
+        {...(canGoBack ? { onBack: () => navigate(-1) } : {})}
+      />
+      <article className="legal-copy">
         <p className="text-body">{doc.intro}</p>
         {doc.sections.map((section) => (
           <section key={section.heading} className="flex flex-col gap-2">
             <h2 className="text-heading-md">{section.heading}</h2>
             {section.paragraphs.map((paragraph) => (
-              <p key={paragraph} className="text-body text-charcoal">
+              <p key={paragraph} className="text-body text-ink">
                 {paragraph}
               </p>
             ))}

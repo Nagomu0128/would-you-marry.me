@@ -41,6 +41,7 @@ export function Preview() {
 
   return (
     <Screen title={ja.admin.previewHeading} backHref={`/tenants/${tenantId}`}>
+      <p className="text-sub text-muted">ゲストの目線で、当日のご案内を確認できます。</p>
       <Tabs
         tabs={tabs}
         value={tab}
@@ -51,8 +52,11 @@ export function Preview() {
       <div
         id="preview-panel"
         role="tabpanel"
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard users must be able to scroll the preview without focusable content
+        tabIndex={0}
+        aria-label="参加者画面のプレビュー"
         data-testid="preview-frame"
-        className="mx-auto h-[667px] w-[375px] max-w-full overflow-y-auto rounded-card border-4 border-charcoal bg-ivory"
+        className="preview-frame"
       >
         {tab === 'home' ? <PreviewHome tenantId={tenantId} /> : null}
         {tab === 'seating' ? <PreviewSeating tenantId={tenantId} /> : null}

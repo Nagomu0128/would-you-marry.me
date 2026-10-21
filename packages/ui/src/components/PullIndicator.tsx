@@ -41,7 +41,7 @@ export function PullIndicator({ distance, refreshing }: PullIndicatorProps) {
           transform: `translateY(${offset}px)`,
         }}
       >
-        <span className="flex size-8 items-center justify-center rounded-full bg-surface text-champagne shadow-card">
+        <span className="flex size-8 items-center justify-center rounded-full bg-surface text-accent shadow-card">
           <RefreshCw
             size={16}
             strokeWidth={ICON_STROKE_WIDTH}

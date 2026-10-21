@@ -50,7 +50,7 @@ function Picture({
       onClick={onSelect}
       data-photo-id={item.id}
       className={cn(
-        'block overflow-hidden bg-sand/70 focus-visible:outline-2 focus-visible:outline-champagne',
+        'block overflow-hidden bg-rule/70 focus-visible:outline-2 focus-visible:outline-accent',
         className,
       )}
     >
@@ -80,17 +80,21 @@ export function RankingBoard({ items, onSelect, onComplete, className }: Ranking
     <RankingReveal
       count={items.length}
       {...(onComplete ? { onComplete } : {})}
-      className={cn('flex flex-col gap-6', className)}
+      className={cn('flex flex-col gap-8', className)}
     >
       {first ? (
-        <RankingRevealItem rank={1} className="pt-6" crownStyle={{ top: 0, left: 0 }}>
-          <p className="mb-2 pl-10 font-accent text-heading-md text-deep-gold">
+        <RankingRevealItem
+          rank={1}
+          className="pt-6 border-b border-rule pb-6"
+          crownStyle={{ top: 0, left: 0 }}
+        >
+          <p className="mb-2 pl-10 font-accent text-heading-md text-accent">
             {ja.guest.album.rank({ rank: 1 })}
           </p>
           <Picture
             item={first.item}
             onSelect={select(first.item, first.index)}
-            className="aspect-square w-full rounded-card"
+            className="aspect-[4/5] w-full border-[6px] border-surface shadow-card"
           />
           <div className="mt-2 flex items-center justify-between gap-3">
             <p className="min-w-0 truncate text-body">
@@ -102,16 +106,16 @@ export function RankingBoard({ items, onSelect, onComplete, className }: Ranking
       ) : null}
 
       {podium.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {podium.map(({ item, index }) => (
             <RankingRevealItem key={item.id} rank={item.rank}>
-              <p className="mb-1 font-accent text-heading-md text-deep-gold">
+              <p className="mb-1 font-accent text-heading-md text-accent">
                 {ja.guest.album.rank({ rank: item.rank })}
               </p>
               <Picture
                 item={item}
                 onSelect={select(item, index)}
-                className="aspect-square w-full rounded-card"
+                className="aspect-[4/5] w-full border-[6px] border-surface shadow-card"
               />
               <div className="mt-1 flex items-center justify-between gap-2">
                 <p className="min-w-0 truncate text-sub">
@@ -134,7 +138,7 @@ export function RankingBoard({ items, onSelect, onComplete, className }: Ranking
                   onSelect={select(item, index)}
                   className="size-16 shrink-0 rounded-photo"
                 />
-                <p className="w-14 shrink-0 font-accent text-heading-md text-deep-gold">
+                <p className="w-14 shrink-0 font-accent text-heading-md text-accent">
                   {ja.guest.album.rank({ rank: item.rank })}
                 </p>
                 <p className="min-w-0 flex-1 truncate text-body">

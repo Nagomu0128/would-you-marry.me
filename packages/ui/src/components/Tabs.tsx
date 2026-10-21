@@ -45,11 +45,7 @@ export function Tabs<T extends string = string>({
   }
 
   return (
-    <div
-      role="tablist"
-      aria-label={ariaLabel}
-      className={cn('flex border-b border-sand', className)}
-    >
+    <div role="tablist" aria-label={ariaLabel} className={cn('tabs', className)}>
       {tabs.map((tab, index) => {
         const selected = tab.id === value
         return (
@@ -62,17 +58,14 @@ export function Tabs<T extends string = string>({
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.id)}
             onKeyDown={(event) => handleKeyDown(event, index)}
-            className={cn(
-              'relative min-h-tap flex-1 px-3 text-body focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-champagne',
-              selected ? 'font-semibold text-charcoal' : 'text-warm-gray',
-            )}
+            className="tab"
           >
             {tab.label}
             {selected ? (
               <m.span
                 layoutId={underlineId}
                 aria-hidden="true"
-                className="absolute inset-x-0 -bottom-px h-0.5 bg-champagne"
+                className="tab-line"
                 transition={{ duration: DURATION.normal, ease: 'easeOut' }}
               />
             ) : null}

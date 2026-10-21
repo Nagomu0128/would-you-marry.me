@@ -1,4 +1,4 @@
-import { Button, ja } from '@wym/ui'
+import { Brand, Button, ja, WeddingMark } from '@wym/ui'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { signInWithGoogle } from '../lib/auth'
@@ -23,9 +23,19 @@ export function Login() {
   }
 
   return (
-    <div className="screen-h layout-admin px-screen flex flex-col items-center justify-center gap-6 text-center">
-      <h1 className="text-heading-md">{ja.admin.loginTitle}</h1>
-      <Button onClick={handleClick} loading={loading}>
+    <main className="screen-h layout-guest px-screen flex flex-col justify-center py-12">
+      <Brand caption="The host's notebook" />
+      <div className="my-8 border-y border-rule py-10">
+        <WeddingMark className="mb-6 h-16 w-16" />
+        <p className="eyebrow text-accent mb-3">For the hosts</p>
+        <h1 className="screen-title">{ja.admin.loginTitle}</h1>
+        <p className="screen-description">
+          大切な一日を、細部まで。
+          <br />
+          結婚式の準備と、思い出の管理をここから。
+        </p>
+      </div>
+      <Button onClick={handleClick} loading={loading} fullWidth>
         {ja.admin.login.google}
       </Button>
       {denied ? (
@@ -38,6 +48,6 @@ export function Login() {
           {messageOf(null)}
         </p>
       ) : null}
-    </div>
+    </main>
   )
 }

@@ -13,11 +13,8 @@ export type ErrorStateProps = {
 /** 画面内のエラー表示。通信できなかったときの「もう一度試す」つき。 */
 export function ErrorState({ message = ja.errors.network, onRetry, className }: ErrorStateProps) {
   return (
-    <div
-      role="alert"
-      className={cn('flex flex-col items-center gap-4 px-6 py-12 text-center', className)}
-    >
-      <p className="text-body text-charcoal">{message}</p>
+    <div role="alert" className={cn('empty-state', className)}>
+      <p className="text-body text-ink">{message}</p>
       {onRetry ? (
         <Button variant="secondary" onClick={onRetry}>
           {ja.common.retry}

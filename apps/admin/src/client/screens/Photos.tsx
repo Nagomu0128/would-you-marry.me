@@ -103,6 +103,9 @@ export function Photos() {
 
   return (
     <Screen title={ja.admin.detail.photos} backHref={`/tenants/${tenantId}`}>
+      <p className="text-sub text-muted">
+        一枚ずつに残る、かけがえのない瞬間。写真を開くと保存・削除できます。
+      </p>
       {state.status === 'loading' ? <LoadingBlocks /> : null}
       {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
       {state.status === 'ready' && photos.length === 0 ? (

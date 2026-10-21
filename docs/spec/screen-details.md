@@ -4,6 +4,9 @@
 見た目と動きは [design-guide.md](design-guide.md)、文言は [messages.md](messages.md)、API は [api.md](api.md) を参照。
 ワイヤーフレームはスマートフォンの縦画面を表す。配置は目安で、細部はデザインガイドに従って調整する。
 
+2026-10 の UI 全面再構成以降、以下のワイヤーフレームは機能・操作の参考資料として扱う。
+現在の配置、色、タイポグラフィ、演出は [design-guide.md](design-guide.md) と共通 UI の実装を正とする。
+
 ## 共通
 
 ### ユーザー画面の骨組み

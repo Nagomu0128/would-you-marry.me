@@ -16,8 +16,7 @@ export type ListCardProps = {
   className?: string
 }
 
-const cardClass =
-  'flex min-h-tap w-full items-center gap-3 rounded-card bg-surface p-4 text-left shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne'
+const cardClass = 'ui-list-card'
 
 /** ホームの入口カード。タイトル、右矢印、任意の中身。 */
 export function ListCard({
@@ -31,13 +30,13 @@ export function ListCard({
   const body = (
     <>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="text-heading-md text-charcoal">{title}</span>
-        {children ? <span className="text-sub text-warm-gray">{children}</span> : null}
+        <span className="ui-list-title">{title}</span>
+        {children ? <span className="text-sub text-muted">{children}</span> : null}
       </span>
       <ChevronRight
         aria-hidden="true"
         strokeWidth={ICON_STROKE_WIDTH}
-        className="shrink-0 text-champagne"
+        className="shrink-0 text-accent"
       />
     </>
   )

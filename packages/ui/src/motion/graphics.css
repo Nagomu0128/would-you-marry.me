@@ -1,0 +1,176 @@
+@layer components {
+  .wedding-mark {
+    display: block;
+    flex: none;
+    color: var(--color-ink, #25483f);
+    max-inline-size: 100%;
+  }
+
+  .wedding-stage {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    padding-block-start: max(env(safe-area-inset-top), 1.5rem);
+    padding-inline: 1rem;
+    pointer-events: none;
+    color: var(--color-ink, #25483f);
+  }
+
+  .wedding-invitation {
+    position: relative;
+    inline-size: min(100%, 23rem);
+    overflow: hidden;
+    padding: 1.75rem 1.5rem 1rem;
+    border: 1px solid var(--color-rule, #d9ded5);
+    background: var(--color-paper, #f5f2eb);
+    box-shadow: 0 12px 36px #25483f12;
+    text-align: center;
+  }
+
+  .wedding-invitation::before {
+    content: "";
+    position: absolute;
+    inset: 0.5rem;
+    border: 1px solid var(--color-rule, #d9ded5);
+    pointer-events: none;
+  }
+
+  .wedding-scene {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+  }
+
+  .wedding-scene :where(p) {
+    margin: 0;
+  }
+
+  .wedding-eyebrow {
+    font-family: var(--font-accent, Georgia, serif);
+    font-style: italic;
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+
+  .wedding-name {
+    max-inline-size: 100%;
+    overflow-wrap: anywhere;
+    font-family: var(--font-accent, Georgia, serif);
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.65rem);
+    line-height: 1.7;
+    text-wrap: balance;
+  }
+
+  .wedding-caption {
+    color: var(--color-muted, #6c746d);
+    font-size: 0.75rem;
+    line-height: 1.8;
+    letter-spacing: 0.08em;
+  }
+
+  .wedding-rule {
+    inline-size: 2rem;
+    block-size: 1px;
+    background: currentColor;
+    opacity: 0.35;
+    margin-block: 0.25rem;
+  }
+
+  .wedding-skip {
+    position: relative;
+    display: block;
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+    max-inline-size: 100%;
+    margin: 1rem auto 0;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    background: transparent;
+    color: var(--color-muted, #6c746d);
+    font: inherit;
+    font-size: 0.75rem;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .wedding-skip:focus-visible {
+    outline: 2px solid var(--color-ink, #25483f);
+    outline-offset: 2px;
+  }
+
+  .wedding-seal {
+    inline-size: 6.5rem;
+    block-size: 6.5rem;
+    color: var(--color-accent, #a64d3c);
+  }
+
+  .wedding-seal :where(path, circle) {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .wedding-botanical {
+    position: absolute;
+    inset-block-end: 3.25rem;
+    inline-size: 3.25rem;
+    color: var(--color-ink, #25483f);
+    opacity: 0.4;
+  }
+
+  .wedding-botanical[data-side="left"] {
+    inset-inline-start: 0.75rem;
+  }
+
+  .wedding-botanical[data-side="right"] {
+    inset-inline-end: 0.75rem;
+  }
+
+  .wedding-like {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    color: var(--color-accent, #a64d3c);
+  }
+
+  .wedding-like-ray {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 0.35rem;
+    background: currentColor;
+  }
+
+  .wedding-like-heart {
+    fill: currentColor;
+  }
+
+  .wedding-rosette {
+    position: absolute;
+    inset-block-start: -1rem;
+    inset-inline-start: 0.625rem;
+    z-index: 1;
+    color: var(--color-accent, #a64d3c);
+  }
+
+  .wedding-rosette svg {
+    display: block;
+    overflow: visible;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wedding-stage,
+    .wedding-like {
+      display: none;
+    }
+  }
+}

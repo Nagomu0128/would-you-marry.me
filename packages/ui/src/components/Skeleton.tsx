@@ -12,7 +12,7 @@ export function Skeleton({ className }: SkeletonProps) {
       aria-hidden="true"
       data-testid="skeleton"
       className={cn(
-        'animate-pulse rounded-control bg-sand/70 motion-reduce:animate-none',
+        'animate-pulse rounded-control bg-rule/70 motion-reduce:animate-none',
         className,
       )}
     />

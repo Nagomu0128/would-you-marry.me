@@ -117,7 +117,7 @@ export function CourseMenuEditor({ tenantId, initialImages, onChange, onClose }:
               key={image.id}
               value={image.id}
               onDragEnd={() => void persistOrder(latest.current)}
-              className="flex cursor-grab items-center gap-3 rounded-control border border-sand bg-surface p-2"
+              className="editor-row cursor-grab"
             >
               <img
                 src={image.url}
@@ -125,7 +125,7 @@ export function CourseMenuEditor({ tenantId, initialImages, onChange, onClose }:
                 draggable={false}
                 className="size-16 shrink-0 rounded-photo object-cover"
               />
-              <span className="flex-1 text-sub text-warm-gray">{index + 1}</span>
+              <span className="flex-1 text-sub text-muted">{index + 1}</span>
               <Button
                 variant="text"
                 className="px-2"
@@ -161,7 +161,7 @@ export function CourseMenuEditor({ tenantId, initialImages, onChange, onClose }:
         ref={fileInput}
         type="file"
         accept="image/jpeg,image/png"
-        className="sr-only"
+        hidden
         data-testid="course-file"
         onChange={(e) => void handleAdd(e.target.files?.[0])}
       />

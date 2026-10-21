@@ -1,6 +1,7 @@
 import type { StaffPhoto, Uploader } from '@wym/shared'
 import {
   Button,
+  Dialog,
   EmptyState,
   ErrorState,
   ja,
@@ -17,7 +18,7 @@ import {
   Tabs,
   usePhotoSave,
 } from '@wym/ui'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { getCoupleMe, getUploaders } from '../lib/api'
 import { useCoupleRanking, useCoupleTimeline } from '../lib/couple-feeds'
@@ -42,10 +43,10 @@ function toGridItem(photo: StaffPhoto): PhotoGridItem {
 
 function GridSkeleton() {
   return (
-    <div data-testid="couple-skeleton" className="grid grid-cols-3 gap-0.5">
+    <div data-testid="couple-skeleton" className="photo-grid">
       {Array.from({ length: 12 }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: 固定の装飾
-        <Skeleton key={i} className="aspect-square w-full rounded-photo" />
+        <Skeleton key={i} className="aspect-[4/5] w-full rounded-photo" />
       ))}
     </div>
   )
@@ -78,19 +79,9 @@ function UploaderSheet({
   onClose: () => void
   onRetry: () => void
 }) {
-  const closeRef = useRef<HTMLButtonElement>(null)
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
-
-  useEffect(() => {
-    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    closeRef.current?.focus()
-    return () => previous?.focus()
-  }, [])
-
   const row = (selected: boolean) =>
-    `flex min-h-tap w-full items-center justify-between gap-3 rounded-control px-3 text-left text-body focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne ${
-      selected ? 'bg-sand/70 font-semibold text-charcoal' : 'text-charcoal'
+    `flex min-h-tap w-full items-center justify-between gap-3 rounded-control px-3 text-left text-body focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+      selected ? 'bg-rule/70 font-semibold text-ink' : 'text-ink'
     }`
 
   let body: ReactNode
@@ -120,7 +111,7 @@ function UploaderSheet({
               onClick={() => onSelect(uploader.id)}
             >
               <span>{uploader.nickname}</span>
-              <span className="text-sub text-warm-gray">
+              <span className="text-sub text-muted">
                 {ja.couple.photos.uploaderPhotoCount({ count: uploader.photoCount })}
               </span>
             </button>
@@ -131,29 +122,19 @@ function UploaderSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div
-        aria-hidden="true"
-        data-testid="uploader-backdrop"
-        className="absolute inset-0 bg-charcoal/40"
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={ja.couple.photos.uploaderSheetTitle}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') onCloseRef.current()
-        }}
-        className="safe-bottom layout-guest relative flex flex-col gap-3 rounded-t-card bg-surface px-screen pt-6 pb-4 shadow-card"
-      >
-        <h2 className="text-heading-md">{ja.couple.photos.uploaderSheetTitle}</h2>
-        {body}
-        <Button ref={closeRef} variant="secondary" fullWidth onClick={onClose}>
-          {ja.common.viewer.close}
-        </Button>
-      </div>
-    </div>
+    <Dialog
+      onClose={onClose}
+      label={ja.couple.photos.uploaderSheetTitle}
+      initialFocus="[data-close]"
+      testId="uploader-backdrop"
+    >
+      <p className="eyebrow text-accent mb-3">Through their eyes</p>
+      <h2 className="modal-title">{ja.couple.photos.uploaderSheetTitle}</h2>
+      {body}
+      <Button data-close variant="secondary" fullWidth className="mt-4" onClick={onClose}>
+        {ja.common.viewer.close}
+      </Button>
+    </Dialog>
   )
 }
 
@@ -273,7 +254,11 @@ export function CouplePhotosRoute() {
 
   return (
     <div>
-      <ScreenHeader title={me.state === 'ready' ? me.data.tenant.name : ''} />
+      <ScreenHeader
+        title={me.state === 'ready' ? me.data.tenant.name : ''}
+        eyebrow="Your day, through their eyes"
+        description="大切な人たちが残してくれた、かけがえのない記録。"
+      />
       <PullIndicator distance={distance} refreshing={refreshing} />
       <div className="flex flex-col gap-3 pb-6">
         <Tabs
@@ -289,7 +274,7 @@ export function CouplePhotosRoute() {
               <button
                 type="button"
                 aria-haspopup="dialog"
-                className="inline-flex min-h-tap items-center gap-1 rounded-full border border-sand bg-surface px-4 text-sub text-charcoal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+                className="filter-chip gap-2"
                 onClick={() => setSheetOpen(true)}
               >
                 {uploaderLabel}
@@ -309,10 +294,7 @@ export function CouplePhotosRoute() {
               </button>
             </div>
           ) : null}
-          <PageTransition
-            key={`${tab}-${uploaderId ?? ''}`}
-            className={tab === 'all' ? '' : 'px-screen'}
-          >
+          <PageTransition key={`${tab}-${uploaderId ?? ''}`} className="album-content">
             {content}
           </PageTransition>
         </div>

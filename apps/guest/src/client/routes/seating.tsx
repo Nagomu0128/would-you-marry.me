@@ -22,10 +22,13 @@ export function SeatingRoute() {
     <div>
       <ScreenHeader
         title={ja.guest.home.cards.seating}
+        eyebrow="At the reception"
+        description="お席を見つけて、ゆっくりお過ごしください。"
         backHref={paths.home(tenantId)}
         LinkComponent={RouterLink}
       />
       <div className="px-screen pb-6">
+        <p className="content-note mb-5">2本の指、またはダブルタップで拡大できます。</p>
         {resource.state === 'loading' ? <Skeleton className="aspect-[1/1.414] w-full" /> : null}
         {resource.state === 'error' ? <ErrorState onRetry={resource.reload} /> : null}
         {resource.state === 'ready' ? (

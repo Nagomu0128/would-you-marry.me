@@ -1,5 +1,5 @@
 import type { Photo } from '@wym/shared'
-import { Heart, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Heart, X } from 'lucide-react'
 import { m } from 'motion/react'
 import {
   type KeyboardEvent,
@@ -45,7 +45,6 @@ export type PhotoViewerProps<P extends Photo = Photo> = {
   deleteConfirm?: PhotoViewerDeleteConfirm
 }
 
-const FOCUSABLE = 'button:not([aria-disabled="true"]), [href], [tabindex]:not([tabindex="-1"])'
 const SWIPE_DISTANCE = 60
 const SWIPE_DOWN_DISTANCE = 90
 /** 写真の周りのヘッダーとフッターの高さのおおよそ（開く動きの大きさの計算用） */
@@ -91,7 +90,7 @@ export function PhotoViewer<P extends Photo = Photo>({
   deleteConfirm = ja.confirms.deletePhotoGuest,
 }: PhotoViewerProps<P>) {
   const photo = photos[index]
-  const rootRef = useRef<HTMLDivElement>(null)
+  const rootRef = useRef<HTMLDialogElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const [origin] = useState<Origin | null>(() => (photo ? originOf(photo) : null))
   const openedPhotoId = useRef(photo?.id)
@@ -110,10 +109,12 @@ export function PhotoViewer<P extends Photo = Photo>({
   useEffect(() => {
     mounted.current = true
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    rootRef.current?.showModal()
     closeRef.current?.focus()
     const overflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
+      rootRef.current?.close()
       mounted.current = false
       document.body.style.overflow = overflow
       previous?.focus()
@@ -177,7 +178,7 @@ export function PhotoViewer<P extends Photo = Photo>({
     if (pointers.current.size === 0) gesture.current = null
   }
 
-  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+  function handleKeyDown(event: KeyboardEvent<HTMLDialogElement>) {
     // 確認シートは別の場所に描かれる（イベントは React の木をさかのぼってくる）。中の操作は扱わない
     if (!rootRef.current?.contains(event.target as Node)) return
     if (event.key === 'Escape') {
@@ -185,19 +186,6 @@ export function PhotoViewer<P extends Photo = Photo>({
       onClose()
     } else if (event.key === 'ArrowLeft') go(-1)
     else if (event.key === 'ArrowRight') go(1)
-    else if (event.key === 'Tab') {
-      const nodes = rootRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE)
-      if (!nodes || nodes.length === 0) return
-      const first = nodes[0]
-      const last = nodes[nodes.length - 1]
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault()
-        last?.focus()
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault()
-        first?.focus()
-      }
-    }
   }
 
   if (!photo) return null
@@ -238,21 +226,21 @@ export function PhotoViewer<P extends Photo = Photo>({
   }
 
   const iconButton =
-    'flex min-h-tap min-w-tap items-center justify-center gap-2 rounded-control px-3 text-body text-white focus-visible:outline-2 focus-visible:outline-champagne'
+    'flex min-h-tap min-w-tap items-center justify-center gap-2 rounded-control px-3 text-body text-white focus-visible:outline-2 focus-visible:outline-accent'
 
   return createPortal(
-    <m.div
+    <dialog
       ref={rootRef}
-      role="dialog"
       aria-modal="true"
       aria-label={alt}
       onKeyDown={handleKeyDown}
-      className="fixed inset-0 z-40 flex flex-col bg-viewer text-white"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: DURATION.normal }}
+      className="viewer-dialog"
+      onCancel={(event) => {
+        event.preventDefault()
+        onClose()
+      }}
     >
-      <div className="safe-top flex items-center justify-between px-2">
+      <div className="viewer-toolbar">
         <button
           ref={closeRef}
           type="button"
@@ -262,6 +250,9 @@ export function PhotoViewer<P extends Photo = Photo>({
         >
           <X aria-hidden="true" strokeWidth={ICON_STROKE_WIDTH} />
         </button>
+        <span className="viewer-count">
+          {String(index + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}
+        </span>
         <button
           type="button"
           onClick={handleSave}
@@ -272,6 +263,7 @@ export function PhotoViewer<P extends Photo = Photo>({
             saving && 'animate-pulse cursor-progress opacity-60 motion-reduce:animate-none',
           )}
         >
+          <Download size={16} aria-hidden="true" />
           {ja.common.viewer.save}
         </button>
       </div>
@@ -283,6 +275,26 @@ export function PhotoViewer<P extends Photo = Photo>({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
       >
+        <button
+          type="button"
+          className="viewer-arrow"
+          data-direction="previous"
+          aria-label="前の写真"
+          disabled={index === 0}
+          onClick={() => go(-1)}
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          type="button"
+          className="viewer-arrow"
+          data-direction="next"
+          aria-label="次の写真"
+          disabled={index === photos.length - 1}
+          onClick={() => go(1)}
+        >
+          <ChevronRight size={20} />
+        </button>
         <m.div
           key={photo.id}
           className="absolute inset-0"
@@ -361,7 +373,7 @@ export function PhotoViewer<P extends Photo = Photo>({
           loading={deleting}
         />
       ) : null}
-    </m.div>,
+    </dialog>,
     document.body,
   )
 }

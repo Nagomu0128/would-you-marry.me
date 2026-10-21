@@ -1,13 +1,6 @@
-import { Button, EmptyState, ja, ListCard } from '@wym/ui'
-import { useNavigate } from 'react-router'
-import {
-  Badge,
-  LinkButton,
-  LoadError,
-  LoadingBlocks,
-  RouterLink,
-  Screen,
-} from '../components/shell'
+import { ArrowUpRightIcon, Button, EmptyState, ja } from '@wym/ui'
+import { Link, useNavigate } from 'react-router'
+import { Badge, LinkButton, LoadError, LoadingBlocks, Screen } from '../components/shell'
 import { api } from '../lib/api'
 import { signOut } from '../lib/auth'
 import { formatCount, periodLabel } from '../lib/format'
@@ -35,30 +28,59 @@ export function TenantList() {
         </div>
       }
     >
+      <p className="text-sub text-muted">一日を迎える準備から、思い出のお届けまで。</p>
       {state.status === 'loading' ? <LoadingBlocks /> : null}
       {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
       {state.status === 'ready' ? (
         state.data.tenants.length === 0 ? (
           <EmptyState message={ja.admin.tenants.empty} />
         ) : (
-          <ul className="flex flex-col gap-3">
-            {state.data.tenants.map((t) => (
-              <li key={t.id}>
-                <ListCard title={t.name} href={`/tenants/${t.id}`} LinkComponent={RouterLink}>
-                  <span className="flex items-center gap-2">
-                    <span>{t.eventDate}</span>
-                    <Badge tone={t.suspended ? 'warn' : 'normal'}>{periodLabel(t)}</Badge>
-                  </span>
-                  <span className="block">
-                    {ja.admin.tenants.stats({
-                      guests: formatCount(t.stats.guestCount),
-                      photos: formatCount(t.stats.photoCount),
-                    })}
-                  </span>
-                </ListCard>
-              </li>
-            ))}
-          </ul>
+          <>
+            <dl className="admin-overview">
+              <div className="admin-stat">
+                <dt>結婚式</dt>
+                <dd>{formatCount(state.data.tenants.length)}</dd>
+              </div>
+              <div className="admin-stat">
+                <dt>参加者</dt>
+                <dd>
+                  {formatCount(state.data.tenants.reduce((n, t) => n + t.stats.guestCount, 0))}
+                </dd>
+              </div>
+              <div className="admin-stat">
+                <dt>思い出の写真</dt>
+                <dd>
+                  {formatCount(state.data.tenants.reduce((n, t) => n + t.stats.photoCount, 0))}
+                </dd>
+              </div>
+            </dl>
+            <ul className="tenant-list">
+              {state.data.tenants.map((t) => (
+                <li key={t.id}>
+                  <Link to={`/tenants/${t.id}`} className="tenant-entry">
+                    <div className="tenant-date" aria-hidden="true">
+                      <span>{t.eventDate.slice(8)}</span>
+                      <small>{t.eventDate.slice(0, 7).replace('-', ' / ')}</small>
+                    </div>
+                    <div>
+                      <h2>{t.name}</h2>
+                      <div className="tenant-meta">
+                        <time dateTime={t.eventDate}>{t.eventDate}</time>
+                        <Badge tone={t.suspended ? 'warn' : 'normal'}>{periodLabel(t)}</Badge>
+                      </div>
+                      <p className="mt-2 text-caption text-muted">
+                        {ja.admin.tenants.stats({
+                          guests: formatCount(t.stats.guestCount),
+                          photos: formatCount(t.stats.photoCount),
+                        })}
+                      </p>
+                    </div>
+                    <ArrowUpRightIcon size={18} aria-hidden="true" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
         )
       ) : null}
       <div>

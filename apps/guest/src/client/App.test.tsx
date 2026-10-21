@@ -208,6 +208,25 @@ describe('ホームのウェルカム演出', () => {
     'GET /api/t/t1/me': () => json(meResponse('たろう')),
   }
 
+  it.each(['遅延', '通信失敗'])('新着写真が%sしても式の案内と投稿を使える', async (state) => {
+    window.localStorage.setItem('wym:welcome-played:t1', '1')
+    mockFetch({
+      ...homeHandlers,
+      'GET /api/t/t1/photos': () => {
+        if (state === '通信失敗') throw new TypeError('Failed to fetch')
+        return new Promise<Response>(() => {})
+      },
+    })
+    renderApp('/t/t1')
+    expect(await screen.findByText('こんにちは、たろう さん')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '写真を投稿する' })).toHaveAttribute(
+      'href',
+      '/t/t1/upload',
+    )
+    expect(screen.getByRole('navigation', { name: 'メインメニュー' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'もう一度試す' })).not.toBeInTheDocument()
+  })
+
   it('初回だけ再生し、飛ばすと保存される', async () => {
     mockFetch(homeHandlers)
     const first = renderApp('/t/t1')

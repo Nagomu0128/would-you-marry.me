@@ -65,7 +65,7 @@ describe('Button', () => {
     expect(onClick).toHaveBeenCalledTimes(1)
   })
 
-  it('高さ 48px のクラスと、種類ごとの見た目を持つ', () => {
+  it('共通スタイルと種類・危険操作の状態を持つ', () => {
     wrap(
       <>
         <Button>主要</Button>
@@ -74,10 +74,10 @@ describe('Button', () => {
         <Button danger>危険</Button>
       </>,
     )
-    expect(screen.getByText('主要')).toHaveClass('h-control', 'bg-charcoal')
-    expect(screen.getByText('補助')).toHaveClass('border-charcoal')
-    expect(screen.getByText('テキスト')).toHaveClass('text-deep-gold')
-    expect(screen.getByText('危険')).toHaveClass('bg-error')
+    expect(screen.getByText('主要')).toHaveAttribute('data-variant', 'primary')
+    expect(screen.getByText('補助')).toHaveAttribute('data-variant', 'secondary')
+    expect(screen.getByText('テキスト')).toHaveAttribute('data-variant', 'text')
+    expect(screen.getByText('危険')).toHaveAttribute('data-danger', 'true')
   })
 })
 
@@ -170,7 +170,7 @@ describe('Tabs', () => {
 describe('Card / ListCard', () => {
   it('Card は中身を表示する', () => {
     render(<Card>内容</Card>)
-    expect(screen.getByText('内容')).toHaveClass('rounded-card', 'shadow-card')
+    expect(screen.getByText('内容')).toHaveClass('ui-card')
   })
 
   it('ListCard は href と LinkComponent でリンクになる', async () => {
@@ -355,7 +355,7 @@ describe('ConfirmSheet', () => {
     const dialog = screen.getByRole('dialog')
     expect(dialog).toHaveAttribute('aria-modal', 'true')
     expect(within(dialog).getByText(ja.confirms.deletePhotoGuest.body)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '削除する' })).toHaveClass('bg-error')
+    expect(screen.getByRole('button', { name: '削除する' })).toHaveAttribute('data-danger', 'true')
     // 最初のフォーカスは、危険な操作ではなくキャンセル
     expect(screen.getByRole('button', { name: 'キャンセル' })).toHaveFocus()
     await user.click(screen.getByRole('button', { name: '削除する' }))
@@ -364,7 +364,7 @@ describe('ConfirmSheet', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it('Esc で閉じ、Tab はシートの中で循環する', async () => {
+  it('ネイティブのモーダルとして開き、Esc で閉じる', async () => {
     const user = userEvent.setup()
     const onClose = vi.fn()
     wrap(
@@ -377,12 +377,10 @@ describe('ConfirmSheet', () => {
         cancelLabel="キャンセル"
       />,
     )
-    // キャンセル → Tab で先頭の確定へ戻る（循環）
+    expect(screen.getByRole('dialog').tagName).toBe('DIALOG')
+    expect(screen.getByRole('dialog')).toHaveAttribute('open')
     expect(screen.getByRole('button', { name: 'キャンセル' })).toHaveFocus()
-    await user.tab()
-    expect(screen.getByRole('button', { name: '再開する' })).toHaveFocus()
-    await user.tab({ shift: true })
-    expect(screen.getByRole('button', { name: 'キャンセル' })).toHaveFocus()
+    // Focus containment is provided by showModal(), checked in Chromium/WebKit.
     await user.keyboard('{Escape}')
     expect(onClose).toHaveBeenCalledTimes(1)
   })
@@ -464,17 +462,17 @@ describe('PhotoGrid', () => {
     const onSelect = vi.fn()
     wrap(<PhotoGrid photos={photos} onSelect={onSelect} />)
     const img = screen.getByAltText('たろう さんの写真')
-    expect(img).toHaveAttribute('loading', 'lazy')
+    expect(img).toHaveAttribute('loading', 'eager')
     expect(screen.getByText('いいね 12 件')).toBeInTheDocument()
     expect(screen.getByText('いいね 0 件')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /はなこ さんの写真/ }))
     expect(onSelect).toHaveBeenCalledWith(photos[1], 1)
   })
 
-  it('3 列・間隔 2px・正方形・角丸 4px のクラスを持つ', () => {
+  it('写真帳のレイアウトと写真の安定した寸法を持つ', () => {
     wrap(<PhotoGrid photos={photos} />)
-    expect(screen.getByRole('list')).toHaveClass('grid-cols-3', 'gap-0.5')
-    expect(screen.getAllByRole('button')[0]).toHaveClass('aspect-square', 'rounded-photo')
+    expect(screen.getByRole('list')).toHaveClass('photo-grid')
+    expect(screen.getAllByRole('button')[0]).toHaveClass('photo-tile')
   })
 
   it('末尾が見えたら onReachEnd を呼ぶ', () => {

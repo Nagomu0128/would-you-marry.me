@@ -1,5 +1,16 @@
 import type { GuestMeResponse } from '@wym/shared'
-import { Button, ErrorState, ja, ScreenHeader, Skeleton, UploadComplete, useToast } from '@wym/ui'
+import {
+  Button,
+  CameraIcon,
+  CheckIcon,
+  ErrorState,
+  ImagesIcon,
+  ja,
+  ScreenHeader,
+  Skeleton,
+  UploadComplete,
+  useToast,
+} from '@wym/ui'
 import { type ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiClientError, getMe } from '../lib/api'
@@ -19,7 +30,7 @@ export function UploadRoute() {
     return (
       <div>
         <Header tenantId={tenantId} />
-        <div className="flex flex-col gap-4 px-screen py-6">
+        <div className="flex flex-col gap-5 px-screen pb-6">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-5 w-1/2" />
@@ -42,6 +53,8 @@ function Header({ tenantId }: { tenantId: string }) {
   return (
     <ScreenHeader
       title={ja.guest.upload.heading}
+      eyebrow="A moment to keep"
+      description="笑顔も、乾杯も、何気ないひとときも。あなたの一枚が、今日の宝物になります。"
       backHref={paths.home(tenantId)}
       LinkComponent={RouterLink}
     />
@@ -171,15 +184,19 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
           skipLabel={ja.common.skipAnimation}
         />
       ) : null}
-      <div className="flex flex-col gap-4 px-screen py-6">
+      <div className="flex flex-col gap-5 px-screen pb-6">
         {phase === 'done' ? (
-          <div className="flex flex-col gap-3">
+          <div className="upload-success">
+            <CheckIcon aria-hidden="true" strokeWidth={1.25} />
+            <h2>思い出を、ありがとう。</h2>
+            <p>写真をアルバムに届けました。</p>
             <Button fullWidth onClick={reset}>
               {ja.guest.upload.another}
             </Button>
             <Link
               to={paths.album(tenantId)}
-              className="inline-flex h-control items-center justify-center rounded-control border border-charcoal text-body font-semibold text-charcoal"
+              className="ui-button mt-3 w-full"
+              data-variant="secondary"
             >
               {ja.guest.upload.toAlbum}
             </Link>
@@ -203,43 +220,47 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
               data-testid="choose-input"
               onChange={onPick}
             />
-            <div className="flex flex-col gap-3">
-              <Button
-                variant="secondary"
-                fullWidth
+            <div className="upload-choices">
+              <button
+                type="button"
+                className="upload-choice"
                 disabled={pickDisabled}
                 onClick={() => cameraInput.current?.click()}
               >
-                {ja.guest.upload.camera}
-              </Button>
-              <Button
-                variant="secondary"
-                fullWidth
+                <CameraIcon aria-hidden="true" strokeWidth={1.25} />
+                <span>{ja.guest.upload.camera}</span>
+              </button>
+              <button
+                type="button"
+                className="upload-choice"
                 disabled={pickDisabled}
                 onClick={() => chooseInput.current?.click()}
               >
-                {ja.guest.upload.choose}
-              </Button>
+                <ImagesIcon aria-hidden="true" strokeWidth={1.25} />
+                <span>{ja.guest.upload.choose}</span>
+              </button>
             </div>
+            <p className="text-caption text-muted">1回に1枚・JPEG / PNG・10MBまで</p>
             {atLimit ? (
-              <p role="status" className="text-small text-error">
+              <p role="status" className="text-sub text-error">
                 {ja.errors.guest.UPLOAD_LIMIT_REACHED}
               </p>
             ) : (
-              <p className="text-small text-warm-gray">{ja.guest.album.remaining({ remaining })}</p>
+              <p className="text-sub text-muted">{ja.guest.album.remaining({ remaining })}</p>
             )}
             {fileError ? (
-              <p role="alert" className="text-small text-error">
+              <p role="alert" className="text-sub text-error">
                 {fileError}
               </p>
             ) : null}
             {file && previewUrl ? (
               <div className="flex flex-col gap-4">
-                <img
-                  src={previewUrl}
-                  alt={ja.guest.upload.previewAlt}
-                  className="max-h-96 w-full rounded-card bg-sand object-contain"
-                />
+                <figure className="upload-paper">
+                  <img src={previewUrl} alt={ja.guest.upload.previewAlt} />
+                  <figcaption className="upload-caption" lang="en">
+                    A little piece of today.
+                  </figcaption>
+                </figure>
                 {sending ? <Progress percent={progress} /> : null}
                 {phase === 'failed' ? (
                   <div role="alert" className="flex flex-col items-center gap-3 text-center">
@@ -264,7 +285,7 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
 
 function Progress({ percent }: { percent: number }) {
   return (
-    <div className="flex items-center gap-3 text-small text-warm-gray">
+    <div className="flex items-center gap-3 text-sub text-muted">
       <span>{ja.guest.upload.sending}</span>
       <div
         role="progressbar"
@@ -272,9 +293,12 @@ function Progress({ percent }: { percent: number }) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent}
-        className="h-2 flex-1 overflow-hidden rounded-full bg-sand"
+        className="h-2 flex-1 overflow-hidden rounded-full bg-rule"
       >
-        <div className="h-full bg-champagne transition-[width]" style={{ width: `${percent}%` }} />
+        <div
+          className="h-full origin-left bg-ink transition-transform motion-reduce:transition-none"
+          style={{ transform: `scaleX(${percent / 100})` }}
+        />
       </div>
       <span className="w-10 text-right tabular-nums">{percent}%</span>
     </div>

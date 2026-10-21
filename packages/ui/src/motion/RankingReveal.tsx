@@ -72,7 +72,7 @@ export type RankingRevealItemProps = {
   children: ReactNode
 }
 
-// 1 位の項目に載る王冠。登場のあとに上から降りる
+// 1 位の写真に押す記念のロゼット。
 function Crown({
   reduced,
   delay,
@@ -88,25 +88,27 @@ function Crown({
     <m.div
       data-testid="crown"
       aria-hidden="true"
-      className={className}
-      style={{ position: 'absolute', top: -18, left: 8, zIndex: 1, ...style }}
-      initial={reduced ? { opacity: 0 } : { y: -16, opacity: 0 }}
-      animate={reduced ? { opacity: 1 } : { y: 0, opacity: 1 }}
+      className={['wedding-rosette', className].filter(Boolean).join(' ')}
+      style={style}
+      initial={reduced ? false : { scale: 1.2, rotate: -8, opacity: 0 }}
+      animate={reduced ? { opacity: 1 } : { scale: 1, rotate: 0, opacity: 1 }}
       transition={{
         delay: reduced ? 0 : delay + 0.35,
-        duration: reduced ? 0.2 : 0.4,
+        duration: reduced ? 0 : 0.4,
         ease: 'easeOut',
       }}
     >
-      <svg viewBox="0 0 32 24" width={32} aria-hidden="true" focusable="false">
+      <svg viewBox="0 0 36 44" width={36} height={44} aria-hidden="true" focusable="false">
         <path
-          d="M3 20 L1 6 L9 12 L16 2 L23 12 L31 6 L29 20 Z"
-          style={{
-            fill: 'var(--color-champagne)',
-            stroke: 'var(--color-deep-gold)',
-            strokeWidth: 1.5,
-            strokeLinejoin: 'round',
-          }}
+          d="M10 27L6 42L14 38L18 43L21 28M24 27L30 42L23 38L19 43L15 28"
+          fill="var(--color-paper, #f5f2eb)"
+          stroke="currentColor"
+        />
+        <circle cx="18" cy="17" r="15" fill="var(--color-paper, #f5f2eb)" stroke="currentColor" />
+        <circle cx="18" cy="17" r="11" fill="none" stroke="currentColor" strokeDasharray="1 3" />
+        <path
+          d="M18 11L20 15L24 16L21 19L22 23L18 21L14 23L15 19L12 16L16 15Z"
+          fill="currentColor"
         />
       </svg>
     </m.div>
@@ -135,11 +137,11 @@ export function RankingRevealItem({
       data-delay={delay}
       className={className}
       style={{ position: 'relative' }}
-      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
-      animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+      initial={reduced ? false : { opacity: 0, y: 12 }}
+      animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
       transition={{
         delay,
-        duration: reduced ? 0.2 : RANKING_ITEM_DURATION,
+        duration: reduced ? 0 : RANKING_ITEM_DURATION,
         ease: 'easeOut',
       }}
     >

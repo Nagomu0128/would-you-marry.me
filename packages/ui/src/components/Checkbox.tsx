@@ -20,10 +20,10 @@ export function Checkbox({ label, error, id, className, ...rest }: CheckboxProps
           type="checkbox"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className="mt-[10px] size-6 shrink-0 accent-charcoal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+          className="mt-[10px] size-6 shrink-0 accent-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           {...rest}
         />
-        <label htmlFor={inputId} className="py-2 text-body text-charcoal">
+        <label htmlFor={inputId} className="py-2 text-body text-ink">
           {label}
         </label>
       </div>

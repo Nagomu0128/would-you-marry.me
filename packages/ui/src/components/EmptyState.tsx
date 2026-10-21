@@ -1,3 +1,4 @@
+import { Flower2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from './cn'
 
@@ -14,9 +15,9 @@ export type EmptyStateProps = {
 /** 0 件のときの表示 */
 export function EmptyState({ message, icon, action, className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center gap-4 px-6 py-12 text-center', className)}>
-      {icon ? <div className="text-champagne">{icon}</div> : null}
-      <p className="text-body text-warm-gray">{message}</p>
+    <div className={cn('empty-state', className)}>
+      <div aria-hidden="true">{icon ?? <Flower2 strokeWidth={1} />}</div>
+      <p className="text-body text-muted">{message}</p>
       {action}
     </div>
   )

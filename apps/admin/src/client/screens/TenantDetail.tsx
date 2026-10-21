@@ -84,14 +84,16 @@ function DetailBody({
 
   return (
     <Screen title={tenant.name} backHref="/">
-      <section className="flex flex-col gap-2">
-        <p>
-          {until ? t.periodUntil({ label, until }) : t.period({ label })}{' '}
-          {tenant.suspended ? <Badge tone="warn">{ja.admin.periodLabels.suspended}</Badge> : null}
-        </p>
-        <p className="text-sub text-warm-gray">
-          {ja.admin.deletionDate({ date: deletionDateLabel(boundaries) })}
-        </p>
+      <section className="detail-summary">
+        <div>
+          <p>
+            {until ? t.periodUntil({ label, until }) : t.period({ label })}{' '}
+            {tenant.suspended ? <Badge tone="warn">{ja.admin.periodLabels.suspended}</Badge> : null}
+          </p>
+          <p className="text-sub detail-summary-note">
+            {ja.admin.deletionDate({ date: deletionDateLabel(boundaries) })}
+          </p>
+        </div>
         {locked ? null : (
           <div>
             <Button variant="secondary" onClick={() => setConfirmSuspend(true)}>
@@ -101,6 +103,9 @@ function DetailBody({
         )}
       </section>
 
+      <h2 className="admin-section-title">
+        <span>01</span> 当日のご案内を整える
+      </h2>
       {locked ? null : (
         <>
           <BasicInfo tenantId={tenantId} detail={detail} onUpdate={onUpdate} />
@@ -109,7 +114,10 @@ function DetailBody({
         </>
       )}
 
-      <div className="flex flex-col gap-3">
+      <h2 className="admin-section-title">
+        <span>02</span> 参加者と思い出の管理
+      </h2>
+      <div className="detail-links">
         <ListCard title={t.urls} href={`/tenants/${tenantId}/urls`} LinkComponent={RouterLink} />
         <ListCard
           title={t.photos}
@@ -128,8 +136,8 @@ function DetailBody({
         />
       </div>
 
-      <section className="flex flex-col gap-1">
-        <h2 className="text-heading-md">{t.usage}</h2>
+      <section className="ui-card flex flex-col gap-3">
+        <h2 className="font-editorial text-heading-md">{t.usage}</h2>
         <p>
           {t.usageLine({
             guests: formatCount(tenant.stats.guestCount),
@@ -211,8 +219,8 @@ function BasicInfo({
 
   return (
     <Card className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-heading-md">{t.basic}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-editorial text-heading-md">{t.basic}</h2>
         {editing ? null : (
           <Button variant="text" onClick={startEdit}>
             {t.edit}
@@ -245,9 +253,9 @@ function BasicInfo({
         </form>
       ) : (
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sub">
-          <dt className="text-warm-gray">{t.name}</dt>
+          <dt className="text-muted">{t.name}</dt>
           <dd className="break-words">{tenant.name}</dd>
-          <dt className="text-warm-gray">{t.eventDate}</dt>
+          <dt className="text-muted">{t.eventDate}</dt>
           <dd>{tenant.eventDate}</dd>
         </dl>
       )}
@@ -303,10 +311,10 @@ function SeatingRow({ tenantId }: { tenantId: string }) {
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-heading-md">
+        <h2 className="font-editorial text-heading-md">
           {t.seating}
           {registered === false ? (
-            <span className="ml-2 text-sub font-normal text-warm-gray">{t.seatingNone}</span>
+            <span className="ml-2 text-sub font-normal text-muted">{t.seatingNone}</span>
           ) : null}
         </h2>
         <div className="flex gap-2">
@@ -318,7 +326,8 @@ function SeatingRow({ tenantId }: { tenantId: string }) {
               href={seatingChartUrl(tenantId)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-control min-w-tap items-center justify-center rounded-control border border-charcoal px-6 text-body font-semibold text-charcoal"
+              className="ui-button"
+              data-variant="secondary"
             >
               {t.seatingCheck}
             </a>
@@ -329,7 +338,7 @@ function SeatingRow({ tenantId }: { tenantId: string }) {
         ref={input}
         type="file"
         accept="application/pdf"
-        className="sr-only"
+        hidden
         data-testid="seating-file"
         onChange={(e) => void handleFile(e.target.files?.[0])}
       />
@@ -354,10 +363,10 @@ function CourseRow({ tenantId }: { tenantId: string }) {
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-heading-md">
+        <h2 className="font-editorial text-heading-md">
           {t.course}
           {shown !== null ? (
-            <span className="ml-2 text-sub font-normal text-warm-gray">
+            <span className="ml-2 text-sub font-normal text-muted">
               {t.courseCount({ count: shown })}
             </span>
           ) : null}
@@ -419,8 +428,8 @@ function DeleteTenant({
   return (
     <div>
       <Button
-        variant="secondary"
-        className="border-error text-error"
+        variant="text"
+        className="text-error"
         onClick={() => {
           setTyped('')
           setError(undefined)

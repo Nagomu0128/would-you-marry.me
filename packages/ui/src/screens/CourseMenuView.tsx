@@ -1,7 +1,8 @@
 import { X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { cn } from '../components/cn'
 import { ICON_STROKE_WIDTH } from '../components/constants'
+import { Dialog } from '../components/Dialog'
 import { EmptyState } from '../components/EmptyState'
 import { ja } from '../messages/ja'
 import { PinchZoom } from './PinchZoom'
@@ -31,13 +32,13 @@ export function CourseMenuView({ images, className }: CourseMenuViewProps) {
   const open = openIndex === null ? null : images[openIndex]
 
   return (
-    <div className={cn('flex flex-col gap-3', className)}>
+    <div className={cn('document-gallery', className)}>
       {images.map((image, index) => (
         <button
           key={image.id}
           type="button"
           onClick={() => setOpenIndex(index)}
-          className="block w-full overflow-hidden rounded-card bg-surface shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+          className="document-sheet block w-full"
         >
           <img
             src={image.url}
@@ -46,6 +47,10 @@ export function CourseMenuView({ images, className }: CourseMenuViewProps) {
             decoding="async"
             className="block h-auto w-full"
           />
+          <span className="document-caption">
+            <span>Menu / {String(index + 1).padStart(2, '0')}</span>
+            <span>タップで拡大</span>
+          </span>
         </button>
       ))}
       {open ? (
@@ -68,26 +73,8 @@ function Lightbox({
   label: string
   onClose: () => void
 }) {
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = previous
-    }
-  }, [onClose])
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={label}
-      className="fixed inset-0 z-50 bg-viewer"
-    >
+    <Dialog fullScreen onClose={onClose} label={label}>
       <PinchZoom
         className="size-full"
         contentClassName="flex size-full items-center justify-center"
@@ -98,10 +85,10 @@ function Lightbox({
         type="button"
         onClick={onClose}
         aria-label={ja.common.back}
-        className="safe-top absolute top-2 left-2 flex size-tap items-center justify-center rounded-full bg-charcoal/60 text-white focus-visible:outline-2 focus-visible:outline-champagne"
+        className="safe-top absolute top-2 left-2 flex size-tap items-center justify-center rounded-full bg-ink/60 text-white focus-visible:outline-2 focus-visible:outline-accent"
       >
         <X aria-hidden="true" strokeWidth={ICON_STROKE_WIDTH} />
       </button>
-    </div>
+    </Dialog>
   )
 }

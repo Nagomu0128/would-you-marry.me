@@ -57,7 +57,8 @@ export function TenantCreate() {
 
   return (
     <Screen title={ja.admin.create.heading} backHref="/">
-      <form onSubmit={handleSubmit} noValidate className="flex max-w-md flex-col gap-4">
+      <p className="text-sub text-muted">特別な一日のために、新しいページを用意しましょう。</p>
+      <form onSubmit={handleSubmit} noValidate className="admin-form">
         <TextField
           label={ja.admin.create.name}
           value={name}

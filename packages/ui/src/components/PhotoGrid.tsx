@@ -24,7 +24,7 @@ export type PhotoGridProps = {
   className?: string
 }
 
-/** 3 列、間隔 2px、正方形に切り抜き、角丸 4px。読み込めた写真から順にフェードインする。 */
+/** 3 列、4:5 の写真枠。読み込めた写真から順にフェードインする。 */
 export function PhotoGrid({ photos, onSelect, onReachEnd, className }: PhotoGridProps) {
   const sentinelRef = useRef<HTMLDivElement>(null)
   const onReachEndRef = useRef(onReachEnd)
@@ -45,10 +45,10 @@ export function PhotoGrid({ photos, onSelect, onReachEnd, className }: PhotoGrid
 
   return (
     <div className={className}>
-      <ul className="grid grid-cols-3 gap-0.5">
+      <ul className="photo-grid">
         {photos.map((photo, index) => (
           <li key={photo.id}>
-            <PhotoTile photo={photo} onSelect={() => onSelect?.(photo, index)} />
+            <PhotoTile photo={photo} eager={index < 6} onSelect={() => onSelect?.(photo, index)} />
           </li>
         ))}
       </ul>
@@ -57,7 +57,15 @@ export function PhotoGrid({ photos, onSelect, onReachEnd, className }: PhotoGrid
   )
 }
 
-function PhotoTile({ photo, onSelect }: { photo: PhotoGridItem; onSelect: () => void }) {
+function PhotoTile({
+  photo,
+  eager,
+  onSelect,
+}: {
+  photo: PhotoGridItem
+  eager: boolean
+  onSelect: () => void
+}) {
   const [loaded, setLoaded] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
@@ -67,17 +75,14 @@ function PhotoTile({ photo, onSelect }: { photo: PhotoGridItem; onSelect: () => 
   }, [])
 
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      data-photo-id={photo.id}
-      className="relative block aspect-square w-full overflow-hidden rounded-photo bg-sand/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-champagne"
-    >
+    <button type="button" onClick={onSelect} data-photo-id={photo.id} className="photo-tile">
       <m.img
         ref={imgRef}
         src={photo.src}
         alt={ja.common.photoAlt({ nickname: photo.nickname })}
-        loading="lazy"
+        loading={eager ? 'eager' : 'lazy'}
+        width={400}
+        height={500}
         decoding="async"
         onLoad={() => setLoaded(true)}
         initial={false}
@@ -85,10 +90,7 @@ function PhotoTile({ photo, onSelect }: { photo: PhotoGridItem; onSelect: () => 
         transition={{ duration: DURATION.normal }}
         className="absolute inset-0 size-full object-cover"
       />
-      <span
-        aria-hidden="true"
-        className="absolute right-1 bottom-1 flex items-center gap-1 rounded-full bg-charcoal/60 px-2 py-0.5 text-caption text-white"
-      >
+      <span aria-hidden="true" className="photo-likes">
         <Heart
           size={14}
           strokeWidth={ICON_STROKE_WIDTH}

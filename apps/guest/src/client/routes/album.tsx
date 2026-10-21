@@ -1,6 +1,5 @@
 import type { GuestPhoto } from '@wym/shared'
 import {
-  cn,
   EmptyState,
   ErrorState,
   ja,
@@ -46,10 +45,10 @@ function toGridItem(photo: GuestPhoto): PhotoGridItem {
 
 function GridSkeleton() {
   return (
-    <div data-testid="album-skeleton" className="grid grid-cols-3 gap-0.5">
+    <div data-testid="album-skeleton" className="photo-grid">
       {Array.from({ length: 12 }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: 固定の装飾
-        <Skeleton key={i} className="aspect-square w-full rounded-photo" />
+        <Skeleton key={i} className="aspect-[4/5] w-full rounded-photo" />
       ))}
     </div>
   )
@@ -69,19 +68,12 @@ function RankingSkeleton() {
 }
 
 function FilterChips({ mine, onChange }: { mine: boolean; onChange: (mine: boolean) => void }) {
-  const chip = (selected: boolean) =>
-    cn(
-      'inline-flex min-h-tap items-center rounded-full border px-4 text-sub focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne',
-      selected
-        ? 'border-charcoal bg-charcoal font-semibold text-white'
-        : 'border-sand bg-surface text-charcoal',
-    )
   return (
     <div className="flex gap-2">
       <button
         type="button"
         aria-pressed={!mine}
-        className={chip(!mine)}
+        className="filter-chip"
         onClick={() => onChange(false)}
       >
         {ja.guest.album.filters.all}
@@ -89,7 +81,7 @@ function FilterChips({ mine, onChange }: { mine: boolean; onChange: (mine: boole
       <button
         type="button"
         aria-pressed={mine}
-        className={chip(mine)}
+        className="filter-chip"
         onClick={() => onChange(true)}
       >
         {ja.guest.album.filters.mine}
@@ -212,10 +204,7 @@ export function AlbumRoute() {
       : null
 
   const postLink = (
-    <RouterLink
-      href={paths.upload(tenantId)}
-      className="inline-flex h-control items-center justify-center rounded-control bg-charcoal px-6 text-body font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
-    >
+    <RouterLink href={paths.upload(tenantId)} className="ui-button" data-variant="primary">
       {ja.guest.home.cards.upload}
     </RouterLink>
   )
@@ -268,6 +257,8 @@ export function AlbumRoute() {
     <div>
       <ScreenHeader
         title={ja.common.nav.album}
+        eyebrow="Collected memories"
+        description="みなさまと綴る、今日の一冊。お気に入りにはハートを添えて。"
         backHref={paths.home(tenantId)}
         LinkComponent={RouterLink}
       />
@@ -285,11 +276,11 @@ export function AlbumRoute() {
             <div className="flex flex-col gap-2 px-screen">
               <FilterChips mine={mine} onChange={changeMine} />
               {mine && remaining !== null ? (
-                <p className="text-sub text-warm-gray">{ja.guest.album.remaining({ remaining })}</p>
+                <p className="text-sub text-muted">{ja.guest.album.remaining({ remaining })}</p>
               ) : null}
             </div>
           ) : null}
-          <PageTransition key={`${tab}-${mine}`} className={tab === 'timeline' ? '' : 'px-screen'}>
+          <PageTransition key={`${tab}-${mine}`} className="album-content">
             {content}
           </PageTransition>
         </div>

@@ -62,7 +62,9 @@ describe.each(fullscreen)('%s（全画面の演出）', (_name, make) => {
   it('タップで飛ばせて、二重に onComplete を呼ばない', () => {
     const onComplete = vi.fn()
     render(wrap(make(onComplete)))
-    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }))
+    const skip = screen.getByRole('button', { name: 'スキップ' })
+    expect(skip).toHaveTextContent('スキップ')
+    fireEvent.click(skip)
     expect(onComplete).toHaveBeenCalledTimes(1)
     expect(screen.queryByTestId('motion-stage')).toBeNull()
     act(() => {

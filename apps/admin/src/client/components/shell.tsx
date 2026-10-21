@@ -1,6 +1,6 @@
-import { cn, ErrorState, type LinkComponent, ScreenHeader, Skeleton } from '@wym/ui'
-import type { ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Brand, cn, ErrorState, type LinkComponent, Skeleton } from '@wym/ui'
+import { type ReactNode, useEffect } from 'react'
+import { Link, useLocation } from 'react-router'
 import type { ApiClientError } from '../lib/api'
 import { messageOf } from '../lib/errors'
 
@@ -23,16 +23,53 @@ export function Screen({
   actions?: ReactNode
   children: ReactNode
 }) {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    document.title = `${title || '管理'} | The Wedding Journal`
+  }, [title])
   return (
-    <div className="screen-h">
-      <div className="layout-admin">
-        <ScreenHeader
-          title={title}
-          backHref={backHref}
-          LinkComponent={RouterLink}
-          actions={actions}
-        />
-        <main className="px-screen flex flex-col gap-4 pt-2 pb-12">{children}</main>
+    <div className="admin-shell">
+      <a href="#admin-main" className="skip-link">
+        本文へ移動
+      </a>
+      <aside className="admin-rail">
+        <div className="admin-rail-top">
+          <Brand caption="The host's notebook" />
+          <span className="eyebrow text-accent">管理</span>
+        </div>
+        <nav className="admin-nav" aria-label="管理メニュー">
+          <Link to="/" aria-current={pathname !== '/monitor' ? 'page' : undefined}>
+            01 <span>結婚式の管理</span>
+          </Link>
+          <Link to="/monitor" aria-current={pathname === '/monitor' ? 'page' : undefined}>
+            02 <span>利用状況</span>
+          </Link>
+        </nav>
+        <p className="admin-rail-note" lang="en">
+          Behind every
+          <br />
+          beautiful day.
+        </p>
+      </aside>
+      <div className="admin-content">
+        <header className="admin-header">
+          {backHref ? (
+            <Link to={backHref} className="header-back">
+              ← 戻る
+            </Link>
+          ) : (
+            <p className="eyebrow text-muted" lang="en">
+              The host's notebook
+            </p>
+          )}
+          <div className="admin-header-row">
+            <h1>{title}</h1>
+            {actions}
+          </div>
+        </header>
+        <main id="admin-main" tabIndex={-1} className="admin-main">
+          {children}
+        </main>
       </div>
     </div>
   )
@@ -52,21 +89,22 @@ export function LinkButton({
   children: ReactNode
   className?: string
 }) {
-  const cls = cn(
-    'inline-flex h-control min-w-tap items-center justify-center rounded-control px-6 text-body font-semibold',
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne',
-    variant === 'primary' ? 'bg-charcoal text-white' : 'border border-charcoal text-charcoal',
-    className,
-  )
+  const cls = cn('ui-button', className)
   if (external) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+      <a
+        data-variant={variant}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cls}
+      >
         {children}
       </a>
     )
   }
   return (
-    <Link to={href} className={cls}>
+    <Link data-variant={variant} to={href} className={cls}>
       {children}
     </Link>
   )
@@ -95,12 +133,7 @@ export function Badge({
   tone?: 'normal' | 'warn'
 }) {
   return (
-    <span
-      className={cn(
-        'inline-block rounded-full border px-2 text-caption',
-        tone === 'warn' ? 'border-error text-error' : 'border-deep-gold text-deep-gold',
-      )}
-    >
+    <span className="badge" data-tone={tone}>
       {children}
     </span>
   )

@@ -13,6 +13,8 @@ export function MenuRoute() {
     <div>
       <ScreenHeader
         title={ja.guest.course.heading}
+        eyebrow="At the table"
+        description="おふたりから、感謝を込めたおもてなし。どうぞごゆっくりお楽しみください。"
         backHref={paths.home(tenantId)}
         LinkComponent={RouterLink}
       />

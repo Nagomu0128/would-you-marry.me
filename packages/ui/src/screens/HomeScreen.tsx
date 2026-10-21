@@ -1,41 +1,23 @@
-import { ListCard } from '../components/ListCard'
+import { ArrowUpRight, Camera, Users, Utensils } from 'lucide-react'
+import { useEffect } from 'react'
+import { SectionHeading } from '../components/Editorial'
 import { DefaultLink, type LinkComponent } from '../components/link'
-import { ScreenHeader } from '../components/ScreenHeader'
 import { ja } from '../messages/ja'
+import { WeddingMark } from '../motion/WeddingMark'
 
-export type HomeScreenPhoto = {
-  id: string
-  /** 一覧用画像の URL */
-  src: string
-  nickname: string
-}
-
+export type HomeScreenPhoto = { id: string; src: string; nickname: string }
 export type HomeScreenProps = {
   tenantName: string
-  /** 開催日（`YYYY-MM-DD`） */
   eventDate: string
   nickname: string
-  /** アルバムのカードに出す新着の写真（先頭から最大 3 枚） */
   recentPhotos?: readonly HomeScreenPhoto[]
-  hrefs: {
-    seating: string
-    course: string
-    album: string
-    upload: string
-    /** ニックネームの変更 */
-    nickname: string
-  }
+  hrefs: { seating: string; course: string; album: string; upload: string; nickname: string }
   LinkComponent?: LinkComponent
 }
-
-/** `2026-10-31` を `2026.10.31` にする */
 export function formatEventDate(eventDate: string): string {
   return eventDate.replaceAll('-', '.')
 }
 
-const RECENT_COUNT = 3
-
-/** ホーム（SG-03）の表示。データの取得はしない。管理面のプレビューでも使う。 */
 export function HomeScreen({
   tenantName,
   eventDate,
@@ -44,41 +26,120 @@ export function HomeScreen({
   hrefs,
   LinkComponent: Link = DefaultLink,
 }: HomeScreenProps) {
-  const recent = recentPhotos.slice(0, RECENT_COUNT)
+  const recent = recentPhotos.slice(0, 3)
+  useEffect(() => {
+    document.title = `${tenantName} | The Wedding Journal`
+  }, [tenantName])
   return (
     <div>
-      <ScreenHeader title={tenantName} />
-      <div className="flex flex-col gap-4 px-screen pb-6">
-        <p className="font-accent text-heading-md text-deep-gold">{formatEventDate(eventDate)}</p>
-        <div className="flex items-center justify-between gap-3">
-          <p className="min-w-0 flex-1 break-words text-body">
-            {ja.guest.home.greeting({ nickname })}
-          </p>
-          <Link
-            href={hrefs.nickname}
-            className="inline-flex min-h-tap min-w-tap shrink-0 items-center justify-center px-2 text-body text-deep-gold underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-champagne"
-          >
+      <section className="invitation">
+        <WeddingMark className="wedding-mark" />
+        <p className="eyebrow text-muted" lang="en">
+          Together, on this day
+        </p>
+        <p className="invitation-title" lang="en" aria-hidden="true">
+          Our wedding<em>journal.</em>
+        </p>
+        <h1 className="invitation-name">{tenantName}</h1>
+        <p className="invitation-date">
+          <time dateTime={eventDate}>{formatEventDate(eventDate)}</time>
+        </p>
+        <p className="invitation-note">
+          今日という日を、みなさまと。
+          <br />
+          かけがえのない一日をお楽しみください。
+        </p>
+      </section>
+      <div className="px-screen">
+        <div className="home-greeting">
+          <p>{ja.guest.home.greeting({ nickname })}</p>
+          <Link href={hrefs.nickname} className="text-link">
             {ja.guest.home.change}
           </Link>
         </div>
-        <ListCard title={ja.guest.home.cards.seating} href={hrefs.seating} LinkComponent={Link} />
-        <ListCard title={ja.guest.home.cards.course} href={hrefs.course} LinkComponent={Link} />
-        <ListCard title={ja.guest.home.cards.album} href={hrefs.album} LinkComponent={Link}>
-          {recent.length > 0 ? (
-            <span className="flex items-center gap-2">
-              <span className="text-caption">{ja.guest.home.recent}</span>
-              {recent.map((photo) => (
-                <img
-                  key={photo.id}
-                  src={photo.src}
-                  alt={ja.common.photoAlt({ nickname: photo.nickname })}
-                  className="size-14 rounded-photo bg-sand/70 object-cover"
-                />
-              ))}
+        <section className="home-section">
+          <Link
+            href={hrefs.upload}
+            className="share-invitation"
+            aria-label={ja.guest.home.cards.upload}
+          >
+            <span>
+              <span className="eyebrow" lang="en">
+                A moment to keep
+              </span>
+              <strong>{ja.guest.home.cards.upload}</strong>
+              <small>あなたが見つけた、幸せの一瞬を。</small>
             </span>
-          ) : null}
-        </ListCard>
-        <ListCard title={ja.guest.home.cards.upload} href={hrefs.upload} LinkComponent={Link} />
+            <Camera aria-hidden="true" strokeWidth={1.25} />
+          </Link>
+        </section>
+        <section className="home-section">
+          <SectionHeading title="本日のご案内" caption="For our guests" />
+          <div className="guide-links">
+            <Link
+              href={hrefs.seating}
+              className="guide-link"
+              aria-label={ja.guest.home.cards.seating}
+            >
+              <Users aria-hidden="true" strokeWidth={1.25} />
+              <span>
+                <strong>{ja.guest.home.cards.seating}</strong>
+                <small lang="en">Find your seat</small>
+              </span>
+            </Link>
+            <Link
+              href={hrefs.course}
+              className="guide-link"
+              aria-label={ja.guest.home.cards.course}
+            >
+              <Utensils aria-hidden="true" strokeWidth={1.25} />
+              <span>
+                <strong>{ja.guest.home.cards.course}</strong>
+                <small lang="en">At the table</small>
+              </span>
+            </Link>
+          </div>
+        </section>
+        <section className="home-section pb-4">
+          <SectionHeading
+            title="みんなのアルバム"
+            caption="Collected memories"
+            action={
+              <Link href={hrefs.album} className="text-link" aria-label={ja.guest.home.cards.album}>
+                すべて見る
+                <ArrowUpRight size={14} aria-hidden="true" />
+              </Link>
+            }
+          />
+          {recent.length ? (
+            <>
+              <p className="mb-3 text-caption text-muted">{ja.guest.home.recent}</p>
+              <Link href={hrefs.album} className="recent-photos" aria-label="新着の写真を見る">
+                {recent.map((photo) => (
+                  <div className="recent-photo" key={photo.id}>
+                    <img
+                      src={photo.src}
+                      alt={ja.common.photoAlt({ nickname: photo.nickname })}
+                      width={240}
+                      height={300}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                ))}
+              </Link>
+            </>
+          ) : (
+            <Link href={hrefs.album} className="album-invitation">
+              <span lang="en">The first page.</span>
+              <p>
+                これから集まる、今日の思い出。
+                <br />
+                みなさまの写真で、一冊のアルバムに。
+              </p>
+            </Link>
+          )}
+        </section>
       </div>
     </div>
   )

@@ -234,10 +234,7 @@ export function PinchZoom({
       className={cn('relative select-none overflow-hidden', className)}
       style={{ touchAction: idleTouchAction }}
     >
-      <div
-        ref={contentRef}
-        className={cn('origin-top-left will-change-transform', contentClassName)}
-      >
+      <div ref={contentRef} className={cn('origin-top-left', contentClassName)}>
         {children}
       </div>
     </div>
