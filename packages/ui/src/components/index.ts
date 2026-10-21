@@ -17,12 +17,13 @@ export {
   TOAST_DURATION_MS,
 } from './constants'
 export { Dialog } from './Dialog'
-export { Brand, PageLoading, SectionHeading } from './Editorial'
+export { Brand, SectionHeading } from './Editorial'
 export { EmptyState, type EmptyStateProps } from './EmptyState'
 export { ErrorState, type ErrorStateProps } from './ErrorState'
 export { Footer, type FooterProps } from './Footer'
 export { ListCard, type ListCardProps } from './ListCard'
 export { DefaultLink, type LinkComponent, type LinkProps } from './link'
+export { PageLoading } from './PageLoading'
 export { PageTransition, type PageTransitionProps } from './PageTransition'
 export { PhotoGrid, type PhotoGridItem, type PhotoGridProps } from './PhotoGrid'
 export {
