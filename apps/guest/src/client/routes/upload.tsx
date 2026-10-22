@@ -182,6 +182,7 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
         <UploadComplete
           onComplete={() => setCelebrating(false)}
           skipLabel={ja.common.skipAnimation}
+          photoSrc={previewUrl ?? undefined}
         />
       ) : null}
       <div className="flex flex-col gap-5 px-screen pb-6">
