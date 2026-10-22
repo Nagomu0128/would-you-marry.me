@@ -116,12 +116,14 @@ function JoinSection({ tenantId, initial }: { tenantId: string; initial: JoinUrl
   return (
     <Ledger title={t.joinTitle} className="admin-urls-join">
       {join.url === null || matrix === null ? (
-        <div className="admin-unissued">
-          <p>{t.joinNone}</p>
-          <Button loading={busy} onClick={() => void issue()}>
-            {t.issue}
-          </Button>
-        </div>
+        <>
+          <p className="admin-unissued-text">{t.joinNone}</p>
+          <div className="admin-actions">
+            <Button loading={busy} onClick={() => void issue()}>
+              {t.issue}
+            </Button>
+          </div>
+        </>
       ) : (
         <div className="admin-join">
           {/* 受付に置く札のように、QR コードを白い紙に載せる */}

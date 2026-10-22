@@ -721,17 +721,6 @@
   }
 
   /* ---- URL の発行 ---- */
-  .admin-unissued {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1.25rem;
-    background: color-mix(in srgb, var(--color-tint) 70%, transparent);
-  }
-
-  .admin-unissued p,
   .admin-unissued-text {
     color: var(--color-muted);
   }
@@ -1153,6 +1142,11 @@
     border-block-end: 1px solid var(--color-rule);
   }
 
+  .admin-shell .admin-state p,
+  .admin-desk .admin-state p {
+    max-inline-size: 36ch;
+  }
+
   /* 空: まだ何も書かれていない頁。水引の下に文言と、白紙の罫を三本 */
   .admin-shell .admin-empty {
     padding-block: 3rem 2.5rem;
@@ -1253,6 +1247,7 @@
   }
 
   .admin-desk .admin-sheet .admin-state {
+    gap: 1.25rem;
     padding: 0;
     border: 0;
   }
