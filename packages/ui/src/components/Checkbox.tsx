@@ -7,28 +7,31 @@ export type CheckboxProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' |
   error?: string
 }
 
-/** 同意欄用のチェックボックス。ラベルを含めた行全体が 44px 以上のタップ領域になる。 */
+/**
+ * 同意欄用のチェックボックス。チェックすると朱の印が押される。
+ * 実体はネイティブの checkbox。ラベルを含めた行全体が 44px 以上のタップ領域になる。
+ */
 export function Checkbox({ label, error, id, className, ...rest }: CheckboxProps) {
   const autoId = useId()
   const inputId = id ?? autoId
   const errorId = `${inputId}-error`
   return (
-    <div className={cn('flex flex-col gap-1', className)}>
-      <div className="flex min-h-tap items-start gap-3">
+    <div className={cn('check', className)}>
+      <div className="check-row">
         <input
           id={inputId}
           type="checkbox"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className="mt-[10px] size-6 shrink-0 accent-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="check-input"
           {...rest}
         />
-        <label htmlFor={inputId} className="py-2 text-body text-ink">
+        <label htmlFor={inputId} className="check-label">
           {label}
         </label>
       </div>
       {error ? (
-        <p id={errorId} role="alert" className="text-sub text-error">
+        <p id={errorId} role="alert" className="field-error">
           {error}
         </p>
       ) : null}

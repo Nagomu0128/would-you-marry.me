@@ -30,6 +30,7 @@ export type ConfirmSheetProps = {
   input?: ConfirmSheetInput
 }
 
+/** 下から出る和紙の確認シート。最初のフォーカスはキャンセル（入力つきのときは入力欄）。 */
 export function ConfirmSheet({
   open,
   onClose,
@@ -51,9 +52,8 @@ export function ConfirmSheet({
       initialFocus={input ? 'input' : '[data-cancel]'}
       testId="confirm-backdrop"
     >
-      <p className="eyebrow text-accent mb-3">Please confirm</p>
       <h2 className="modal-title">{confirmLabel}</h2>
-      <p className="text-sub text-muted mb-5">{body}</p>
+      <p className="modal-body">{body}</p>
       {input ? (
         <TextField
           label={input.label}

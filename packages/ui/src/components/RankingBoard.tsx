@@ -2,7 +2,6 @@ import { Heart } from 'lucide-react'
 import { ja } from '../messages/ja'
 import { RankingReveal, RankingRevealItem } from '../motion/RankingReveal'
 import { cn } from './cn'
-import { ICON_STROKE_WIDTH } from './constants'
 import type { PhotoGridItem } from './PhotoGrid'
 
 export type RankingBoardItem = PhotoGridItem & {
@@ -20,14 +19,14 @@ export type RankingBoardProps = {
   className?: string
 }
 
-function Likes({ item, className }: { item: RankingBoardItem; className?: string }) {
+function Likes({ item }: { item: RankingBoardItem }) {
   return (
-    <span className={cn('flex shrink-0 items-center gap-1 text-sub', className)}>
+    <span className="rank-likes">
       <Heart
         aria-hidden="true"
-        size={16}
-        strokeWidth={ICON_STROKE_WIDTH}
-        className={cn(item.liked && 'fill-rose text-rose')}
+        size={14}
+        strokeWidth={1.4}
+        className={cn('heart', item.liked && 'is-filled')}
       />
       <span aria-hidden="true">{item.likeCount}</span>
       <span className="sr-only-text">{ja.common.likeCount({ count: item.likeCount })}</span>
@@ -39,35 +38,29 @@ function Picture({
   item,
   onSelect,
   className,
+  eager = false,
 }: {
   item: RankingBoardItem
   onSelect: () => void
   className: string
+  eager?: boolean
 }) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      data-photo-id={item.id}
-      className={cn(
-        'block overflow-hidden bg-rule/70 focus-visible:outline-2 focus-visible:outline-accent',
-        className,
-      )}
-    >
+    <button type="button" onClick={onSelect} data-photo-id={item.id} className={className}>
       <img
         src={item.src}
         alt={ja.common.photoAlt({ nickname: item.nickname })}
-        loading="lazy"
+        loading={eager ? 'eager' : 'lazy'}
         decoding="async"
-        className="size-full object-cover"
       />
     </button>
   )
 }
 
 /**
- * ランキング（SG-06・SC-02 で共通）。1 位は大きく、2 位・3 位は横に並べ、4 位以下は行で表示する。
- * 表示するたびに（マウントするたびに）3 位 → 2 位 → 1 位（王冠）の順に登場する。
+ * ランキング（SG-06・SC-02 で共通）。紙焼き写真の写真帖の見立て。
+ * 1 位は金の額縁に収め、2 位・3 位は細い金の縁で横に並べ、4 位以下は帳面の行で表示する。
+ * 表示するたびに（マウントするたびに）3 位 → 2 位 → 1 位（飾り）の順に登場する。
  */
 export function RankingBoard({ items, onSelect, onComplete, className }: RankingBoardProps) {
   const indexed = items.map((item, index) => ({ item, index }))
@@ -80,47 +73,43 @@ export function RankingBoard({ items, onSelect, onComplete, className }: Ranking
     <RankingReveal
       count={items.length}
       {...(onComplete ? { onComplete } : {})}
-      className={cn('flex flex-col gap-8', className)}
+      className={cn('ranking', className)}
     >
       {first ? (
-        <RankingRevealItem
-          rank={1}
-          className="pt-6 border-b border-rule pb-6"
-          crownStyle={{ top: 0, left: 0 }}
-        >
-          <p className="mb-2 pl-10 font-accent text-heading-md text-accent">
+        <RankingRevealItem rank={1} className="rank-first" crownClassName="rank-first-crown">
+          <p className="rank-label" data-rank="1">
             {ja.guest.album.rank({ rank: 1 })}
           </p>
-          <Picture
-            item={first.item}
-            onSelect={select(first.item, first.index)}
-            className="aspect-[4/5] w-full border-[6px] border-surface shadow-card"
-          />
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-body">
-              {ja.common.uploader({ nickname: first.item.nickname })}
-            </p>
+          <div className="rank-gold-frame">
+            <Picture
+              item={first.item}
+              eager
+              onSelect={select(first.item, first.index)}
+              className="rank-picture"
+            />
+          </div>
+          <div className="rank-meta">
+            <p className="rank-name">{ja.common.uploader({ nickname: first.item.nickname })}</p>
             <Likes item={first.item} />
           </div>
         </RankingRevealItem>
       ) : null}
 
       {podium.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="rank-podium">
           {podium.map(({ item, index }) => (
-            <RankingRevealItem key={item.id} rank={item.rank}>
-              <p className="mb-1 font-accent text-heading-md text-accent">
+            <RankingRevealItem key={item.id} rank={item.rank} className="rank-second">
+              <p className="rank-label" data-rank={item.rank}>
                 {ja.guest.album.rank({ rank: item.rank })}
               </p>
               <Picture
                 item={item}
+                eager
                 onSelect={select(item, index)}
-                className="aspect-[4/5] w-full border-[6px] border-surface shadow-card"
+                className="rank-picture rank-print"
               />
-              <div className="mt-1 flex items-center justify-between gap-2">
-                <p className="min-w-0 truncate text-sub">
-                  {ja.common.uploader({ nickname: item.nickname })}
-                </p>
+              <div className="rank-meta">
+                <p className="rank-name">{ja.common.uploader({ nickname: item.nickname })}</p>
                 <Likes item={item} />
               </div>
             </RankingRevealItem>
@@ -129,23 +118,19 @@ export function RankingBoard({ items, onSelect, onComplete, className }: Ranking
       ) : null}
 
       {rest.length > 0 ? (
-        <ul className="flex flex-col gap-3">
+        <ul className="rank-rows">
           {rest.map(({ item, index }) => (
-            <RankingRevealItem key={item.id} rank={item.rank} as="li">
-              <div className="flex items-center gap-3">
-                <Picture
-                  item={item}
-                  onSelect={select(item, index)}
-                  className="size-16 shrink-0 rounded-photo"
-                />
-                <p className="w-14 shrink-0 font-accent text-heading-md text-accent">
-                  {ja.guest.album.rank({ rank: item.rank })}
-                </p>
-                <p className="min-w-0 flex-1 truncate text-body">
-                  {ja.common.uploader({ nickname: item.nickname })}
-                </p>
-                <Likes item={item} />
-              </div>
+            <RankingRevealItem key={item.id} rank={item.rank} as="li" className="rank-row">
+              <p className="rank-label" data-rank={item.rank}>
+                {ja.guest.album.rank({ rank: item.rank })}
+              </p>
+              <Picture
+                item={item}
+                onSelect={select(item, index)}
+                className="rank-picture rank-thumb"
+              />
+              <p className="rank-name">{ja.common.uploader({ nickname: item.nickname })}</p>
+              <Likes item={item} />
             </RankingRevealItem>
           ))}
         </ul>

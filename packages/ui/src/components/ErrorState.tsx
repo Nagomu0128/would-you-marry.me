@@ -1,4 +1,5 @@
 import { ja } from '../messages/ja'
+import { MizuhikiKnot } from '../ornaments/MizuhikiKnot'
 import { Button } from './Button'
 import { cn } from './cn'
 
@@ -10,11 +11,12 @@ export type ErrorStateProps = {
   className?: string
 }
 
-/** 画面内のエラー表示。通信できなかったときの「もう一度試す」つき。 */
+/** 画面内のエラー表示。紙の上に小さな水引と文言、「もう一度試す」。 */
 export function ErrorState({ message = ja.errors.network, onRetry, className }: ErrorStateProps) {
   return (
-    <div role="alert" className={cn('empty-state', className)}>
-      <p className="text-body text-ink">{message}</p>
+    <div role="alert" className={cn('error-state', className)}>
+      <MizuhikiKnot strands="one" tone="kin" className="error-state-knot" />
+      <p className="error-state-message">{message}</p>
       {onRetry ? (
         <Button variant="secondary" onClick={onRetry}>
           {ja.common.retry}

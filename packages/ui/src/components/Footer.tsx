@@ -11,7 +11,7 @@ export type FooterProps = {
   className?: string
 }
 
-/** ページの末尾に置く。利用規約 / プライバシーポリシー / お問い合わせ。 */
+/** ページの末尾に置く、控えめなリンクの列。利用規約 / プライバシーポリシー / お問い合わせ。 */
 export function Footer({
   termsHref,
   privacyHref,
@@ -20,14 +20,22 @@ export function Footer({
   className,
 }: FooterProps) {
   return (
-    <footer className={cn('app-footer px-screen', className)}>
-      <p className="footer-signature" lang="en">
-        With love, for this day.
-      </p>
-      <nav className="footer-links" aria-label="ご利用について">
-        <Link href={termsHref}>{ja.common.footer.terms}</Link>
-        <Link href={privacyHref}>{ja.common.footer.privacy}</Link>
-        {contactEmail ? <a href={`mailto:${contactEmail}`}>{ja.common.footer.contact}</a> : null}
+    <footer className={cn('app-footer', className)}>
+      <span className="footer-rule" aria-hidden="true" />
+      <nav aria-label={ja.common.footerLabel}>
+        <ul className="footer-links">
+          <li>
+            <Link href={termsHref}>{ja.common.footer.terms}</Link>
+          </li>
+          <li>
+            <Link href={privacyHref}>{ja.common.footer.privacy}</Link>
+          </li>
+          {contactEmail ? (
+            <li>
+              <a href={`mailto:${contactEmail}`}>{ja.common.footer.contact}</a>
+            </li>
+          ) : null}
+        </ul>
       </nav>
     </footer>
   )
