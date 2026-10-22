@@ -330,18 +330,21 @@ export function PhotoViewer<P extends Photo = Photo>({
               aria-label={liked ? ja.common.viewer.unlike : ja.common.viewer.like}
               className="viewer-button viewer-like"
             >
-              <Heart
-                aria-hidden="true"
-                strokeWidth={1.25}
-                className={cn('heart', liked && 'is-filled')}
-              />
+              {/* ハートと演出を同じ小さな箱に兄弟で置く（演出がハートに合わせて弾む） */}
+              <span className="like-heart">
+                <Heart
+                  aria-hidden="true"
+                  strokeWidth={1.25}
+                  className={cn('heart', liked && 'is-filled fill-accent text-accent')}
+                />
+                <LikeBurst
+                  active={burstId === photo.id && liked}
+                  onComplete={() => setBurstId(null)}
+                />
+              </span>
               <span aria-hidden="true" className="viewer-like-count">
                 {photo.likeCount}
               </span>
-              <LikeBurst
-                active={burstId === photo.id && liked}
-                onComplete={() => setBurstId(null)}
-              />
             </button>
           ) : (
             <div className="viewer-likes">

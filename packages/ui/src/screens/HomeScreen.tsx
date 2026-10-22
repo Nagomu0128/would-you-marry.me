@@ -100,7 +100,7 @@ export function HomeScreen({
       <section className="cover wa-seigaiha">
         <div className="cover-frame">
           <span className="cover-corners" aria-hidden="true" />
-          <span className="cover-knot wa-kin-sheen">
+          <span className="cover-knot">
             <MizuhikiKnot strands="five" tone="on-dark" />
           </span>
           <h1 className="cover-names" aria-label={tenantName}>

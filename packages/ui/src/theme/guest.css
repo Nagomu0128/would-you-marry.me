@@ -45,7 +45,7 @@
 
   /*
    * 明朝の見出しと短い言葉は、語の途中で折り返さない（読点・句点・空白で折る）。
-   * 入りきらない長さのときだけ任意の位置で折る。文節で折れるブラウザでは文節で折る
+   * 入りきらない長さのときだけ任意の位置で折る。エンジンで折り方が変わらないよう auto-phrase は使わない
    */
   :where(
     .screen-title,
@@ -67,29 +67,6 @@
   ) {
     word-break: keep-all;
     overflow-wrap: anywhere;
-  }
-
-  @supports (word-break: auto-phrase) {
-    :where(
-      .screen-title,
-      .screen-lead,
-      .section-title,
-      .modal-title,
-      .empty-message,
-      .error-state-message,
-      .cover-line,
-      .shugi-note,
-      .waiting-text,
-      .upload-done-title,
-      .upload-done-note,
-      .tsutsumi-note,
-      .entry-form-description,
-      .couple-lead,
-      .error-title,
-      .error-detail
-    ):lang(ja) {
-      word-break: auto-phrase;
-    }
   }
 
   /* ---------- ホーム: 式の表紙 ---------- */

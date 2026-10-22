@@ -97,7 +97,7 @@ function PhotoTile({
         <Heart
           size={12}
           strokeWidth={ICON_STROKE_WIDTH}
-          className={cn('heart', photo.liked && 'is-filled')}
+          className={cn('heart', photo.liked && 'is-filled fill-accent text-accent')}
         />
         {photo.likeCount}
       </span>

@@ -26,7 +26,7 @@ function Likes({ item }: { item: RankingBoardItem }) {
         aria-hidden="true"
         size={14}
         strokeWidth={1.4}
-        className={cn('heart', item.liked && 'is-filled')}
+        className={cn('heart', item.liked && 'is-filled fill-accent text-accent')}
       />
       <span aria-hidden="true">{item.likeCount}</span>
       <span className="sr-only-text">{ja.common.likeCount({ count: item.likeCount })}</span>
@@ -76,11 +76,11 @@ export function RankingBoard({ items, onSelect, onComplete, className }: Ranking
       className={cn('ranking', className)}
     >
       {first ? (
-        <RankingRevealItem rank={1} className="rank-first" crownClassName="rank-first-crown">
-          <p className="rank-label" data-rank="1">
+        <RankingRevealItem rank={1} className="rank-first">
+          <p className="rank-label wa-rank-numeral font-numeral" data-rank="1">
             {ja.guest.album.rank({ rank: 1 })}
           </p>
-          <div className="rank-gold-frame">
+          <div className="rank-gold-frame wa-rank-sheen">
             <Picture
               item={first.item}
               eager
@@ -99,7 +99,7 @@ export function RankingBoard({ items, onSelect, onComplete, className }: Ranking
         <div className="rank-podium">
           {podium.map(({ item, index }) => (
             <RankingRevealItem key={item.id} rank={item.rank} className="rank-second">
-              <p className="rank-label" data-rank={item.rank}>
+              <p className="rank-label wa-rank-numeral font-numeral" data-rank={item.rank}>
                 {ja.guest.album.rank({ rank: item.rank })}
               </p>
               <Picture
@@ -121,7 +121,7 @@ export function RankingBoard({ items, onSelect, onComplete, className }: Ranking
         <ul className="rank-rows">
           {rest.map(({ item, index }) => (
             <RankingRevealItem key={item.id} rank={item.rank} as="li" className="rank-row">
-              <p className="rank-label" data-rank={item.rank}>
+              <p className="rank-label wa-rank-numeral font-numeral" data-rank={item.rank}>
                 {ja.guest.album.rank({ rank: item.rank })}
               </p>
               <Picture

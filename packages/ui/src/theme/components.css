@@ -124,7 +124,7 @@
     line-height: 1.9;
     letter-spacing: 0.04em;
     color: var(--color-muted);
-    text-wrap: pretty;
+    text-wrap: balance;
   }
 
   /* ---------- 段の見出し（SectionHeading）: 両側に金の細罫 ---------- */
@@ -690,7 +690,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    column-gap: 1.5rem;
+    column-gap: 1.25rem;
   }
 
   .footer-links li {
@@ -701,7 +701,7 @@
     content: "";
     position: absolute;
     inset-block-start: 50%;
-    inset-inline-start: -0.8rem;
+    inset-inline-start: -0.625rem;
     inline-size: 3px;
     block-size: 3px;
     background: var(--color-gold);
@@ -714,7 +714,7 @@
     min-block-size: var(--spacing-tap);
     color: var(--color-muted);
     font-size: 0.75rem;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
   }
 
   /* ---------- トースト: 金の縁の短冊 ---------- */
@@ -1037,10 +1037,6 @@
     block-size: 0.75rem;
   }
 
-  .photo-likes .heart.is-filled {
-    color: var(--color-surface);
-  }
-
   /* ---------- ランキング: 一位は金の額縁、二・三位は金の縁、四位以下は帳面の行 ---------- */
   .ranking {
     display: flex;
@@ -1146,10 +1142,9 @@
     inline-size: min(100%, 22rem);
   }
 
-  .rank-first > .rank-first-crown {
-    inset-block-start: 2.75rem;
-    inset-inline-start: max(-0.5rem, calc(50% - 11rem - 1rem));
-    z-index: 2;
+  /* 1 位の水引の飾り（RankingRevealItem が上端中央に載せる）の分だけ、上を空ける */
+  .rank-first {
+    padding-block-start: 3.75rem;
   }
 
   .rank-podium {
@@ -1401,8 +1396,18 @@
     block-size: 1.125rem;
   }
 
-  .viewer-dialog .heart.is-filled {
-    color: var(--color-gold-light);
+  /* ハートと、いいねの演出（LikeBurst）を重ねる小さな箱 */
+  .like-heart {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+  }
+
+  .like-heart .heart {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
   }
 
   .viewer-delete {
