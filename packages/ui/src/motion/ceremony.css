@@ -163,7 +163,8 @@
     align-items: center;
     justify-content: center;
     gap: 1.125rem;
-    padding: max(2.5rem, env(safe-area-inset-top)) 1.5rem
+    /* 左右は、畳まれて端に残る屏風の幅をよける */
+    padding: max(2.5rem, env(safe-area-inset-top)) 2.25rem
       max(5.75rem, calc(env(safe-area-inset-bottom) + 5rem));
     text-align: center;
   }
@@ -177,7 +178,7 @@
   .byobu-greeting {
     color: var(--color-gold-light);
     font-family: var(--font-mincho);
-    font-size: 0.9375rem;
+    font-size: clamp(0.8125rem, 0.6rem + 1.1vw, 0.9375rem);
     font-weight: 500;
     line-height: 1.8;
     letter-spacing: var(--tracking-wide-wa);
@@ -526,7 +527,7 @@
   .tsuru-congrats {
     color: var(--color-gold-light);
     font-family: var(--font-mincho);
-    font-size: 1.0625rem;
+    font-size: clamp(0.9375rem, 0.7rem + 1.3vw, 1.0625rem);
     font-weight: 500;
     line-height: 1.8;
     letter-spacing: var(--tracking-wide-wa);
