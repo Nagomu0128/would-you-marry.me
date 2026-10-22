@@ -5,6 +5,7 @@ import {
   EmptyState,
   ErrorState,
   ja,
+  MizuhikiKnot,
   PageTransition,
   PhotoGrid,
   type PhotoGridItem,
@@ -12,13 +13,12 @@ import {
   PullIndicator,
   RankingBoard,
   type RankingBoardItem,
-  ScreenHeader,
   Skeleton,
   type TabItem,
   Tabs,
   usePhotoSave,
 } from '@wym/ui'
-import { type ReactNode, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { getCoupleMe, getUploaders } from '../lib/api'
 import { useCoupleRanking, useCoupleTimeline } from '../lib/couple-feeds'
@@ -43,10 +43,10 @@ function toGridItem(photo: StaffPhoto): PhotoGridItem {
 
 function GridSkeleton() {
   return (
-    <div data-testid="couple-skeleton" className="photo-grid">
+    <div data-testid="couple-skeleton" className="album-skeleton-grid">
       {Array.from({ length: 12 }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: 固定の装飾
-        <Skeleton key={i} className="aspect-[4/5] w-full rounded-photo" />
+        <Skeleton key={i} className="aspect-[4/5] w-full rounded-none" />
       ))}
     </div>
   )
@@ -54,14 +54,33 @@ function GridSkeleton() {
 
 function RankingSkeleton() {
   return (
-    <div data-testid="couple-skeleton" className="flex flex-col gap-4">
-      <Skeleton className="aspect-square w-full rounded-card" />
-      <div className="grid grid-cols-2 gap-3">
-        <Skeleton className="aspect-square w-full rounded-card" />
-        <Skeleton className="aspect-square w-full rounded-card" />
+    <div data-testid="couple-skeleton" className="flex flex-col items-center gap-6 px-3 pt-12">
+      <Skeleton className="aspect-[4/5] w-[min(100%,22rem)] rounded-none" />
+      <div className="grid w-full grid-cols-2 gap-5">
+        <Skeleton className="aspect-[4/5] w-full rounded-none" />
+        <Skeleton className="aspect-[4/5] w-full rounded-none" />
       </div>
       <Skeleton className="h-16 w-full" />
     </div>
+  )
+}
+
+/**
+ * 写真一覧の上の帯。おふたりに宛てた祝いの包みの掛け紙の見立て（臙脂の青海波・水引・名前）。
+ * 名前が見出し（h1）になる。
+ */
+function CoupleBand({ title }: { title: string }) {
+  useEffect(() => {
+    if (title) document.title = title
+  }, [title])
+  return (
+    <header className="couple-band wa-seigaiha">
+      <div className="couple-band-inner">
+        <MizuhikiKnot strands="three" tone="on-dark" />
+        <h1 className="couple-title">{title}</h1>
+        <p className="couple-lead">{ja.couple.photos.lead}</p>
+      </div>
+    </header>
   )
 }
 
@@ -79,11 +98,6 @@ function UploaderSheet({
   onClose: () => void
   onRetry: () => void
 }) {
-  const row = (selected: boolean) =>
-    `flex min-h-tap w-full items-center justify-between gap-3 rounded-control px-3 text-left text-body focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
-      selected ? 'bg-rule/70 font-semibold text-ink' : 'text-ink'
-    }`
-
   let body: ReactNode
   if (uploaders.state === 'loading') {
     body = <Skeleton className="h-24 w-full" />
@@ -91,15 +105,15 @@ function UploaderSheet({
     body = <ErrorState onRetry={onRetry} />
   } else {
     body = (
-      <ul className="flex max-h-[50vh] flex-col overflow-y-auto">
+      <ul className="uploader-list">
         <li>
           <button
             type="button"
             aria-pressed={selectedId === null}
-            className={row(selectedId === null)}
+            className="uploader-row"
             onClick={() => onSelect(null)}
           >
-            {ja.couple.photos.uploaderAll}
+            <span className="uploader-name">{ja.couple.photos.uploaderAll}</span>
           </button>
         </li>
         {uploaders.list.map((uploader) => (
@@ -107,11 +121,11 @@ function UploaderSheet({
             <button
               type="button"
               aria-pressed={selectedId === uploader.id}
-              className={row(selectedId === uploader.id)}
+              className="uploader-row"
               onClick={() => onSelect(uploader.id)}
             >
-              <span>{uploader.nickname}</span>
-              <span className="text-sub text-muted">
+              <span className="uploader-name">{uploader.nickname}</span>
+              <span className="uploader-count">
                 {ja.couple.photos.uploaderPhotoCount({ count: uploader.photoCount })}
               </span>
             </button>
@@ -128,7 +142,6 @@ function UploaderSheet({
       initialFocus="[data-close]"
       testId="uploader-backdrop"
     >
-      <p className="eyebrow text-accent mb-3">Through their eyes</p>
       <h2 className="modal-title">{ja.couple.photos.uploaderSheetTitle}</h2>
       {body}
       <Button data-close variant="secondary" fullWidth className="mt-4" onClick={onClose}>
@@ -254,27 +267,24 @@ export function CouplePhotosRoute() {
 
   return (
     <div>
-      <ScreenHeader
-        title={me.state === 'ready' ? me.data.tenant.name : ''}
-        eyebrow="Your day, through their eyes"
-        description="大切な人たちが残してくれた、かけがえのない記録。"
-      />
+      <CoupleBand title={me.state === 'ready' ? me.data.tenant.name : ''} />
       <PullIndicator distance={distance} refreshing={refreshing} />
-      <div className="flex flex-col gap-3 pb-6">
-        <Tabs
-          tabs={tabs}
-          value={tab}
-          onChange={changeTab}
-          aria-label={ja.couple.photos.tabs.all}
-          className="px-screen"
-        />
-        <div id={PANEL_ID} role="tabpanel" className="flex flex-col gap-3">
+      <div>
+        <div className="couple-tabs">
+          <Tabs
+            tabs={tabs}
+            value={tab}
+            onChange={changeTab}
+            aria-label={ja.couple.photos.tabs.all}
+          />
+        </div>
+        <div id={PANEL_ID} role="tabpanel">
           {tab === 'all' ? (
-            <div className="px-screen">
+            <div className="album-tools">
               <button
                 type="button"
                 aria-haspopup="dialog"
-                className="filter-chip gap-2"
+                className="filter-chip"
                 onClick={() => setSheetOpen(true)}
               >
                 {uploaderLabel}

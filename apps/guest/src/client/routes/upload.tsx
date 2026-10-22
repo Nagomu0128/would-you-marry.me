@@ -2,10 +2,10 @@ import type { GuestMeResponse } from '@wym/shared'
 import {
   Button,
   CameraIcon,
-  CheckIcon,
   ErrorState,
   ImagesIcon,
   ja,
+  Orizuru,
   ScreenHeader,
   Skeleton,
   UploadComplete,
@@ -21,6 +21,18 @@ import { paths, RouterLink } from '../lib/router-link'
 import { uploadPhoto } from '../lib/upload'
 import { useApiResource } from '../lib/use-api-resource'
 
+/** 写真の四隅を留める金の写真コーナー（装飾） */
+function PhotoCorners() {
+  return (
+    <span className="photo-corners" aria-hidden="true">
+      <span data-corner="tl" />
+      <span data-corner="tr" />
+      <span data-corner="bl" />
+      <span data-corner="br" />
+    </span>
+  )
+}
+
 // SG-07 フォトアップロード
 export function UploadRoute() {
   const { tenantId = '' } = useParams()
@@ -30,10 +42,9 @@ export function UploadRoute() {
     return (
       <div>
         <Header tenantId={tenantId} />
-        <div className="flex flex-col gap-5 px-screen pb-6">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-5 w-1/2" />
+        <div className="upload">
+          <Skeleton className="h-[26rem] w-full rounded-none" />
+          <Skeleton className="mx-auto h-5 w-1/2" />
         </div>
       </div>
     )
@@ -53,8 +64,7 @@ function Header({ tenantId }: { tenantId: string }) {
   return (
     <ScreenHeader
       title={ja.guest.upload.heading}
-      eyebrow="A moment to keep"
-      description="笑顔も、乾杯も、何気ないひとときも。あなたの一枚が、今日の宝物になります。"
+      description={ja.guest.upload.lead}
       backHref={paths.home(tenantId)}
       LinkComponent={RouterLink}
     />
@@ -70,6 +80,10 @@ const FILE_ERROR_CODES = [
   'UPLOAD_LIMIT_REACHED',
 ] as const
 
+/**
+ * 写真を一枚、台紙に貼る見立て。空の台紙には金の写真コーナーだけがあり、
+ * 選んだ写真は紙焼きとして貼られる。送信中は金の線が伸び、届いたら「寿」の朱印が押される。
+ */
 function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestMeResponse }) {
   const toast = useToast()
   const handleError = useApiErrorHandler()
@@ -174,6 +188,7 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
   }
 
   const pickDisabled = atLimit || sending
+  const picked = file !== null && previewUrl !== null
 
   return (
     <div>
@@ -185,22 +200,32 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
           photoSrc={previewUrl ?? undefined}
         />
       ) : null}
-      <div className="flex flex-col gap-5 px-screen pb-6">
+      <div className="upload">
         {phase === 'done' ? (
-          <div className="upload-success">
-            <CheckIcon aria-hidden="true" strokeWidth={1.25} />
-            <h2>思い出を、ありがとう。</h2>
-            <p>写真をアルバムに届けました。</p>
-            <Button fullWidth onClick={reset}>
-              {ja.guest.upload.another}
-            </Button>
-            <Link
-              to={paths.album(tenantId)}
-              className="ui-button mt-3 w-full"
-              data-variant="secondary"
-            >
-              {ja.guest.upload.toAlbum}
-            </Link>
+          <div className="mount upload-done">
+            {previewUrl ? (
+              <figure className="mount-print">
+                <img src={previewUrl} alt={ja.guest.upload.previewAlt} />
+                <PhotoCorners />
+                <span className="kotobuki-seal" aria-hidden="true">
+                  {ja.guest.upload.seal}
+                </span>
+              </figure>
+            ) : null}
+            <h2 className="upload-done-title">{ja.guest.upload.doneHeading}</h2>
+            <p className="upload-done-note">{ja.guest.upload.doneNote}</p>
+            <div className="upload-done-actions">
+              <Button fullWidth tone="beni" onClick={reset}>
+                {ja.guest.upload.another}
+              </Button>
+              <Link
+                to={paths.album(tenantId)}
+                className="ui-button w-full"
+                data-variant="secondary"
+              >
+                {ja.guest.upload.toAlbum}
+              </Link>
+            </div>
           </div>
         ) : (
           <>
@@ -221,61 +246,72 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
               data-testid="choose-input"
               onChange={onPick}
             />
-            <div className="upload-choices">
-              <button
-                type="button"
-                className="upload-choice"
-                disabled={pickDisabled}
-                onClick={() => cameraInput.current?.click()}
-              >
-                <CameraIcon aria-hidden="true" strokeWidth={1.25} />
-                <span>{ja.guest.upload.camera}</span>
-              </button>
-              <button
-                type="button"
-                className="upload-choice"
-                disabled={pickDisabled}
-                onClick={() => chooseInput.current?.click()}
-              >
-                <ImagesIcon aria-hidden="true" strokeWidth={1.25} />
-                <span>{ja.guest.upload.choose}</span>
-              </button>
+            <div className="mount">
+              {picked ? (
+                <figure className="mount-print">
+                  <img src={previewUrl} alt={ja.guest.upload.previewAlt} />
+                  <PhotoCorners />
+                </figure>
+              ) : (
+                <div className="mount-slot" aria-hidden="true">
+                  <PhotoCorners />
+                  <Orizuru tone="line" className="mount-slot-crane" />
+                  <span className="mount-slot-text">{ja.guest.upload.slot}</span>
+                </div>
+              )}
+              <div className="upload-choices">
+                <Button
+                  variant={picked ? 'secondary' : 'primary'}
+                  disabled={pickDisabled}
+                  onClick={() => cameraInput.current?.click()}
+                >
+                  <CameraIcon aria-hidden="true" strokeWidth={1.5} />
+                  {ja.guest.upload.camera}
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={pickDisabled}
+                  onClick={() => chooseInput.current?.click()}
+                >
+                  <ImagesIcon aria-hidden="true" strokeWidth={1.5} />
+                  {ja.guest.upload.choose}
+                </Button>
+              </div>
             </div>
-            <p className="text-caption text-muted">1回に1枚・JPEG / PNG・10MBまで</p>
-            {atLimit ? (
-              <p role="status" className="text-sub text-error">
-                {ja.errors.guest.UPLOAD_LIMIT_REACHED}
-              </p>
-            ) : (
-              <p className="text-sub text-muted">{ja.guest.album.remaining({ remaining })}</p>
-            )}
+
+            <div className="upload-meta">
+              {atLimit ? (
+                <p role="status" className="upload-limit">
+                  {ja.errors.guest.UPLOAD_LIMIT_REACHED}
+                </p>
+              ) : (
+                <p className="upload-remaining">{ja.guest.album.remaining({ remaining })}</p>
+              )}
+              <p className="upload-rules">{ja.guest.upload.rules}</p>
+            </div>
+
             {fileError ? (
-              <p role="alert" className="text-sub text-error">
+              <p role="alert" className="upload-error">
                 {fileError}
               </p>
             ) : null}
-            {file && previewUrl ? (
-              <div className="flex flex-col gap-4">
-                <figure className="upload-paper">
-                  <img src={previewUrl} alt={ja.guest.upload.previewAlt} />
-                  <figcaption className="upload-caption" lang="en">
-                    A little piece of today.
-                  </figcaption>
-                </figure>
+
+            {picked ? (
+              <>
                 {sending ? <Progress percent={progress} /> : null}
                 {phase === 'failed' ? (
-                  <div role="alert" className="flex flex-col items-center gap-3 text-center">
-                    <p className="text-body text-error">{ja.guest.upload.failed}</p>
+                  <div role="alert" className="upload-failed">
+                    <p className="upload-error">{ja.guest.upload.failed}</p>
                     <Button variant="secondary" onClick={() => void send()}>
                       {ja.guest.upload.retry}
                     </Button>
                   </div>
                 ) : (
-                  <Button fullWidth loading={sending} onClick={() => void send()}>
+                  <Button fullWidth tone="beni" loading={sending} onClick={() => void send()}>
                     {ja.guest.upload.submit}
                   </Button>
                 )}
-              </div>
+              </>
             ) : null}
           </>
         )}
@@ -286,22 +322,21 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
 
 function Progress({ percent }: { percent: number }) {
   return (
-    <div className="flex items-center gap-3 text-sub text-muted">
-      <span>{ja.guest.upload.sending}</span>
+    <div className="upload-progress">
+      <div className="upload-progress-head">
+        <span>{ja.guest.upload.sending}</span>
+        <span className="upload-progress-value">{percent}%</span>
+      </div>
       <div
         role="progressbar"
         aria-label={ja.guest.upload.sending}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent}
-        className="h-2 flex-1 overflow-hidden rounded-full bg-rule"
+        className="upload-progress-track"
       >
-        <div
-          className="h-full origin-left bg-ink transition-transform motion-reduce:transition-none"
-          style={{ transform: `scaleX(${percent / 100})` }}
-        />
+        <div className="upload-progress-bar" style={{ inlineSize: `${percent}%` }} />
       </div>
-      <span className="w-10 text-right tabular-nums">{percent}%</span>
     </div>
   )
 }

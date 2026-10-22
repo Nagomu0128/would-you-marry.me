@@ -2,7 +2,10 @@ import { type ReactNode, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from './cn'
 
-/** Native modal: browser top layer, inert background, focus containment and Escape. */
+/**
+ * ネイティブのモーダル（最上位の層・背景の操作の無効化・フォーカスの閉じ込め・Esc）。
+ * 通常は下から出る和紙のシート、`fullScreen` は漆黒の全画面。
+ */
 export function Dialog({
   open = true,
   onClose,
@@ -64,7 +67,7 @@ export function Dialog({
         children
       ) : (
         <>
-          <span className="modal-handle" aria-hidden="true" />
+          <span className="modal-edge" aria-hidden="true" />
           <div className="modal-content">{children}</div>
         </>
       )}

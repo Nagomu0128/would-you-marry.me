@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { cn } from './cn'
 import { DURATION, TOAST_DURATION_MS } from './constants'
 
 type ToastItem = { id: number; message: string }
@@ -31,7 +30,7 @@ export type ToastProviderProps = {
   bottom?: 'nav' | 'none'
 }
 
-/** 画面下部（ナビゲーションの上）にトーストを 3 秒表示する。アプリのルート付近に 1 つ置く。 */
+/** 画面下部（ナビゲーションの上）に、金の縁の短冊のトーストを 3 秒表示する。アプリのルート付近に 1 つ置く。 */
 export function ToastProvider({
   children,
   duration = TOAST_DURATION_MS,
@@ -73,25 +72,18 @@ export function ToastProvider({
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div
-        className={cn(
-          'pointer-events-none fixed inset-x-0 z-50 flex justify-center px-screen',
-          bottom === 'nav'
-            ? 'bottom-[calc(var(--spacing-nav)+env(safe-area-inset-bottom)+12px)]'
-            : 'bottom-[calc(env(safe-area-inset-bottom)+16px)]',
-        )}
-      >
+      <div className="toast-region" data-bottom={bottom}>
         {/* 読み上げ用の領域は常に残し、中身だけを入れ替える */}
         <div role="status" aria-live="polite" className="contents">
           <AnimatePresence>
             {toast ? (
               <m.p
                 key={toast.id}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
+                exit={{ opacity: 0, y: 4 }}
                 transition={{ duration: DURATION.normal, ease: 'easeOut' }}
-                className="pointer-events-auto max-w-[calc(var(--container-guest)-32px)] rounded-control bg-ink px-4 py-3 text-sub text-white shadow-card"
+                className="toast"
               >
                 {toast.message}
               </m.p>

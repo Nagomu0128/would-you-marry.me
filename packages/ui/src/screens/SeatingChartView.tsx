@@ -28,18 +28,26 @@ type PdfState =
   | { status: 'ready'; doc: PDFDocumentProxy; aspects: number[] }
 
 /**
- * 席次表（PDF）の表示。全ページを縦に並べ、端末の画素密度に合わせて高精細に描く。
+ * 席次表（PDF）の表示。額装した席次表の見立てで、全ページを縦に並べ、端末の画素密度に合わせて高精細に描く。
  * 各ページはピンチ・ダブルタップで拡大し、拡大中は指で動かせる（最大 4 倍）。
  * データの取得はしない。PDF.js は表示するときに読み込む。
  */
 export function SeatingChartView({ pdfUrl, workerSrc, className }: SeatingChartViewProps) {
-  if (pdfUrl === null) {
-    return <EmptyState className={className} message={ja.guest.seating.empty} />
-  }
-  return <PdfPages pdfUrl={pdfUrl} workerSrc={workerSrc} className={className} />
+  return (
+    <div className={cn('document-frame', className)} data-empty={pdfUrl === null || undefined}>
+      <p className="frame-mark" aria-hidden="true">
+        {ja.guest.seating.mark}
+      </p>
+      {pdfUrl === null ? (
+        <EmptyState message={ja.guest.seating.empty} ornament="mizuhiki" />
+      ) : (
+        <PdfPages pdfUrl={pdfUrl} workerSrc={workerSrc} />
+      )}
+    </div>
+  )
 }
 
-function PdfPages({ pdfUrl, workerSrc, className }: SeatingChartViewProps & { pdfUrl: string }) {
+function PdfPages({ pdfUrl, workerSrc }: { pdfUrl: string; workerSrc: string }) {
   const [state, setState] = useState<PdfState>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -90,8 +98,8 @@ function PdfPages({ pdfUrl, workerSrc, className }: SeatingChartViewProps & { pd
   }, [pdfUrl, workerSrc, attempt])
 
   return (
-    <div ref={containerRef} className={cn('flex flex-col gap-3', className)}>
-      {state.status === 'loading' ? <Skeleton className="aspect-[1/1.414] w-full" /> : null}
+    <div ref={containerRef} className="document-gallery">
+      {state.status === 'loading' ? <Skeleton className="aspect-[1.414/1] w-full" /> : null}
       {state.status === 'error' ? <ErrorState onRetry={() => setAttempt((n) => n + 1)} /> : null}
       {state.status === 'ready' && width > 0 ? (
         <Pages doc={state.doc} aspects={state.aspects} width={width} />
@@ -164,7 +172,7 @@ function Pages({
           <div className="relative" style={{ aspectRatio: `1 / ${aspect}` }}>
             <canvas
               role="img"
-              aria-label={`席次表 ${index + 1} ページ目`}
+              aria-label={ja.guest.seating.pageAlt({ page: index + 1 })}
               ref={(node) => {
                 canvasRefs.current[index] = node
               }}

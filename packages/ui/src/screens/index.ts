@@ -9,6 +9,7 @@ export {
   HomeScreen,
   type HomeScreenPhoto,
   type HomeScreenProps,
+  splitCoupleName,
 } from './HomeScreen'
 export { PinchZoom, type PinchZoomProps } from './PinchZoom'
 export { SeatingChartView, type SeatingChartViewProps } from './SeatingChartView'
