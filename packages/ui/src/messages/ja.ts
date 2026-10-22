@@ -1,5 +1,6 @@
 // 画面に出す文言。docs/spec/messages.md の全文言を持つ（NFR-21）。
-// messages.md にない文言をここに足さない。差し込みのある文言は型のある関数にする。
+// messages.md にない文言をここに足さない（装飾の言葉を足したときは messages.md にも載せる）。
+// 差し込みのある文言は型のある関数にする。
 import { type ErrorCode, isErrorCode } from '@wym/shared'
 
 /** `{name}` のような部分に値を差し込む */
@@ -91,6 +92,16 @@ export const ja = {
     },
     back: '戻る',
     retry: 'もう一度試す',
+    /** 本文へのスキップリンク */
+    skipToContent: '本文へ移動',
+    /** 下部ナビゲーション・フッターのリンク群の読み上げ名 */
+    navLabel: 'メインメニュー',
+    footerLabel: 'ご利用について',
+    /** 画面（ルート）の読み込みに失敗したとき */
+    routeError: {
+      message: '画面を読み込めませんでした。電波の良い場所でもう一度お試しください',
+      reload: '画面を読み込み直す',
+    },
     /** 演出を飛ばすボタン（読み上げ用） */
     skipAnimation: '演出を飛ばす',
     photoAlt: ({ nickname }: { nickname: string }) => `${nickname} さんの写真`,
@@ -104,6 +115,9 @@ export const ja = {
       delete: '削除',
       like: 'いいね',
       unlike: 'いいねを取り消す',
+      /** 前後の写真へ移るボタン（読み上げ用） */
+      previous: '前の写真',
+      next: '次の写真',
     },
   },
 
@@ -136,15 +150,42 @@ export const ja = {
         album: 'アルバム',
         upload: '写真を投稿する',
       },
+      // --- 以下は表紙と入口の装飾の言葉（design-guide.md「画面ごとの見立て」） ---
+      /** 表紙の日付の下の一行 */
+      welcomeLine: '本日はようこそお越しくださいました',
+      /** 祝儀袋の表書きと、袋の下の添え書き */
+      giftOmote: '写真を贈る',
+      giftNote: '撮った一枚を、おふたりのアルバムへ',
+      /** 席札・御品書きの段の見出しと、札の添え書き */
+      guideHeading: '本日のご案内',
+      seatingNote: 'お席のご案内',
+      courseNote: '本日のお料理',
+      courseMark: '御品書',
+      /** アルバムの段 */
+      albumHeading: 'みんなのアルバム',
+      openAlbum: 'アルバムを見る',
+      albumEmpty: 'まだ写真がありません。最初の一枚を、お待ちしています',
     },
     // SG-04
     seating: {
       empty: '席次表は準備中です',
+      lead: 'お席をご確認のうえ、どうぞごゆっくりお過ごしください',
+      zoomHint: '二本の指で広げるか、ダブルタップで拡大できます',
+      /** PDF の各ページの代替テキスト */
+      pageAlt: ({ page }: { page: number }) => `席次表 ${page} ページ目`,
+      /** 額の題箋（装飾） */
+      mark: '御席次',
     },
     // SG-05
     course: {
       heading: '料理のコース',
       empty: 'コースのご案内は準備中です',
+      lead: 'おふたりから、感謝を込めたおもてなしです',
+      /** 各画像の代替テキスト */
+      imageAlt: ({ index }: { index: number }) => `料理のコース ${index}`,
+      zoomHint: 'タップで拡大',
+      /** 額の題箋（装飾） */
+      mark: '御品書',
     },
     // SG-06
     album: {
@@ -171,14 +212,24 @@ export const ja = {
       toAlbum: 'アルバムを見る',
       /** プレビュー画像の代替テキスト（読み上げ用） */
       previewAlt: '選んだ写真',
+      lead: '笑顔も、乾杯も、何気ないひとときも。あなたの一枚を、おふたりのアルバムへ',
+      rules: '1 回に 1 枚・JPEG / PNG・10MB まで',
+      /** 台紙の空いた枠に添える言葉 */
+      slot: 'ここに一枚を',
+      doneHeading: '思い出を、ありがとうございます',
+      doneNote: '写真をアルバムに届けました',
+      /** 貼った写真に押す朱印の文字（装飾） */
+      seal: '寿',
     },
   },
 
   couple: {
     // SC-01
     entry: {
-      heading: 'For the Couple',
+      heading: 'おふたりへ',
       description: '管理者からお伝えしたパスコードを入力してください',
+      /** 包みの下の添え書き */
+      note: 'みなさまが撮った今日の写真を、お届けします',
       submit: '入る',
       /** パスコード入力欄のラベル（screen-details.md SC-01 のワイヤーフレーム） */
       passcodeLabel: 'パスコード',
@@ -193,6 +244,8 @@ export const ja = {
       uploaderAll: 'すべて',
       uploaderSheetTitle: '投稿者',
       uploaderPhotoCount: ({ count }: { count: number }) => `${count} 枚`,
+      /** 見出しの帯の添え書き */
+      lead: 'みなさまから届いた写真',
     },
   },
 
