@@ -1,9 +1,20 @@
-import { type AdminTenantDetailResponse, SEATING_CHART_MAX_BYTES } from '@wym/shared'
-import { Button, Card, ConfirmSheet, ja, ListCard, TextField, useToast } from '@wym/ui'
+import {
+  type AdminTenantDetailResponse,
+  SEATING_CHART_MAX_BYTES,
+  type TenantStats,
+} from '@wym/shared'
+import { Button, ConfirmSheet, ja, TextField, useToast } from '@wym/ui'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { CourseMenuEditor } from '../components/CourseMenuEditor'
-import { Badge, LoadError, LoadingBlocks, RouterLink, Screen } from '../components/shell'
+import {
+  EventDateLine,
+  Ledger,
+  LoadError,
+  LoadingBlocks,
+  PeriodTag,
+  Screen,
+} from '../components/shell'
 import { ApiClientError, api, seatingChartUrl } from '../lib/api'
 import { messageOf } from '../lib/errors'
 import {
@@ -12,6 +23,7 @@ import {
   formatCount,
   periodEndLabel,
   periodLabel,
+  periodLabelKey,
 } from '../lib/format'
 import { useAsync } from '../lib/use-async'
 import { fieldErrorsFrom, type TenantFormErrors, validateTenantForm } from './TenantCreate'
@@ -23,7 +35,7 @@ export function TenantDetail() {
 
   if (state.status === 'loading') {
     return (
-      <Screen title="" backHref="/">
+      <Screen backHref="/">
         <LoadingBlocks />
       </Screen>
     )
@@ -57,6 +69,7 @@ function DetailBody({
   const toast = useToast()
   const navigate = useNavigate()
   const t = ja.admin.detail
+  const b = ja.admin.book
   const locked = tenant.dataDeletedAt !== null
 
   const [confirmSuspend, setConfirmSuspend] = useState(false)
@@ -81,72 +94,74 @@ function DetailBody({
   }
 
   const suspendTexts = tenant.suspended ? ja.confirms.resumeTenant : ja.confirms.suspendTenant
+  const links = [
+    { title: t.urls, path: 'urls' },
+    { title: t.photos, path: 'photos' },
+    { title: t.guests, path: 'guests' },
+    { title: t.preview, path: 'preview' },
+  ] as const
 
   return (
-    <Screen title={tenant.name} backHref="/">
-      <section className="detail-summary">
-        <div>
-          <p>
-            {until ? t.periodUntil({ label, until }) : t.period({ label })}{' '}
-            {tenant.suspended ? <Badge tone="warn">{ja.admin.periodLabels.suspended}</Badge> : null}
+    <Screen
+      title={tenant.name}
+      backHref="/"
+      lead={
+        <>
+          <EventDateLine eventDate={tenant.eventDate} />
+          <PeriodTag period={periodLabelKey(tenant)}>{periodLabel(tenant)}</PeriodTag>
+        </>
+      }
+    >
+      {/* 期間と削除予定日。停止・再開はここで行う */}
+      <div className="admin-status" data-suspended={tenant.suspended || undefined}>
+        <div className="admin-status-text">
+          <p className="admin-status-period">
+            {until ? t.periodUntil({ label, until }) : t.period({ label })}
           </p>
-          <p className="text-sub detail-summary-note">
+          <p className="admin-status-deletion">
             {ja.admin.deletionDate({ date: deletionDateLabel(boundaries) })}
           </p>
         </div>
         {locked ? null : (
-          <div>
-            <Button variant="secondary" onClick={() => setConfirmSuspend(true)}>
-              {tenant.suspended ? t.resume : t.suspend}
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            className={tenant.suspended ? undefined : 'admin-danger'}
+            onClick={() => setConfirmSuspend(true)}
+          >
+            {tenant.suspended ? t.resume : t.suspend}
+          </Button>
         )}
-      </section>
+      </div>
 
-      <h2 className="admin-section-title">
-        <span>01</span> 当日のご案内を整える
-      </h2>
       {locked ? null : (
         <>
           <BasicInfo tenantId={tenantId} detail={detail} onUpdate={onUpdate} />
-          <SeatingRow tenantId={tenantId} />
-          <CourseRow tenantId={tenantId} />
+          <Ledger title={b.materials}>
+            <div className="admin-rows">
+              <SeatingRow tenantId={tenantId} />
+              <CourseRow tenantId={tenantId} />
+            </div>
+          </Ledger>
         </>
       )}
 
-      <h2 className="admin-section-title">
-        <span>02</span> 参加者と思い出の管理
-      </h2>
-      <div className="detail-links">
-        <ListCard title={t.urls} href={`/tenants/${tenantId}/urls`} LinkComponent={RouterLink} />
-        <ListCard
-          title={t.photos}
-          href={`/tenants/${tenantId}/photos`}
-          LinkComponent={RouterLink}
-        />
-        <ListCard
-          title={t.guests}
-          href={`/tenants/${tenantId}/guests`}
-          LinkComponent={RouterLink}
-        />
-        <ListCard
-          title={t.preview}
-          href={`/tenants/${tenantId}/preview`}
-          LinkComponent={RouterLink}
-        />
-      </div>
+      <Ledger title={b.records}>
+        <ul className="admin-index">
+          {links.map((link) => (
+            <li key={link.path}>
+              <Link to={`/tenants/${tenantId}/${link.path}`} className="admin-index-link">
+                <span className="admin-index-title">{link.title}</span>
+                <span className="admin-index-leader" aria-hidden="true" />
+                <span className="admin-index-mark" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Ledger>
 
-      <section className="ui-card flex flex-col gap-3">
-        <h2 className="font-editorial text-heading-md">{t.usage}</h2>
-        <p>
-          {t.usageLine({
-            guests: formatCount(tenant.stats.guestCount),
-            photos: formatCount(tenant.stats.photoCount),
-            likes: formatCount(tenant.stats.likeCount),
-            storage: formatBytes(tenant.stats.storageBytes),
-          })}
-        </p>
-      </section>
+      <Ledger title={t.usage}>
+        <UsageTally stats={tenant.stats} />
+      </Ledger>
 
       <DeleteTenant
         tenantId={tenantId}
@@ -165,6 +180,27 @@ function DetailBody({
         loading={busy}
       />
     </Screen>
+  )
+}
+
+/** 利用状況。帳面の集計欄のように、数を大きく並べる */
+function UsageTally({ stats }: { stats: TenantStats }) {
+  const m = ja.admin.monitor
+  const items = [
+    { label: m.guests, value: formatCount(stats.guestCount) },
+    { label: m.photos, value: formatCount(stats.photoCount) },
+    { label: m.likes, value: formatCount(stats.likeCount) },
+    { label: m.storage, value: formatBytes(stats.storageBytes) },
+  ]
+  return (
+    <dl className="admin-tally">
+      {items.map((item) => (
+        <div key={item.label}>
+          <dt>{item.label}</dt>
+          <dd>{item.value}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 
@@ -218,31 +254,34 @@ function BasicInfo({
   }
 
   return (
-    <Card className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-editorial text-heading-md">{t.basic}</h2>
-        {editing ? null : (
-          <Button variant="text" onClick={startEdit}>
+    <Ledger
+      title={t.basic}
+      action={
+        editing ? null : (
+          <Button variant="secondary" onClick={startEdit}>
             {t.edit}
           </Button>
-        )}
-      </div>
+        )
+      }
+    >
       {editing ? (
-        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} noValidate className="admin-form admin-form-inline">
           <TextField
+            className="admin-field"
             label={t.name}
             value={name}
             onChange={(e) => setName(e.target.value)}
             error={errors.name}
           />
           <TextField
+            className="admin-field admin-field-date"
             label={t.eventDate}
             type="date"
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}
             error={errors.eventDate}
           />
-          <div className="flex gap-2">
+          <div className="admin-form-actions">
             <Button type="submit" loading={saving}>
               {ja.admin.save}
             </Button>
@@ -252,14 +291,20 @@ function BasicInfo({
           </div>
         </form>
       ) : (
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sub">
-          <dt className="text-muted">{t.name}</dt>
-          <dd className="break-words">{tenant.name}</dd>
-          <dt className="text-muted">{t.eventDate}</dt>
-          <dd>{tenant.eventDate}</dd>
+        <dl className="admin-facts">
+          <div>
+            <dt>{t.name}</dt>
+            <dd className="admin-facts-name">{tenant.name}</dd>
+          </div>
+          <div>
+            <dt>{t.eventDate}</dt>
+            <dd>
+              <EventDateLine eventDate={tenant.eventDate} />
+            </dd>
+          </div>
         </dl>
       )}
-    </Card>
+    </Ledger>
   )
 }
 
@@ -309,30 +354,28 @@ function SeatingRow({ tenantId }: { tenantId: string }) {
   }
 
   return (
-    <Card className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-editorial text-heading-md">
-          {t.seating}
-          {registered === false ? (
-            <span className="ml-2 text-sub font-normal text-muted">{t.seatingNone}</span>
-          ) : null}
-        </h2>
-        <div className="flex gap-2">
-          <Button variant="secondary" loading={busy} onClick={() => input.current?.click()}>
-            {registered ? t.seatingReplace : t.seatingRegister}
-          </Button>
-          {registered ? (
-            <a
-              href={seatingChartUrl(tenantId)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ui-button"
-              data-variant="secondary"
-            >
-              {t.seatingCheck}
-            </a>
-          ) : null}
-        </div>
+    <div className="admin-row">
+      <h3 className="admin-row-title">{t.seating}</h3>
+      {registered === null ? null : (
+        <p className="admin-row-state" data-empty={registered ? undefined : true}>
+          {registered ? ja.admin.book.seatingRegistered : t.seatingNone}
+        </p>
+      )}
+      <div className="admin-row-actions">
+        <Button variant="secondary" loading={busy} onClick={() => input.current?.click()}>
+          {registered ? t.seatingReplace : t.seatingRegister}
+        </Button>
+        {registered ? (
+          <a
+            href={seatingChartUrl(tenantId)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ui-button"
+            data-variant="secondary"
+          >
+            {t.seatingCheck}
+          </a>
+        ) : null}
       </div>
       <input
         ref={input}
@@ -343,11 +386,11 @@ function SeatingRow({ tenantId }: { tenantId: string }) {
         onChange={(e) => void handleFile(e.target.files?.[0])}
       />
       {fileError ? (
-        <p role="alert" className="text-sub text-error">
+        <p role="alert" className="admin-row-error">
           {fileError}
         </p>
       ) : null}
-    </Card>
+    </div>
   )
 }
 
@@ -361,36 +404,40 @@ function CourseRow({ tenantId }: { tenantId: string }) {
   const shown = count ?? (state.status === 'ready' ? state.data.images.length : null)
 
   return (
-    <Card className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="font-editorial text-heading-md">
-          {t.course}
-          {shown !== null ? (
-            <span className="ml-2 text-sub font-normal text-muted">
-              {t.courseCount({ count: shown })}
-            </span>
-          ) : null}
-        </h2>
-        {state.status === 'ready' && !editing ? (
-          <Button variant="text" onClick={() => setEditing(true)}>
+    <div className="admin-row" data-editing={editing || undefined}>
+      <h3 className="admin-row-title">{t.course}</h3>
+      {shown !== null ? (
+        <p className="admin-row-state" data-empty={shown === 0 || undefined}>
+          {t.courseCount({ count: shown })}
+        </p>
+      ) : null}
+      {state.status === 'ready' && !editing ? (
+        <div className="admin-row-actions">
+          <Button variant="secondary" onClick={() => setEditing(true)}>
             {t.edit}
           </Button>
-        ) : null}
-      </div>
-      {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
-      {state.status === 'ready' && editing ? (
-        <CourseMenuEditor
-          tenantId={tenantId}
-          initialImages={state.data.images}
-          onChange={(images) => setCount(images.length)}
-          onClose={() => setEditing(false)}
-        />
+        </div>
       ) : null}
-    </Card>
+      {state.status === 'error' ? (
+        <div className="admin-row-wide">
+          <LoadError error={state.error} onRetry={retry} />
+        </div>
+      ) : null}
+      {state.status === 'ready' && editing ? (
+        <div className="admin-row-wide">
+          <CourseMenuEditor
+            tenantId={tenantId}
+            initialImages={state.data.images}
+            onChange={(images) => setCount(images.length)}
+            onClose={() => setEditing(false)}
+          />
+        </div>
+      ) : null}
+    </div>
   )
 }
 
-/** テナントの削除（テナント名の入力を求める） */
+/** テナントの削除（テナント名の入力を求める）。取り消せない操作として、紅の罫で区切る */
 function DeleteTenant({
   tenantId,
   name,
@@ -426,18 +473,20 @@ function DeleteTenant({
   }
 
   return (
-    <div>
-      <Button
-        variant="text"
-        className="text-error"
-        onClick={() => {
-          setTyped('')
-          setError(undefined)
-          setOpen(true)
-        }}
-      >
-        {ja.admin.detail.delete}
-      </Button>
+    <Ledger title={ja.admin.book.danger} tone="danger">
+      <div>
+        <Button
+          variant="secondary"
+          className="admin-danger"
+          onClick={() => {
+            setTyped('')
+            setError(undefined)
+            setOpen(true)
+          }}
+        >
+          {ja.admin.detail.delete}
+        </Button>
+      </div>
       <ConfirmSheet
         open={open}
         onClose={() => setOpen(false)}
@@ -455,6 +504,6 @@ function DeleteTenant({
           error,
         }}
       />
-    </div>
+    </Ledger>
   )
 }

@@ -134,7 +134,7 @@ describe('PhotoViewer', () => {
     await user.keyboard('{ArrowRight}')
     const unlike = screen.getByRole('button', { name: ja.common.viewer.unlike })
     expect(unlike).toHaveAttribute('aria-pressed', 'true')
-    expect(unlike.querySelector('svg')).toHaveClass('fill-rose')
+    expect(unlike.querySelector('svg')).toHaveClass('fill-accent')
   })
 
   it('いいねしたとき LikeBurst を出す', () => {

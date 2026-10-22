@@ -17,6 +17,7 @@
 | [ADR-0001](0001-select-tech-stack.md) | 技術スタックの選定 | 承認 |
 | [ADR-0002](0002-use-motion-for-animation.md) | UI のアニメーションに Motion を使う | 承認 |
 | [ADR-0003](0003-dev-tools-and-repository-layout.md) | 開発ツールとリポジトリ構成 | 承認 |
+| [ADR-0004](0004-wa-wedding-redesign-and-self-hosted-fonts.md) | 和の婚礼の意匠への再構成と、Web フォントの自前配信 | 承認 |
 
 ## テンプレート
 

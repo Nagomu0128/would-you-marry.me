@@ -1,8 +1,8 @@
 import { type AdminGuest, validateNickname } from '@wym/shared'
-import { Button, ConfirmSheet, EmptyState, ja, useToast } from '@wym/ui'
+import { Button, ConfirmSheet, ja, useToast } from '@wym/ui'
 import { useState } from 'react'
 import { useParams } from 'react-router'
-import { LoadError, LoadingBlocks, Screen } from '../components/shell'
+import { AdminEmpty, LoadError, LoadingBlocks, Screen } from '../components/shell'
 import { ApiClientError, api } from '../lib/api'
 import { messageOf } from '../lib/errors'
 import { useAsync } from '../lib/use-async'
@@ -71,33 +71,36 @@ export function Guests() {
 
   return (
     <Screen title={ja.admin.detail.guests} backHref={`/tenants/${tenantId}`}>
-      <p className="text-sub text-muted">この一日を、ともに過ごすみなさま。</p>
       {state.status === 'loading' ? <LoadingBlocks /> : null}
       {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
       {state.status === 'ready' && guests.length === 0 ? (
-        <EmptyState message={ja.admin.guests.empty} />
+        <AdminEmpty message={ja.admin.guests.empty} />
       ) : null}
       {state.status === 'ready' && guests.length > 0 ? (
-        <ul className="flex flex-col gap-2">
-          {guests.map((guest) => (
-            <li key={guest.id}>
-              <div className="guest-row">
-                <span className="guest-avatar" aria-hidden="true">
-                  {Array.from(guest.nickname ?? '')[0]}
-                </span>
-                <div className="min-w-0">
-                  <p className="break-words text-body">{guest.nickname}</p>
-                  <p className="text-caption text-muted">
-                    {ja.admin.guests.photoCount({ count: guest.photoCount })}
-                  </p>
-                </div>
-                <Button variant="secondary" onClick={() => open(guest)}>
-                  {ja.guest.home.change}
-                </Button>
-              </div>
+        // 芳名帳のように、記帳の順に番号を振って名前を並べる
+        <ol className="admin-guests">
+          {guests.map((guest, index) => (
+            <li key={guest.id} className="admin-guest">
+              <span className="admin-guest-no" aria-hidden="true">
+                {index + 1}
+              </span>
+              <p id={`guest-${guest.id}`} className="admin-guest-name">
+                {guest.nickname}
+              </p>
+              <p className="admin-guest-count">
+                {ja.admin.guests.photoCount({ count: guest.photoCount })}
+              </p>
+              <Button
+                variant="secondary"
+                className="admin-guest-change"
+                aria-describedby={`guest-${guest.id}`}
+                onClick={() => open(guest)}
+              >
+                {ja.guest.home.change}
+              </Button>
             </li>
           ))}
-        </ul>
+        </ol>
       ) : null}
 
       <ConfirmSheet

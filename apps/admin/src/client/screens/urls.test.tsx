@@ -49,7 +49,9 @@ describe('URL の発行（SA-05）', () => {
       [`POST ${BASE}/join-url`]: () => ({ json: joinIssued }),
     })
     renderApp(`/tenants/${TENANT_ID}/urls`)
-    const card = (await screen.findByText('参加 URL（QR コード）')).closest('div') as HTMLElement
+    const card = (await screen.findByText('参加 URL（QR コード）')).closest(
+      'section',
+    ) as HTMLElement
     expect(screen.queryByRole('img', { name: '参加 URL の QR コード' })).not.toBeInTheDocument()
     await userEvent.click(within(card).getByRole('button', { name: '発行' }))
     expect(await screen.findByRole('img', { name: '参加 URL の QR コード' })).toBeInTheDocument()
@@ -126,7 +128,7 @@ describe('URL の発行（SA-05）', () => {
       }),
     })
     const first = renderApp(`/tenants/${TENANT_ID}/urls`)
-    const section = (await screen.findByText('新郎新婦用 URL')).closest('div') as HTMLElement
+    const section = (await screen.findByText('新郎新婦用 URL')).closest('section') as HTMLElement
     expect(screen.queryByText('AB12CD34')).not.toBeInTheDocument()
     await userEvent.click(within(section).getByRole('button', { name: '発行' }))
     expect(await screen.findByText('AB12CD34')).toBeInTheDocument()
@@ -166,7 +168,7 @@ describe('URL の発行（SA-05）', () => {
     })
     renderApp(`/tenants/${TENANT_ID}/urls`)
     expect(await screen.findByText('規約に同意済み')).toBeInTheDocument()
-    const section = screen.getByText('新郎新婦用 URL').closest('div') as HTMLElement
+    const section = screen.getByText('新郎新婦用 URL').closest('section') as HTMLElement
     await userEvent.click(within(section).getByRole('button', { name: '再発行' }))
     const dialog = await screen.findByRole('dialog')
     expect(dialog).toHaveTextContent('新郎新婦用 URL とパスコードを再発行しますか？')

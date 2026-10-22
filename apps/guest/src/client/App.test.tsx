@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiClientError, NetworkError } from './lib/api'
@@ -14,13 +14,16 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
 })
 
 describe('ニックネーム登録（初回）', () => {
   it('同意するまで押せず、使用中の名前ではエラーを出し、成功でホームへ進む', async () => {
-    const user = userEvent.setup()
+    // 送信すると紙が折り鶴になって飛び立つ（約 2.4 秒）。時計を進めて待つ
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     let registered = false
     let attempts = 0
     const { calls } = mockFetch({
@@ -37,7 +40,7 @@ describe('ニックネーム登録（初回）', () => {
     renderApp('/t/t1/nickname')
 
     const input = await screen.findByRole('textbox')
-    const submit = screen.getByRole('button', { name: 'はじめる' })
+    const submit = screen.getByRole('button', { name: '記帳する' })
     expect(submit).toBeDisabled()
     expect(screen.getByText('0 / 20')).toBeInTheDocument()
 
@@ -53,7 +56,8 @@ describe('ニックネーム登録（初回）', () => {
       await screen.findByText('この名前は使われています。別の名前を入力してください'),
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'はじめる' }))
+    await user.click(screen.getByRole('button', { name: '記帳する' }))
+    await act(() => vi.advanceTimersByTimeAsync(3000))
     expect(await screen.findByText('こんにちは、たろう さん')).toBeInTheDocument()
 
     const put = calls.filter((call) => call.key === 'PUT /api/t/t1/me/nickname')
@@ -69,14 +73,15 @@ describe('ニックネーム登録（初回）', () => {
     renderApp('/t/t1/nickname')
     await user.type(await screen.findByRole('textbox'), 'あ'.repeat(21))
     await user.click(screen.getByRole('checkbox'))
-    expect(screen.getByRole('button', { name: 'はじめる' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '記帳する' })).toBeDisabled()
     expect(screen.getByText('ニックネームは 20 文字以内で入力してください')).toBeInTheDocument()
   })
 })
 
 describe('ニックネーム変更', () => {
   it('同意欄がなく、成功するとホームに戻ってトーストを出す', async () => {
-    const user = userEvent.setup()
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     mockFetch({
       ...config,
       ...emptyPhotos,
@@ -93,6 +98,7 @@ describe('ニックネーム変更', () => {
     await user.clear(input)
     await user.type(input, 'じろう')
     await user.click(screen.getByRole('button', { name: '変更する' }))
+    await act(() => vi.advanceTimersByTimeAsync(2000))
 
     expect(await screen.findByText('ニックネームを変更しました')).toBeInTheDocument()
     expect(await screen.findByText(/こんにちは/)).toBeInTheDocument()
@@ -115,7 +121,7 @@ describe('エラーの振り分け', () => {
       'GET /api/t/t1/seating-chart': () => apiError('NICKNAME_REQUIRED', 403),
     })
     renderApp('/t/t1/seating')
-    expect(await screen.findByRole('button', { name: 'はじめる' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: '記帳する' })).toBeInTheDocument()
   })
 
   it('通信エラーは画面内に「もう一度試す」を出し、押すと読み込み直す', async () => {

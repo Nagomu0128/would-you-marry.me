@@ -11,5 +11,5 @@ export const DURATION = {
 /** トーストを表示する時間（ミリ秒） */
 export const TOAST_DURATION_MS = 3000
 
-/** 画面の切り替えで上へ動く量（px） */
-export const PAGE_TRANSITION_OFFSET = 8
+/** 画面の切り替えで、紙が送られて上へ動く量（px） */
+export const PAGE_TRANSITION_OFFSET = 14

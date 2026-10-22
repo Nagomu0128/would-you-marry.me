@@ -2,11 +2,10 @@ import { ChevronLeft } from 'lucide-react'
 import { type ReactNode, useEffect } from 'react'
 import { ja } from '../messages/ja'
 import { cn } from './cn'
-import { ICON_STROKE_WIDTH } from './constants'
 import { DefaultLink, type LinkComponent } from './link'
 
 export type ScreenHeaderProps = {
-  /** 画面名（ホームではテナント名） */
+  /** 画面名（h1） */
   title: string
   /** 戻り先。渡すと戻るボタンをリンクで出す */
   backHref?: string
@@ -15,14 +14,15 @@ export type ScreenHeaderProps = {
   onBack?: () => void
   /** 右端に置く操作（任意） */
   actions?: ReactNode
-  eyebrow?: string
+  /** 題の下に添える短い言葉（明朝） */
   description?: string
   className?: string
 }
 
-const backClass = 'header-back'
-
-/** 上部のヘッダー。戻るボタンは「戻る」と読み上げる。上はセーフエリアを避ける。 */
+/**
+ * 画面の表題。戻るは控えめな文字のリンク、題は明朝で、右へ金の細罫が伸びる（書物の柱の見立て）。
+ * 戻るボタンは「戻る」と読み上げる。上はセーフエリアを避ける。
+ */
 export function ScreenHeader({
   title,
   backHref,
@@ -30,47 +30,42 @@ export function ScreenHeader({
   onBack,
   actions,
   className,
-  eyebrow = 'The Wedding Journal',
   description,
 }: ScreenHeaderProps) {
   useEffect(() => {
-    if (title) document.title = `${title} | The Wedding Journal`
+    if (title) document.title = title
   }, [title])
-  const icon = <ChevronLeft aria-hidden="true" strokeWidth={ICON_STROKE_WIDTH} />
+  const label = (
+    <>
+      <ChevronLeft aria-hidden="true" strokeWidth={1.4} />
+      <span>{ja.common.back}</span>
+    </>
+  )
   let back: ReactNode = null
   if (backHref !== undefined) {
     back = (
-      <Link href={backHref} className={backClass} aria-label={ja.common.back} onClick={onBack}>
-        {icon}
-        <span>{ja.common.back}</span>
+      <Link href={backHref} className="header-back" onClick={onBack}>
+        {label}
       </Link>
     )
   } else if (onBack) {
     back = (
-      <button type="button" className={backClass} aria-label={ja.common.back} onClick={onBack}>
-        {icon}
-        <span>{ja.common.back}</span>
+      <button type="button" className="header-back" onClick={onBack}>
+        {label}
       </button>
     )
   }
 
   return (
-    <header className={cn('screen-header px-screen', className)}>
-      <div className="header-top">
-        {back ?? (
-          <span className="brand-monogram" aria-hidden="true">
-            &
-          </span>
-        )}
-        <p className="eyebrow text-muted" lang="en">
-          {eyebrow}
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="screen-title">{title}</h1>
-        {actions}
-      </div>
-      {description ? <p className="screen-description">{description}</p> : null}
+    <header className={cn('screen-header', className)}>
+      {back || actions ? (
+        <div className="header-bar">
+          {back ?? <span />}
+          {actions}
+        </div>
+      ) : null}
+      <h1 className="screen-title">{title}</h1>
+      {description ? <p className="screen-lead">{description}</p> : null}
     </header>
   )
 }

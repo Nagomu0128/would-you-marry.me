@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { StaffPhoto } from '@wym/shared'
 import { MemoryRouter, useLocation } from 'react-router'
@@ -145,17 +145,29 @@ describe('SC-02 写真一覧', () => {
   })
 
   it('末尾が見えたら続きを読み込み、重複した写真は 1 枚だけ表示する', async () => {
-    let reachEnd: () => void = () => {}
+    // 監視中（observe 済みで disconnect されていない）の監視だけに「見えた」を伝える。
+    // 最後に作られた監視が片付け済みのこともあるので、作られた順には頼らない
+    const live = new Set<{ notify: () => void }>()
+    const reachEnd = () => {
+      for (const observer of live) observer.notify()
+    }
     vi.stubGlobal(
       'IntersectionObserver',
       class {
+        notify: () => void
         constructor(callback: IntersectionObserverCallback) {
-          reachEnd = () =>
+          this.notify = () =>
             callback([{ isIntersecting: true } as IntersectionObserverEntry], this as never)
         }
-        observe() {}
-        disconnect() {}
-        unobserve() {}
+        observe() {
+          live.add(this)
+        }
+        disconnect() {
+          live.delete(this)
+        }
+        unobserve() {
+          live.delete(this)
+        }
       },
     )
     const { calls } = mockApi({
@@ -168,8 +180,10 @@ describe('SC-02 写真一覧', () => {
     })
     renderPhotos()
     await waitFor(() => expect(tileIds()).toEqual(['a', 'b']))
-    reachEnd()
-    await waitFor(() => expect(tileIds()).toEqual(['a', 'b', 'c']))
+    await waitFor(() => expect(live.size).toBeGreaterThan(0))
+    act(() => reachEnd())
+    // 全体のテストと並行して動くと遅くなるので、待つ時間に余裕を持たせる（確かめる内容は同じ）
+    await waitFor(() => expect(tileIds()).toEqual(['a', 'b', 'c']), { timeout: 4000 })
     expect(calls.filter((c) => c.url.searchParams.get('cursor') === 'c1')).toHaveLength(1)
   })
 

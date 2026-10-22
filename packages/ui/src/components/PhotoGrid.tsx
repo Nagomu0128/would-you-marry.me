@@ -24,7 +24,10 @@ export type PhotoGridProps = {
   className?: string
 }
 
-/** 3 列、4:5 の写真枠。読み込めた写真から順にフェードインする。 */
+/**
+ * 写真帖の一頁。3 列、4:5 の写真枠を、細い和紙の余白で区切って貼る。
+ * 読み込めた写真から順にフェードインする。いいね数は写真の右下に小さく添える。
+ */
 export function PhotoGrid({ photos, onSelect, onReachEnd, className }: PhotoGridProps) {
   const sentinelRef = useRef<HTMLDivElement>(null)
   const onReachEndRef = useRef(onReachEnd)
@@ -88,13 +91,13 @@ function PhotoTile({
         initial={false}
         animate={{ opacity: loaded ? 1 : 0 }}
         transition={{ duration: DURATION.normal }}
-        className="absolute inset-0 size-full object-cover"
+        className="photo-image"
       />
       <span aria-hidden="true" className="photo-likes">
         <Heart
-          size={14}
+          size={12}
           strokeWidth={ICON_STROKE_WIDTH}
-          className={cn(photo.liked && 'fill-rose text-rose')}
+          className={cn('heart', photo.liked && 'is-filled fill-accent text-accent')}
         />
         {photo.likeCount}
       </span>

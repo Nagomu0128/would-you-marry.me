@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { CourseMenuView } from './CourseMenuView'
-import { formatEventDate, HomeScreen } from './HomeScreen'
+import { formatEventDate, HomeScreen, splitCoupleName } from './HomeScreen'
 import { clampTransform, zoomAround } from './PinchZoom'
 import { SeatingChartView } from './SeatingChartView'
 
@@ -41,6 +41,54 @@ describe('HomeScreen', () => {
 
   it('日付の形式', () => {
     expect(formatEventDate('2026-01-05')).toBe('2026.01.05')
+  })
+
+  it('表紙の名前は縦書きの列に分けても、見出しの名前はテナント名のまま', () => {
+    render(
+      <HomeScreen
+        tenantName="佐藤 健太 & 鈴木 美咲"
+        eventDate="2026-10-31"
+        nickname="n"
+        hrefs={hrefs}
+      />,
+    )
+    expect(
+      screen.getByRole('heading', { level: 1, name: '佐藤 健太 & 鈴木 美咲' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('佐藤 健太')).toBeInTheDocument()
+    expect(screen.getByText('鈴木 美咲')).toBeInTheDocument()
+  })
+
+  it('写真がなければ、最初の一枚を待つ表示とアルバムへの導線を出す', () => {
+    render(<HomeScreen tenantName="t" eventDate="2026-10-31" nickname="n" hrefs={hrefs} />)
+    expect(
+      screen.getByText('まだ写真がありません。最初の一枚を、お待ちしています'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /アルバムを見る/ })).toHaveAttribute('href', '/a')
+  })
+
+  it('写真を贈る入口（祝儀袋）は「写真を投稿する」として投稿へ移る', () => {
+    render(<HomeScreen tenantName="t" eventDate="2026-10-31" nickname="n" hrefs={hrefs} />)
+    expect(screen.getByRole('link', { name: '写真を投稿する' })).toHaveAttribute('href', '/u')
+  })
+})
+
+describe('splitCoupleName', () => {
+  it('区切り（&・＆・「・」・と）でおふたりの名前に分ける', () => {
+    expect(splitCoupleName('佐藤 健太 & 鈴木 美咲')).toEqual({
+      names: ['佐藤 健太', '鈴木 美咲'],
+      separator: '&',
+    })
+    expect(splitCoupleName('〇〇家・△△家 結婚式')).toEqual({
+      names: ['〇〇家', '△△家 結婚式'],
+      separator: '・',
+    })
+    expect(splitCoupleName('太郎 と 花子')).toEqual({ names: ['太郎', '花子'], separator: 'と' })
+  })
+
+  it('区切りがないときは 1 つのまま', () => {
+    expect(splitCoupleName('山田家 結婚式')).toEqual({ names: ['山田家 結婚式'], separator: null })
+    expect(splitCoupleName('& 花子')).toEqual({ names: ['& 花子'], separator: null })
   })
 })
 

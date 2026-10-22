@@ -3,6 +3,7 @@ import {
   type BottomNavKey,
   Brand,
   Footer,
+  ja,
   PageLoading,
   PageTransition,
   RouteBoundary,
@@ -40,29 +41,34 @@ function Page({ children }: { children: ReactNode }) {
   )
 }
 
-/** 下部ナビゲーションのない画面（SG-02、SG-E1、規約、新郎新婦用ページ） */
-export function PlainLayout() {
+/**
+ * 一枚の紙（参加者・新郎新婦の画面の外枠）。上端は小さな水引と金の細罫だけの静かな帯、
+ * 下端は控えめなリンク。48rem 以上では、紙の外側を臙脂と青海波の卓にする（guest.css）。
+ */
+function Sheet({ withNav = false }: { withNav?: boolean }) {
   return (
-    <div className="screen-h layout-guest guest-shell flex flex-col safe-bottom">
-      <a href="#main-content" className="skip-link">
-        本文へ移動
-      </a>
-      <header className="guest-masthead">
-        <Brand />
-        <span className="eyebrow" lang="en">
-          Made of
-          <br />
-          your moments
-        </span>
-      </header>
-      <main id="main-content" tabIndex={-1} className="flex-1">
-        <Page>
-          <Outlet />
-        </Page>
-      </main>
-      <AppFooter />
+    <div className="guest-table">
+      <div className="guest-sheet" data-nav={withNav || undefined}>
+        <a href="#main-content" className="skip-link">
+          {ja.common.skipToContent}
+        </a>
+        <div className="guest-band">
+          <Brand />
+        </div>
+        <main id="main-content" tabIndex={-1} className="guest-main">
+          <Page>
+            <Outlet />
+          </Page>
+        </main>
+        <AppFooter />
+      </div>
     </div>
   )
+}
+
+/** 下部ナビゲーションのない画面（SG-02、SG-E1、規約、新郎新婦用ページ） */
+export function PlainLayout() {
+  return <Sheet />
 }
 
 function currentNavKey(pathname: string): BottomNavKey | undefined {
@@ -88,25 +94,7 @@ export function NavLayout() {
   const current = currentNavKey(pathname)
   return (
     <>
-      <div className="screen-h layout-guest guest-shell guest-with-nav flex flex-col">
-        <a href="#main-content" className="skip-link">
-          本文へ移動
-        </a>
-        <header className="guest-masthead">
-          <Brand />
-          <span className="eyebrow" lang="en">
-            Made of
-            <br />
-            your moments
-          </span>
-        </header>
-        <main id="main-content" tabIndex={-1} className="flex-1">
-          <Page>
-            <Outlet />
-          </Page>
-        </main>
-        <AppFooter />
-      </div>
+      <Sheet withNav />
       <BottomNav
         {...(current ? { current } : {})}
         hrefs={{

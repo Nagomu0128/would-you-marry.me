@@ -45,10 +45,10 @@ function toGridItem(photo: GuestPhoto): PhotoGridItem {
 
 function GridSkeleton() {
   return (
-    <div data-testid="album-skeleton" className="photo-grid">
+    <div data-testid="album-skeleton" className="album-skeleton-grid">
       {Array.from({ length: 12 }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: 固定の装飾
-        <Skeleton key={i} className="aspect-[4/5] w-full rounded-photo" />
+        <Skeleton key={i} className="aspect-[4/5] w-full rounded-none" />
       ))}
     </div>
   )
@@ -56,11 +56,11 @@ function GridSkeleton() {
 
 function RankingSkeleton() {
   return (
-    <div data-testid="album-skeleton" className="flex flex-col gap-4">
-      <Skeleton className="aspect-square w-full rounded-card" />
-      <div className="grid grid-cols-2 gap-3">
-        <Skeleton className="aspect-square w-full rounded-card" />
-        <Skeleton className="aspect-square w-full rounded-card" />
+    <div data-testid="album-skeleton" className="flex flex-col items-center gap-6 px-3 pt-12">
+      <Skeleton className="aspect-[4/5] w-[min(100%,22rem)] rounded-none" />
+      <div className="grid w-full grid-cols-2 gap-5">
+        <Skeleton className="aspect-[4/5] w-full rounded-none" />
+        <Skeleton className="aspect-[4/5] w-full rounded-none" />
       </div>
       <Skeleton className="h-16 w-full" />
     </div>
@@ -69,7 +69,7 @@ function RankingSkeleton() {
 
 function FilterChips({ mine, onChange }: { mine: boolean; onChange: (mine: boolean) => void }) {
   return (
-    <div className="flex gap-2">
+    <div className="album-filters">
       <button
         type="button"
         aria-pressed={!mine}
@@ -204,7 +204,12 @@ export function AlbumRoute() {
       : null
 
   const postLink = (
-    <RouterLink href={paths.upload(tenantId)} className="ui-button" data-variant="primary">
+    <RouterLink
+      href={paths.upload(tenantId)}
+      className="ui-button"
+      data-variant="primary"
+      data-tone="beni"
+    >
       {ja.guest.home.cards.upload}
     </RouterLink>
   )
@@ -257,26 +262,20 @@ export function AlbumRoute() {
     <div>
       <ScreenHeader
         title={ja.common.nav.album}
-        eyebrow="Collected memories"
-        description="みなさまと綴る、今日の一冊。お気に入りにはハートを添えて。"
         backHref={paths.home(tenantId)}
         LinkComponent={RouterLink}
       />
       <PullIndicator distance={distance} refreshing={refreshing} />
-      <div className="flex flex-col gap-3 pb-6">
-        <Tabs
-          tabs={tabs}
-          value={tab}
-          onChange={changeTab}
-          aria-label={ja.common.nav.album}
-          className="px-screen"
-        />
-        <div id={PANEL_ID} role="tabpanel" className="flex flex-col gap-3">
+      <div>
+        <div className="album-tabs">
+          <Tabs tabs={tabs} value={tab} onChange={changeTab} aria-label={ja.common.nav.album} />
+        </div>
+        <div id={PANEL_ID} role="tabpanel">
           {tab === 'timeline' ? (
-            <div className="flex flex-col gap-2 px-screen">
+            <div className="album-tools">
               <FilterChips mine={mine} onChange={changeMine} />
               {mine && remaining !== null ? (
-                <p className="text-sub text-muted">{ja.guest.album.remaining({ remaining })}</p>
+                <p className="album-remaining">{ja.guest.album.remaining({ remaining })}</p>
               ) : null}
             </div>
           ) : null}

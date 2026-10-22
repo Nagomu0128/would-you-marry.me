@@ -15,7 +15,7 @@ import { LikeBurst } from '../motion/LikeBurst'
 import { PinchZoom } from '../screens/PinchZoom'
 import { ConfirmSheet } from './ConfirmSheet'
 import { cn } from './cn'
-import { DURATION, ICON_STROKE_WIDTH } from './constants'
+import { DURATION } from './constants'
 
 export type PhotoViewerDeleteConfirm = {
   body: string
@@ -73,7 +73,7 @@ function originOf(photo: Photo): Origin | null {
 }
 
 /**
- * 写真の拡大表示（SG-06・SC-02・SA-07 で共通）。黒背景・全画面。
+ * 写真の拡大表示（SG-06・SC-02・SA-07 で共通）。漆黒の全画面に、金の細い線の操作を置く。
  * 役割ごとの違いは props で決める: `onToggleLike`（参加者だけ）、`canDelete` と `onDelete`、`onSave`（全員）。
  * 左右のスワイプ（矢印キー）で前後の写真、下へのスワイプ・× ・Esc で閉じる。ピンチで拡大できる。
  * 動きを減らす設定では、移動や拡大をやめてフェードだけにする（MotionConfig）。
@@ -225,9 +225,6 @@ export function PhotoViewer<P extends Photo = Photo>({
     if (deleted) onClose()
   }
 
-  const iconButton =
-    'flex min-h-tap min-w-tap items-center justify-center gap-2 rounded-control px-3 text-body text-white focus-visible:outline-2 focus-visible:outline-accent'
-
   return createPortal(
     <dialog
       ref={rootRef}
@@ -246,31 +243,31 @@ export function PhotoViewer<P extends Photo = Photo>({
           type="button"
           onClick={onClose}
           aria-label={ja.common.viewer.close}
-          className={iconButton}
+          className="viewer-button"
+          data-shape="round"
         >
-          <X aria-hidden="true" strokeWidth={ICON_STROKE_WIDTH} />
+          <X aria-hidden="true" strokeWidth={1.25} />
         </button>
-        <span className="viewer-count">
-          {String(index + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}
-        </span>
+        <p className="viewer-count" aria-hidden="true">
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          <span className="viewer-count-rule" />
+          <span>{String(photos.length).padStart(2, '0')}</span>
+        </p>
         <button
           type="button"
           onClick={handleSave}
           aria-disabled={saving}
           aria-busy={saving || undefined}
-          className={cn(
-            iconButton,
-            saving && 'animate-pulse cursor-progress opacity-60 motion-reduce:animate-none',
-          )}
+          className="viewer-button"
         >
-          <Download size={16} aria-hidden="true" />
+          <Download aria-hidden="true" strokeWidth={1.25} />
           {ja.common.viewer.save}
         </button>
       </div>
 
       <div
         data-testid="viewer-stage"
-        className="relative min-h-0 flex-1"
+        className="viewer-stage"
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
@@ -279,21 +276,21 @@ export function PhotoViewer<P extends Photo = Photo>({
           type="button"
           className="viewer-arrow"
           data-direction="previous"
-          aria-label="前の写真"
+          aria-label={ja.common.viewer.previous}
           disabled={index === 0}
           onClick={() => go(-1)}
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft aria-hidden="true" strokeWidth={1.25} />
         </button>
         <button
           type="button"
           className="viewer-arrow"
           data-direction="next"
-          aria-label="次の写真"
+          aria-label={ja.common.viewer.next}
           disabled={index === photos.length - 1}
           onClick={() => go(1)}
         >
-          <ChevronRight size={20} />
+          <ChevronRight aria-hidden="true" strokeWidth={1.25} />
         </button>
         <m.div
           key={photo.id}
@@ -310,54 +307,56 @@ export function PhotoViewer<P extends Photo = Photo>({
               zoomedRef.current = next
             }}
           >
-            <img
-              src={photo.urls.display}
-              alt={alt}
-              draggable={false}
-              className="max-h-full max-w-full object-contain"
-            />
+            <img src={photo.urls.display} alt={alt} draggable={false} className="viewer-image" />
           </PinchZoom>
         </m.div>
       </div>
 
-      <div className="safe-bottom flex items-end justify-between gap-4 px-4 py-3">
-        <p className="min-w-0 truncate text-body">
+      <div className="viewer-caption">
+        <p className="viewer-uploader">
           {ja.common.uploader({ nickname: photo.uploader.nickname })}
         </p>
-        <div className="flex flex-col items-end">
+        <div className="viewer-actions">
+          {showDelete ? (
+            <button type="button" onClick={() => setConfirming(true)} className="viewer-delete">
+              {ja.common.viewer.delete}
+            </button>
+          ) : null}
           {onToggleLike ? (
             <button
               type="button"
               onClick={handleLike}
               aria-pressed={liked}
               aria-label={liked ? ja.common.viewer.unlike : ja.common.viewer.like}
-              className={cn(iconButton, 'relative')}
+              className="viewer-button viewer-like"
             >
-              <Heart
-                aria-hidden="true"
-                strokeWidth={ICON_STROKE_WIDTH}
-                className={cn(liked && 'fill-rose text-rose')}
-              />
-              <span aria-hidden="true">{photo.likeCount}</span>
-              <LikeBurst
-                active={burstId === photo.id && liked}
-                onComplete={() => setBurstId(null)}
-              />
+              {/* ハートと演出を同じ小さな箱に兄弟で置く（演出がハートに合わせて弾む） */}
+              <span className="like-heart">
+                <Heart
+                  aria-hidden="true"
+                  strokeWidth={1.25}
+                  className={cn('heart', liked && 'is-filled fill-accent text-accent')}
+                />
+                <LikeBurst
+                  active={burstId === photo.id && liked}
+                  onComplete={() => setBurstId(null)}
+                />
+              </span>
+              <span aria-hidden="true" className="viewer-like-count">
+                {photo.likeCount}
+              </span>
             </button>
           ) : (
-            <div className="flex min-h-tap items-center gap-2 px-3 text-body">
-              <Heart aria-hidden="true" strokeWidth={ICON_STROKE_WIDTH} />
-              <span aria-hidden="true">{photo.likeCount}</span>
+            <div className="viewer-likes">
+              <Heart aria-hidden="true" strokeWidth={1.25} className="heart" />
+              <span aria-hidden="true" className="viewer-like-count">
+                {photo.likeCount}
+              </span>
             </div>
           )}
           <span className="sr-only-text" aria-live="polite">
             {ja.common.likeCount({ count: photo.likeCount })}
           </span>
-          {showDelete ? (
-            <button type="button" onClick={() => setConfirming(true)} className={iconButton}>
-              {ja.common.viewer.delete}
-            </button>
-          ) : null}
         </div>
       </div>
 

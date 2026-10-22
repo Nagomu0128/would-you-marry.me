@@ -14,7 +14,7 @@ export type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>
   hint?: string
 }
 
-/** 高さ 48px、文字 16px（iPhone の Safari で拡大されない）。 */
+/** 和紙に下線を引いた入力欄。文字 16px（iPhone の Safari で拡大されない）。 */
 export function TextField({
   label,
   error,
@@ -31,6 +31,7 @@ export function TextField({
   const errorId = `${inputId}-error`
   const countId = `${inputId}-count`
   const showCount = count !== undefined && max !== undefined
+  const over = showCount && count > max
 
   const describedBy =
     [hint ? hintId : null, error ? errorId : null, showCount ? countId : null]
@@ -43,7 +44,7 @@ export function TextField({
         {label}
       </label>
       {hint ? (
-        <p id={hintId} className="text-caption text-muted">
+        <p id={hintId} className="field-hint">
           {hint}
         </p>
       ) : null}
@@ -55,12 +56,12 @@ export function TextField({
         {...rest}
       />
       {error || showCount ? (
-        <div className="flex items-start justify-between gap-3">
-          <p id={errorId} className="text-sub text-error" role={error ? 'alert' : undefined}>
+        <div className="field-foot">
+          <p id={errorId} className="field-error" role={error ? 'alert' : undefined}>
             {error}
           </p>
           {showCount ? (
-            <p id={countId} className="ml-auto shrink-0 text-caption text-muted">
+            <p id={countId} className="field-count" data-over={over || undefined}>
               {count} / {max}
             </p>
           ) : null}

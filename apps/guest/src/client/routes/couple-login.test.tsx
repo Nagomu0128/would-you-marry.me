@@ -52,7 +52,7 @@ describe('SC-01 パスコード入力', () => {
   it('見出し・結婚式の名前・説明を表示し、入力欄は大文字入力の設定にする', async () => {
     mockFetch({ ...config, ...loginState(false) })
     renderLogin()
-    expect(await screen.findByRole('heading', { name: /For.*the couple/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'おふたりへ' })).toBeInTheDocument()
     expect(screen.getByText('〇〇家・△△家 結婚式')).toBeInTheDocument()
     expect(screen.getByText('管理者からお伝えしたパスコードを入力してください')).toBeInTheDocument()
     expect(passcodeInput()).toHaveAttribute('autocapitalize', 'characters')
@@ -72,7 +72,7 @@ describe('SC-01 パスコード入力', () => {
     })
     window.localStorage.setItem('wym:couple-celebration-played:t1', '1')
     renderLogin()
-    await screen.findByRole('heading', { name: /For.*the couple/i })
+    await screen.findByRole('heading', { name: 'おふたりへ' })
     await user.type(passcodeInput(), 'ab12cd34')
     expect(submitButton()).toBeDisabled()
     await user.click(screen.getByRole('checkbox'))
@@ -91,7 +91,7 @@ describe('SC-01 パスコード入力', () => {
   it('2 回目以降は同意欄を出さない', async () => {
     mockFetch({ ...config, ...loginState(false) })
     renderLogin()
-    await screen.findByRole('heading', { name: /For.*the couple/i })
+    await screen.findByRole('heading', { name: 'おふたりへ' })
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
     expect(submitButton()).toBeEnabled()
   })
@@ -100,7 +100,7 @@ describe('SC-01 パスコード入力', () => {
     const user = userEvent.setup()
     const { calls } = mockFetch({ ...config, ...loginState(false) })
     renderLogin()
-    await screen.findByRole('heading', { name: /For.*the couple/i })
+    await screen.findByRole('heading', { name: 'おふたりへ' })
     await user.click(submitButton())
     expect(await screen.findByText('パスコードを入力してください')).toBeInTheDocument()
     expect(calls.some((c) => c.key === 'POST /api/couple/t1/login')).toBe(false)
@@ -115,7 +115,7 @@ describe('SC-01 パスコード入力', () => {
         apiError('PASSCODE_INVALID', 401, { remainingAttempts: 3 }),
     })
     renderLogin()
-    await screen.findByRole('heading', { name: /For.*the couple/i })
+    await screen.findByRole('heading', { name: 'おふたりへ' })
     await user.type(passcodeInput(), 'WRONG')
     await user.click(submitButton())
     expect(await screen.findByText('パスコードが違います（あと 3 回）')).toBeInTheDocument()
@@ -130,7 +130,7 @@ describe('SC-01 パスコード入力', () => {
         apiError('PASSCODE_LOCKED', 429, { retryAfterSeconds: 61 }),
     })
     renderLogin()
-    await screen.findByRole('heading', { name: /For.*the couple/i })
+    await screen.findByRole('heading', { name: 'おふたりへ' })
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] })
     fireEvent.change(passcodeInput(), { target: { value: 'WRONG' } })
     fireEvent.click(submitButton())
@@ -166,7 +166,7 @@ describe('SC-01 パスコード入力', () => {
       ...photosHandlers,
     })
     const first = renderLogin()
-    await screen.findByRole('heading', { name: /For.*the couple/i })
+    await screen.findByRole('heading', { name: 'おふたりへ' })
     await user.type(passcodeInput(), 'AB12CD34')
     await user.click(submitButton())
 
@@ -181,7 +181,7 @@ describe('SC-01 パスコード入力', () => {
 
     // 2 回目は演出なしで写真一覧へ
     renderLogin()
-    await screen.findByRole('heading', { name: /For.*the couple/i })
+    await screen.findByRole('heading', { name: 'おふたりへ' })
     await user.type(passcodeInput(), 'AB12CD34')
     await user.click(submitButton())
     await waitFor(() =>

@@ -1,18 +1,22 @@
-import { Button, ja } from '@wym/ui'
+import type { AdminMeResponse } from '@wym/shared'
+import { Button, ja, Skeleton } from '@wym/ui'
 import { useEffect, useState } from 'react'
 import { Navigate, Outlet, useNavigate } from 'react-router'
 import { ApiClientError, api, setUnauthenticatedHandler } from '../lib/api'
 import { signOut } from '../lib/auth'
-import { LoadError, LoadingBlocks } from './shell'
+import { LoadError, SheetPage } from './shell'
 
 type Gate =
   | { status: 'loading' }
-  | { status: 'ok' }
+  | { status: 'ok'; me: AdminMeResponse }
   | { status: 'unauthenticated' }
   | { status: 'forbidden' }
   | { status: 'error'; error: ApiClientError }
 
-/** 未ログインはログインへ、許可されていないアカウントは拒否の表示とログアウト */
+/**
+ * 未ログインはログインへ、許可されていないアカウントは拒否の表示とログアウト。
+ * ログイン中の管理者は `Outlet` の context で外枠（背表紙）に渡す。
+ */
 export function AuthGate() {
   const navigate = useNavigate()
   const [gate, setGate] = useState<Gate>({ status: 'loading' })
@@ -22,7 +26,7 @@ export function AuthGate() {
   useEffect(() => {
     let cancelled = false
     api.me().then(
-      () => !cancelled && setGate({ status: 'ok' }),
+      (me) => !cancelled && setGate({ status: 'ok', me }),
       (error: unknown) => {
         if (cancelled) return
         if (error instanceof ApiClientError) {
@@ -47,9 +51,13 @@ export function AuthGate() {
   switch (gate.status) {
     case 'loading':
       return (
-        <div className="layout-admin px-screen pt-6">
-          <LoadingBlocks />
-        </div>
+        <SheetPage>
+          <div className="admin-sheet-wait" aria-busy="true">
+            <span className="sr-only-text">{ja.admin.book.loading}</span>
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-13 w-full" />
+          </div>
+        </SheetPage>
       )
     case 'unauthenticated':
       return <Navigate to="/login" replace />
@@ -57,7 +65,7 @@ export function AuthGate() {
       return <Denied onLogout={() => signOut().then(() => navigate('/login', { replace: true }))} />
     case 'error':
       return (
-        <div className="layout-admin px-screen pt-6">
+        <SheetPage>
           <LoadError
             error={gate.error}
             onRetry={() => {
@@ -65,22 +73,22 @@ export function AuthGate() {
               setAttempt((n) => n + 1)
             }}
           />
-        </div>
+        </SheetPage>
       )
     case 'ok':
-      return <Outlet />
+      return <Outlet context={gate.me} />
   }
 }
 
 function Denied({ onLogout }: { onLogout: () => void }) {
   return (
-    <div className="screen-h layout-admin px-screen flex flex-col items-center justify-center gap-6 text-center">
-      <p role="alert" className="text-body text-error">
+    <SheetPage>
+      <p role="alert" className="admin-sheet-alert">
         {ja.admin.login.denied}
       </p>
-      <Button variant="secondary" onClick={onLogout}>
+      <Button variant="secondary" fullWidth onClick={onLogout}>
         {ja.admin.logout}
       </Button>
-    </div>
+    </SheetPage>
   )
 }
