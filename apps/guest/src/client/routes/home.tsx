@@ -13,8 +13,8 @@ function HomeSkeleton() {
     <div aria-busy="true" className="flex flex-col items-center gap-4 pb-6">
       <Skeleton className="h-[26rem] w-full rounded-none" />
       <Skeleton className="-mt-12 h-14 w-[min(22rem,80%)]" />
-      <Skeleton className="mt-10 h-64 w-44" />
-      <Skeleton className="h-12 w-48" />
+      <Skeleton className="mt-10 h-64 w-[min(11rem,70%)]" />
+      <Skeleton className="h-12 w-[min(12rem,80%)]" />
     </div>
   )
 }

@@ -215,8 +215,9 @@
     color: var(--color-gold-light);
   }
 
+  /* 日付は折り返せない 1 語なので、表紙の幅（cqi）を上限に大きさを決める（文字の拡大でもはみ出さない） */
   .cover-date {
-    font-size: 1.5rem;
+    font-size: min(1.5rem, 7.5cqi);
     line-height: 1.3;
     letter-spacing: 0.2em;
     padding-inline-start: 0.2em;
