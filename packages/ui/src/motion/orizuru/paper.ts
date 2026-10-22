@@ -8,6 +8,7 @@ import {
   applyDirection,
   bump,
   compose,
+  cubicBezier,
   easeFold,
   easeWa,
   lerp,
@@ -30,10 +31,10 @@ export const FOLD_BEATS = {
   /** 紙が持ち上がる */
   liftEnd: 0.3,
   /** 左の余りを裏へ折り、正方形に整える */
-  squareStart: 0.22,
-  squareEnd: 0.48,
+  squareStart: 0.2,
+  squareEnd: 0.46,
   /** 対角線で三角に折る */
-  diagonalEnd: 0.8,
+  diagonalEnd: 0.82,
   /** さらに半分に折る。ここで紙（DOM）から鶴（SVG）に替わる */
   halfEnd: 1.02,
   /** 正方基本形 → 鶴の基本形 → 首と尾を折り上げ、羽を広げる */
@@ -154,8 +155,8 @@ function rootAt(c: number, size: SheetSize, center: Vec2, endScale: number): Roo
   const B = FOLD_BEATS
   const lift = easeWa(segment(c, 0, B.liftEnd))
   const settle = easeFold(segment(c, 0.46, B.halfEnd))
-  const rx = (9 * Math.PI) / 180
-  const ry = (-7 * Math.PI) / 180
+  const rx = (12 * Math.PI) / 180
+  const ry = (-9 * Math.PI) / 180
   const tiltX = rx * lift * (1 - settle)
   const tiltY = ry * lift * (1 - settle)
   const spin = ((-3.5 * Math.PI) / 180) * bump(segment(c, B.liftEnd, B.halfEnd))
@@ -194,13 +195,16 @@ function rootAt(c: number, size: SheetSize, center: Vec2, endScale: number): Roo
   return { matrix, flat, lift, scale, pivot, target }
 }
 
+// 折り返す面の動き: すぐに持ち上がり、立ったところを過ぎてから、静かに置く
+const easeCrease = cubicBezier(0.42, 0.08, 0.38, 1)
+
 /** 折り目の角度（谷折りは手前へ、山折りは奥へ。どちらも 180° で平らに重なる） */
 export function hingeAngles(c: number) {
   const B = FOLD_BEATS
   return {
-    strip: -Math.PI * easeFold(segment(c, B.squareStart, B.squareEnd)),
-    flap: -Math.PI * easeFold(segment(c, B.squareEnd, B.diagonalEnd)),
-    left: -Math.PI * easeFold(segment(c, B.diagonalEnd, B.halfEnd)),
+    strip: -Math.PI * easeCrease(segment(c, B.squareStart, B.squareEnd)),
+    flap: -Math.PI * easeCrease(segment(c, B.squareEnd, B.diagonalEnd)),
+    left: -Math.PI * easeCrease(segment(c, B.diagonalEnd, B.halfEnd)),
   }
 }
 

@@ -29,6 +29,7 @@ import {
   returnFlight,
   withVelocity,
 } from './flight'
+import { MATERIAL_LIGHT } from './light'
 import { clamp, round, seeded, segment, toMatrix3d, type Vec2 } from './math'
 import {
   endScaleFor,
@@ -132,6 +133,7 @@ export function OrizuruStage({
     const foldRate = FOLD_BEATS.end / fold
     const unfoldRate = FOLD_BEATS.end / ORIZURU_UNFOLD
 
+    const fronts = new Map(faceDefs(size).map((def) => [def.id, def.front]))
     const groups = new Map<FaceId, HTMLElement[]>()
     for (const el of stage.querySelectorAll<HTMLElement>('[data-face]')) {
       const id = el.dataset.face as FaceId
@@ -152,7 +154,7 @@ export function OrizuruStage({
     }
     /** 折り上がった鶴の位置と、その元になる三角（鶴の座標） */
     const restOf = (center: Vec2) => {
-      const tri = foldedTriangle(size, center, endScale, origin)
+      const tri = foldedTriangle(size, center, endScale, center)
       const cx = (tri[0][0] + tri[1][0] + tri[2][0]) / 3
       const cy = (tri[0][1] + tri[1][1] + tri[2][1]) / 3
       const nominal = (TRIANGLE[0][1] + TRIANGLE[1][1] + TRIANGLE[2][1]) / 3
@@ -167,7 +169,9 @@ export function OrizuruStage({
     // ── 描く ──
     const drawFold = (c: number) => {
       const center = sheetCenter()
-      const frame = foldFrame(Math.min(c, FOLD_BEATS.halfEnd), size, center, endScale, origin)
+      // 紙はいつも正面から見る（ページが動いても、透視の中心を紙に合わせる）
+      stage.style.perspectiveOrigin = `${round(center[0])}px ${round(center[1])}px`
+      const frame = foldFrame(Math.min(c, FOLD_BEATS.halfEnd), size, center, endScale, center)
       const states = new Map(frame.faces.map((f) => [f.id, f]))
       for (const [id, els] of groups) {
         const state = c < FOLD_BEATS.halfEnd ? states.get(id) : undefined
@@ -182,8 +186,19 @@ export function OrizuruStage({
           el.style.zIndex = String(2 + state.order * 4 + Number(el.dataset.layer ?? 0))
           if (part === 'front') el.style.opacity = state.side === 'front' ? '1' : '0'
           else if (part === 'back') el.style.opacity = state.side === 'back' ? '1' : '0'
-          else if (part === 'shade') el.style.opacity = String(round(state.lighting.shade, 3))
-          else if (part === 'sheen') el.style.opacity = String(round(state.lighting.sheen, 3))
+          else {
+            // 見えている面の素材に合わせて、影と艶の色を替える
+            const material = state.side === 'front' ? (fronts.get(id) ?? 'washi') : 'beni'
+            const light = MATERIAL_LIGHT[material]
+            const lit =
+              part === 'shade' ? state.lighting.shade : state.lighting.sheen * light.sheenScale
+            const color = part === 'shade' ? light.shade : light.sheen
+            if (el.dataset.color !== color) {
+              el.dataset.color = color
+              el.style.backgroundColor = color
+            }
+            el.style.opacity = String(round(lit, 3))
+          }
         }
       }
       if (restShadow && liftShadow) {
@@ -458,7 +473,12 @@ export function OrizuruStage({
     }
 
     stage.style.perspective = `${PERSPECTIVE}px`
-    stage.style.perspectiveOrigin = `${round(origin[0])}px ${round(origin[1])}px`
+    // 紙が画面からはみ出していたら、折るところが見えるように寄せる
+    const sheet = sheetRef.current
+    const box = sheet?.getBoundingClientRect()
+    if (sheet && box && (box.top < 8 || box.bottom > window.innerHeight - 8)) {
+      sheet.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
+    }
     draw()
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)

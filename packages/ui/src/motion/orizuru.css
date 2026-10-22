@@ -46,6 +46,13 @@
     line-height: 1.8;
     color: var(--color-muted);
   }
+  /* 狭い画面でも、歓迎の言葉を一行に収める（一字だけ次の行に落とさない） */
+  @media (max-width: 25rem) {
+    .oz-invite-welcome {
+      font-size: 0.9375rem;
+      letter-spacing: 0.03em;
+    }
+  }
 
   /* ── 画面: 芳名帳と入力欄 ── */
   .oz-form {

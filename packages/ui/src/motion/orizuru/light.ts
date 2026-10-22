@@ -23,7 +23,14 @@ export function lightFor(normal: Vec3): Lighting {
   const delta = dot(LIGHT, n) - LIGHT[2]
   const specular = Math.max(0, dot(n, HALF)) ** SHEEN_POWER - FLAT_SPECULAR
   return {
-    shade: clamp(-delta * 1.15, 0, 0.62),
-    sheen: clamp(delta * 0.85, 0, 0.5) + clamp(specular * 0.6, 0, 0.35),
+    shade: clamp(-delta * 0.8, 0, 0.46),
+    sheen: clamp(delta * 0.6, 0, 0.28) + clamp(specular * 0.45, 0, 0.2),
   }
 }
+
+/** 紙の素材ごとの、影と艶の色。白を重ねると紅が桃色にくすむので、紅には明るい紅を重ねる */
+export const MATERIAL_LIGHT = {
+  // 和紙の艶は控えめに（強いと墨の字が白っぽく飛ぶ）
+  washi: { shade: '#2a201c', sheen: '#fffaf0', sheenScale: 0.6 },
+  beni: { shade: '#3d0a12', sheen: '#e8505a', sheenScale: 1 },
+} as const

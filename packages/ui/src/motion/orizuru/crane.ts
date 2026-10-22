@@ -2,13 +2,14 @@
 // 折り上がりの形は ORIZURU_FACETS と一致する。
 
 import { ORIZURU_FACETS, type OrizuruFacetShade } from '../../ornaments/Orizuru'
-import { lightFor } from './light'
+import { lightFor, MATERIAL_LIGHT } from './light'
 import {
   apply,
   clamp,
   compose,
   cross,
   easeFold,
+  easeOut,
   easeOutBack,
   hexToRgb,
   lerp,
@@ -47,8 +48,8 @@ export const BENI: Record<OrizuruFacetShade, string> = {
   shade: '#8a1c26',
   deep: '#6e1520',
 }
-const INK: Rgb = hexToRgb('#2a201c')
-const SHEEN: Rgb = hexToRgb('#fff6ea')
+const DARK: Rgb = hexToRgb(MATERIAL_LIGHT.beni.shade)
+const LIGHT: Rgb = hexToRgb(MATERIAL_LIGHT.beni.sheen)
 
 /** 鶴を回すときの中心と、画面に置くときの基準点 */
 export const CRANE_ANCHOR: Vec2 = [100, 90]
@@ -375,7 +376,7 @@ function shadeColor(shade: OrizuruFacetShade): Rgb {
  */
 export function morphFacets(u: number, triangle: Tri): CraneFacet[] {
   // 拍: 正方基本形 0〜0.26、鶴の基本形 0.26〜0.53、首・尾・羽・頭 0.53〜1
-  const a = easeFold(segment(u, 0, 0.26))
+  const a = easeOut(segment(u, 0, 0.26))
   const b = easeFold(segment(u, 0.26, 0.53))
   const wings = easeOutBack(segment(u, 0.5, 0.9), 1.6)
   const legs = easeOutBack(segment(u, 0.56, 1), 1.2)
@@ -463,8 +464,6 @@ export type CranePose = {
 
 export const REST_POSE: CranePose = { wing: 0, bank: 0, pitch: 0 }
 
-const WEAK_PERSPECTIVE = 520
-
 function facetVertices(name: FacetName, pose: CranePose): [Vec3, Vec3, Vec3] {
   const [a, b, c] = finalOf(name)
   const wing = WINGS.find((w) => w.name === name)
@@ -504,7 +503,6 @@ const REST_NORMALS = new Map(
 /** 姿勢から、奥から順に並べた面を返す。折り上がりの姿（REST_POSE）では ORIZURU_FACETS と同じ形・色 */
 export function poseFacets(pose: CranePose): CraneFacet[] {
   const body = bodyMatrix(pose)
-  const [cx, cy] = CRANE_ANCHOR
   const facets = FACET_NAMES.map((name, index) => {
     const local = facetVertices(name, pose)
     const world: [Vec3, Vec3, Vec3] = [
@@ -512,10 +510,8 @@ export function poseFacets(pose: CranePose): CraneFacet[] {
       apply(body, local[1]),
       apply(body, local[2]),
     ]
-    const toScreen = (p: Vec3): Vec2 => {
-      const f = WEAK_PERSPECTIVE / (WEAK_PERSPECTIVE - p[2])
-      return [cx + (p[0] - cx) * f, cy + (p[1] - cy) * f]
-    }
+    // 小さな鶴なので平行投影で描く（折り上がりの姿が ORIZURU_FACETS とぴったり重なる）
+    const toScreen = (p: Vec3): Vec2 => [p[0], p[1]]
     const points: Tri = [toScreen(world[0]), toScreen(world[1]), toScreen(world[2])]
     // 折り上がりの姿で手前を向いていた側の法線。z が負なら、いまは裏が見えている
     const rest = REST_NORMALS.get(name) ?? [0, 0, 1]
@@ -528,8 +524,8 @@ export function poseFacets(pose: CranePose): CraneFacet[] {
     let color = shadeColor(flipped ? (shadeName === 'light' ? 'shade' : 'deep') : shadeName)
     const darker = nowLight.shade - restLight.shade
     const brighter = nowLight.sheen - restLight.sheen
-    if (darker > 0) color = mixRgb(color, INK, clamp(darker * 0.9, 0, 0.55))
-    if (brighter > 0) color = mixRgb(color, SHEEN, clamp(brighter * 0.5, 0, 0.35))
+    if (darker > 0) color = mixRgb(color, DARK, clamp(darker * 0.9, 0, 0.55))
+    if (brighter > 0) color = mixRgb(color, LIGHT, clamp(brighter, 0, 0.45))
     const depth = world.reduce((sum, p) => sum + p[2], 0) / 3
     return { facet: { name, points, fill: rgbToCss(color), edge: 1 }, depth, index }
   })
