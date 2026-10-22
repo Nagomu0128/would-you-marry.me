@@ -1,142 +1,640 @@
-/* 全画面の演出（ウェルカム・新郎新婦の入室・投稿完了）と水引の印。担当: ceremony */
+/* 全画面の儀式の演出（初回ホームの金屏風・新郎新婦の入室の向かい鶴・投稿完了の朱印）と水引の印。担当: ceremony */
 @layer components {
   .wedding-mark {
     display: block;
     flex: none;
-    color: var(--color-ink, #25483f);
     max-inline-size: 100%;
   }
 
-  .wedding-stage {
+  /* ── 舞台 ───────────────────────────────────────── */
+  .ceremony-stage {
+    /* 金箔の継ぎ目（2×2 枚の箔と、重なりの縁の影と光） */
+    --byobu-seams: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27104%27%20height%3D%27104%27%3E%3Crect%20width%3D%2752%27%20height%3D%2752%27%20fill%3D%27%23fff8e0%27%20fill-opacity%3D%27.05%27%2F%3E%3Crect%20x%3D%2752%27%20y%3D%2752%27%20width%3D%2752%27%20height%3D%2752%27%20fill%3D%27%23fff8e0%27%20fill-opacity%3D%27.05%27%2F%3E%3Crect%20x%3D%2752%27%20width%3D%2752%27%20height%3D%2752%27%20fill%3D%27%235a3a0c%27%20fill-opacity%3D%27.05%27%2F%3E%3Crect%20y%3D%2752%27%20width%3D%2752%27%20height%3D%2752%27%20fill%3D%27%235a3a0c%27%20fill-opacity%3D%27.03%27%2F%3E%3Cpath%20d%3D%27M0%2051.5H104M0%20103.5H104M51.5%200V104M103.5%200V104%27%20stroke%3D%27%236e4a14%27%20stroke-opacity%3D%27.2%27%2F%3E%3Cpath%20d%3D%27M0%2052.5H104M0%20.5H104M52.5%200V104M.5%200V104%27%20stroke%3D%27%23fff6da%27%20stroke-opacity%3D%27.22%27%2F%3E%3C%2Fsvg%3E");
+    /* 金の面にごく薄く刷る青海波（線だけ） */
+    --byobu-seigaiha: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2740%27%20height%3D%2720%27%20viewBox%3D%270%200%2040%2020%27%3E%3Cmask%20id%3D%27m%27%3E%3Cg%20fill%3D%27%23000%27%20stroke%3D%27%23fff%27%20stroke-width%3D%27.7%27%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%270%27%20r%3D%2720%27%2F%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%270%27%20r%3D%2715.5%27%2F%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%270%27%20r%3D%2711%27%2F%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%270%27%20r%3D%276.5%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2710%27%20r%3D%2720%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2710%27%20r%3D%2715.5%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2710%27%20r%3D%2711%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2710%27%20r%3D%276.5%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2710%27%20r%3D%2720%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2710%27%20r%3D%2715.5%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2710%27%20r%3D%2711%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2710%27%20r%3D%276.5%27%2F%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%2720%27%20r%3D%2720%27%2F%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%2720%27%20r%3D%2715.5%27%2F%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%2720%27%20r%3D%2711%27%2F%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%2720%27%20r%3D%276.5%27%2F%3E%3C%2Fg%3E%3C%2Fmask%3E%3Crect%20width%3D%2740%27%20height%3D%2720%27%20fill%3D%27%236e4a14%27%20fill-opacity%3D%27.2%27%20mask%3D%27url(%23m)%27%2F%3E%3C%2Fsvg%3E");
     position: fixed;
     inset: 0;
-    z-index: 50;
-    display: grid;
-    align-content: start;
-    justify-items: center;
-    padding-block-start: max(env(safe-area-inset-top), 1.5rem);
-    padding-inline: 1rem;
-    pointer-events: none;
-    color: var(--color-ink, #25483f);
-  }
-
-  .wedding-invitation {
-    position: relative;
-    inline-size: min(100%, 23rem);
+    z-index: 60;
     overflow: hidden;
-    padding: 1.75rem 1.5rem 1rem;
-    border: 1px solid var(--color-rule, #d9ded5);
-    background: var(--color-paper, #f5f2eb);
-    box-shadow: 0 12px 36px #25483f12;
-    text-align: center;
+    container-type: inline-size;
+    background-color: var(--color-urushi);
+    color: var(--color-surface);
+    /* 舞台の上の指の動きで、背面の画面がスクロールしないように */
+    touch-action: none;
+    overscroll-behavior: contain;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
-  .wedding-invitation::before {
-    content: "";
+  .ceremony-scene {
     position: absolute;
-    inset: 0.5rem;
-    border: 1px solid var(--color-rule, #d9ded5);
+    inset: 0;
     pointer-events: none;
   }
 
-  .wedding-scene {
-    position: relative;
-    display: grid;
-    justify-items: center;
-    gap: 0.75rem;
-  }
-
-  .wedding-scene :where(p) {
+  .ceremony-scene :where(p) {
     margin: 0;
   }
 
-  .wedding-eyebrow {
-    font-family: var(--font-accent, Georgia, serif);
-    font-style: italic;
-    font-size: 1.125rem;
-    line-height: 1.5;
+  .ceremony-tap {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
   }
 
-  .wedding-name {
-    max-inline-size: 100%;
-    overflow-wrap: anywhere;
-    font-family: var(--font-accent, Georgia, serif);
-    font-size: clamp(1.25rem, 1rem + 1vw, 1.65rem);
-    line-height: 1.7;
+  .ceremony-skip {
+    position: absolute;
+    inset-block-end: max(1.25rem, calc(env(safe-area-inset-bottom) + 0.75rem));
+    inset-inline: 0;
+    inline-size: fit-content;
+    max-inline-size: calc(100% - 2rem);
+    min-block-size: var(--spacing-tap);
+    margin-inline: auto;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid rgb(226 201 143 / 0.55);
+    border-radius: var(--radius-control);
+    background: rgb(27 19 20 / 0.74);
+    color: var(--color-surface);
+    font-family: var(--font-gothic);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+
+  .ceremony-skip:focus-visible {
+    outline: 2px solid var(--color-gold-light);
+    outline-offset: 3px;
+  }
+
+  /* ── 粒: 金箔と紙吹雪 ───────────────────────────── */
+  .ceremony-kinpaku {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    perspective: 32rem;
+  }
+
+  .ceremony-kinpaku-flake {
+    position: absolute;
+    inset-block-start: 0;
+    background: linear-gradient(125deg, #8a6420, #e2c98f 40%, #fff3cf 52%, #c9a55a 70%, #8a6420);
+    backface-visibility: visible;
+    will-change: transform, opacity;
+  }
+
+  .ceremony-kinpaku-flake[data-tone="1"] {
+    background: linear-gradient(160deg, #f0dca6, #c9a55a 58%, #8a6420);
+  }
+
+  .ceremony-kinpaku-flake[data-tone="2"] {
+    background: linear-gradient(60deg, #b8923f, #fff3cf 45%, #c9a55a);
+  }
+
+  .ceremony-confetti {
+    position: absolute;
+    inline-size: 0;
+    block-size: 0;
+    perspective: 36rem;
+  }
+
+  .ceremony-paper {
+    position: absolute;
+    inset-block-start: -0.375rem;
+    inset-inline-start: -0.25rem;
+    inline-size: 0.5rem;
+    block-size: 0.75rem;
+    background: var(--color-accent);
+    backface-visibility: visible;
+    will-change: transform, opacity;
+  }
+
+  .ceremony-paper[data-shape="strip"] {
+    inline-size: 0.3125rem;
+    block-size: 1rem;
+  }
+
+  .ceremony-paper[data-shape="square"] {
+    inline-size: 0.5625rem;
+    block-size: 0.5625rem;
+  }
+
+  .ceremony-paper[data-tone="kin"] {
+    background: linear-gradient(135deg, #f0dca6, #b8923f 55%, #e2c98f);
+  }
+
+  .ceremony-paper[data-tone="shiro"] {
+    background: var(--color-surface);
+  }
+
+  /* ── 初回ホーム: 金屏風 ─────────────────────────── */
+  .ceremony-stage[data-scene="byobu"] {
+    background-color: var(--color-enji);
+  }
+
+  .byobu-back {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* 名前の周りだけ文様を沈め、灯りが当たったように見せる */
+  .byobu-lamp {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 74% 54% at 50% 50%,
+      rgb(92 22 33 / 0.94) 0%,
+      rgb(92 22 33 / 0.82) 46%,
+      rgb(92 22 33 / 0.2) 100%
+    );
+  }
+
+  .byobu-reveal {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.125rem;
+    padding: max(2.5rem, env(safe-area-inset-top)) 1.5rem
+      max(5.75rem, calc(env(safe-area-inset-bottom) + 5rem));
+    text-align: center;
+  }
+
+  .byobu-crest-slot {
+    flex: none;
+    inline-size: 6.5rem;
+    aspect-ratio: 200 / 166;
+  }
+
+  .byobu-greeting {
+    color: var(--color-gold-light);
+    font-family: var(--font-mincho);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.8;
+    letter-spacing: var(--tracking-wide-wa);
     text-wrap: balance;
   }
 
-  .wedding-caption {
-    color: var(--color-muted, #6c746d);
-    font-size: 0.75rem;
-    line-height: 1.8;
-    letter-spacing: 0.08em;
-  }
-
-  .wedding-rule {
-    inline-size: 2rem;
-    block-size: 1px;
-    background: currentColor;
-    opacity: 0.35;
-    margin-block: 0.25rem;
-  }
-
-  .wedding-skip {
-    position: relative;
-    display: block;
-    min-block-size: 2.75rem;
-    min-inline-size: 2.75rem;
+  .byobu-names {
     max-inline-size: 100%;
-    margin: 1rem auto 0;
-    padding: 0.5rem 0.75rem;
-    border: 0;
-    background: transparent;
-    color: var(--color-muted, #6c746d);
-    font: inherit;
-    font-size: 0.75rem;
-    text-decoration: underline;
-    text-underline-offset: 0.25em;
-    cursor: pointer;
-    pointer-events: auto;
+    color: var(--color-gold-light);
+    font-family: var(--font-mincho);
+    font-size: clamp(1.5rem, 1rem + 3vw, 2.25rem);
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: var(--tracking-wa);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
   }
 
-  .wedding-skip:focus-visible {
-    outline: 2px solid var(--color-ink, #25483f);
-    outline-offset: 2px;
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    .byobu-names {
+      background: linear-gradient(
+        172deg,
+        #f0dca6 0%,
+        #e2c98f 38%,
+        #fffcf6 54%,
+        #e2c98f 72%,
+        #c9a55a 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
   }
 
-  .wedding-seal {
-    inline-size: 6.5rem;
-    block-size: 6.5rem;
-    color: var(--color-accent, #a64d3c);
+  /* 縦書き: 一人ずつ一行に収まるよう、長い名前ほど字を小さくする（--chars は長いほうの字数） */
+  .byobu-names[data-vertical] {
+    max-inline-size: min(48vh, 22rem);
+    font-size: clamp(1.125rem, calc(min(44vh, 20rem) / (var(--chars) * 1.3)), 2.125rem);
+    line-height: 1.7;
+    letter-spacing: var(--tracking-wide-wa);
+    text-align: center;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-feature-settings: "vert" 1;
   }
 
-  .wedding-seal :where(path, circle) {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  @supports (block-size: 1dvh) {
+    .byobu-names[data-vertical] {
+      max-inline-size: min(48dvh, 22rem);
+      font-size: clamp(1.125rem, calc(min(44dvh, 20rem) / (var(--chars) * 1.3)), 2.125rem);
+    }
   }
 
-  .wedding-botanical {
+  .byobu-names[data-vertical] .byobu-name {
+    display: block;
+  }
+
+  .byobu-amp {
+    color: var(--color-gold-light);
+    font-size: 0.6em;
+  }
+
+  .byobu-names[data-vertical] .byobu-amp {
+    display: block;
+    margin-block: 0.15em;
+    text-orientation: upright;
+  }
+
+  .byobu-date {
+    color: var(--color-gold-light);
+    font-family: var(--font-numeral);
+    font-size: 1.25rem;
+    font-variant-numeric: lining-nums;
+    line-height: 1.4;
+    letter-spacing: 0.2em;
+  }
+
+  .byobu {
     position: absolute;
-    inset-block-end: 3.25rem;
-    inline-size: 3.25rem;
-    color: var(--color-ink, #25483f);
-    opacity: 0.4;
+    inset: 0;
   }
 
-  .wedding-botanical[data-side="left"] {
-    inset-inline-start: 0.75rem;
+  .byobu-wing {
+    position: absolute;
+    inset-block: 0;
+    inline-size: 50%;
+    perspective: 54rem;
   }
 
-  .wedding-botanical[data-side="right"] {
-    inset-inline-end: 0.75rem;
+  /* 消失点は屏風の中央 */
+  .byobu-wing[data-side="left"] {
+    left: 0;
+    perspective-origin: 100% 46%;
+  }
+
+  .byobu-wing[data-side="right"] {
+    right: 0;
+    perspective-origin: 0% 46%;
+  }
+
+  .byobu-panel {
+    position: absolute;
+    inset-block: 0;
+    inline-size: calc(100% / 3 + 1px);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .byobu-panel .byobu-panel {
+    inline-size: 100%;
+  }
+
+  .byobu-wing[data-side="left"] .byobu-panel {
+    left: 0;
+    transform-origin: 0 50%;
+  }
+
+  .byobu-wing[data-side="right"] .byobu-panel {
+    right: 0;
+    transform-origin: 100% 50%;
+  }
+
+  .byobu-wing[data-side="left"] .byobu-panel .byobu-panel {
+    left: calc(100% - 1px);
+  }
+
+  .byobu-wing[data-side="right"] .byobu-panel .byobu-panel {
+    right: calc(100% - 1px);
+  }
+
+  /* 一扇の金箔。6 扇で一枚の金地に見えるよう、扇の位置（--col）だけ模様をずらす */
+  .byobu-face {
+    --shift: calc(var(--col) * -100vw / 6);
+    position: absolute;
+    inset: 0;
+    background-color: #c9a55a;
+    /* 金箔の地は --kin-foil。帯が強く出すぎないよう、平らな金を薄く重ねてならす */
+    background-image:
+      var(--byobu-seams), var(--byobu-seigaiha), var(--washi-fiber),
+      linear-gradient(rgb(212 178 106 / 0.42), rgb(212 178 106 / 0.42)), var(--kin-foil);
+    background-position:
+      var(--shift) 0,
+      var(--shift) 0,
+      var(--shift) 0,
+      0 0,
+      calc(var(--col) * 20%) 0;
+    background-size:
+      6.5rem 6.5rem,
+      2.5rem 1.25rem,
+      16rem 16rem,
+      100% 100%,
+      600% 100%;
+    /* 蝶番の影と光、上下の漆の縁と金の細線 */
+    box-shadow:
+      inset 1px 0 0 rgb(96 64 16 / 0.6),
+      inset 2px 0 0 rgb(255 246 218 / 0.38),
+      inset 0 0.375rem 0 var(--color-urushi),
+      inset 0 -0.375rem 0 var(--color-urushi),
+      inset 0 0.4375rem 0 rgb(226 201 143 / 0.7),
+      inset 0 -0.4375rem 0 rgb(226 201 143 / 0.7);
+  }
+
+  @supports (inline-size: 1cqw) {
+    .byobu-face {
+      --shift: calc(var(--col) * -100cqw / 6);
+    }
+  }
+
+  /* 外を向く扇の影と、中央を向く扇の照り */
+  .byobu-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgb(52 30 8 / 0.66), rgb(52 30 8 / 0.42));
+  }
+
+  .byobu-shade[data-lit] {
+    background: linear-gradient(
+      90deg,
+      rgb(255 244 210 / 0.04),
+      rgb(255 244 210 / 0.42) 55%,
+      rgb(255 244 210 / 0.1)
+    );
+  }
+
+  .byobu-wing[data-side="right"] .byobu-shade {
+    transform: scaleX(-1);
+  }
+
+  /* 結び目が締まったとき、金地に一度だけ走る光 */
+  .byobu-glint {
+    position: absolute;
+    inset: 0 -40%;
+    background: linear-gradient(
+      100deg,
+      transparent 38%,
+      rgb(255 249 228 / 0.5) 48%,
+      rgb(255 249 228 / 0.14) 53%,
+      transparent 62%
+    );
+  }
+
+  .byobu-knot {
+    --knot-gap: var(--color-enji);
+    position: absolute;
+    inset-block-start: 46%;
+    inset-inline-start: 50%;
+    inline-size: min(66vw, 17rem);
+    translate: -50% -50%;
+  }
+
+  .byobu-knot-svg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    overflow: visible;
+  }
+
+  /* ── 新郎新婦の初回入室: 向かい鶴 ───────────────── */
+  .ceremony-stage[data-scene="tsuru"] {
+    background:
+      radial-gradient(
+        ellipse 85% 52% at 50% 34%,
+        rgb(92 22 33 / 0.92),
+        rgb(92 22 33 / 0.32) 58%,
+        transparent 82%
+      ),
+      var(--color-urushi);
+  }
+
+  /* 足もとに沈む青海波 */
+  .tsuru-sea {
+    position: absolute;
+    inset: auto 0 0;
+    block-size: 36%;
+    background-image: var(--seigaiha-on-enji);
+    background-size: 2.5rem 1.25rem;
+    opacity: 0.45;
+    -webkit-mask-image: linear-gradient(to top, #000 10%, transparent);
+    mask-image: linear-gradient(to top, #000 10%, transparent);
+  }
+
+  .tsuru-layout {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: max(1.5rem, env(safe-area-inset-top)) 1.5rem
+      max(5.75rem, calc(env(safe-area-inset-bottom) + 5rem));
+    text-align: center;
+  }
+
+  .tsuru-sky {
+    position: relative;
+    flex: none;
+  }
+
+  .tsuru-sky-inner {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    transform-origin: 0 0;
+  }
+
+  .tsuru-trails {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+  }
+
+  .tsuru-crane {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 112px;
+    offset-anchor: 50% 55%;
+    offset-rotate: auto;
+    perspective: 24rem;
+    will-change: transform, offset-distance;
+  }
+
+  /* 紅の鶴は左を向いて飛ぶ。素の絵が左向きなので、進む向きと逆に回す */
+  .tsuru-crane[data-side="beni"] {
+    offset-rotate: reverse;
+  }
+
+  .tsuru-figure {
+    inline-size: 100%;
+  }
+
+  .tsuru-crane[data-side="kin"] .tsuru-figure {
+    transform: scaleX(-1);
+  }
+
+  /* offset-path が使えないときは、向かい合った最後の位置に置く */
+  @supports not (offset-path: path("M0 0")) {
+    .tsuru-crane[data-side="kin"] {
+      translate: 68px 104px;
+    }
+
+    .tsuru-crane[data-side="beni"] {
+      translate: 180px 104px;
+    }
+  }
+
+  .tsuru-words {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.625rem;
+    max-inline-size: 100%;
+  }
+
+  .tsuru-names {
+    max-inline-size: 100%;
+    color: var(--color-surface);
+    font-family: var(--font-brush);
+    font-size: clamp(1.625rem, 1.15rem + 2.6vw, 2.25rem);
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  .tsuru-rule {
+    display: block;
+    inline-size: 6rem;
+    block-size: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-gold-light) 30%,
+      var(--color-gold-light) 70%,
+      transparent
+    );
+  }
+
+  .tsuru-congrats {
+    color: var(--color-gold-light);
+    font-family: var(--font-mincho);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    line-height: 1.8;
+    letter-spacing: var(--tracking-wide-wa);
+    text-wrap: balance;
+  }
+
+  .tsuru-note {
+    color: rgb(255 252 246 / 0.84);
+    font-size: 0.875rem;
+    line-height: 1.8;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── 投稿完了: 朱印 ─────────────────────────────── */
+  .ceremony-stage[data-scene="shuin"] {
+    background:
+      radial-gradient(ellipse 90% 60% at 50% 42%, rgb(92 22 33 / 0.6), transparent 76%),
+      var(--color-urushi);
+  }
+
+  .shuin-layout {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.75rem;
+    padding: max(1.5rem, env(safe-area-inset-top)) 1.5rem
+      max(5.75rem, calc(env(safe-area-inset-bottom) + 5rem));
+    text-align: center;
+  }
+
+  /* 台紙の和紙 */
+  .shuin-sheet {
+    position: relative;
+    inline-size: min(74vw, 17.5rem);
+    padding: 0.875rem 0.875rem 3rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface);
+    background-image: var(--washi-fiber);
+    box-shadow:
+      0 2px 0 rgb(160 122 50 / 0.25),
+      0 30px 60px -24px rgb(0 0 0 / 0.75);
+  }
+
+  /* 紙焼きの写真（なければ色紙） */
+  .shuin-photo {
+    aspect-ratio: 4 / 5;
+    padding: 0.375rem;
+    background: var(--color-surface);
+    box-shadow:
+      0 1px 2px rgb(42 32 28 / 0.28),
+      0 10px 20px -12px rgb(42 32 28 / 0.6);
+  }
+
+  .shuin-photo-image {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .shuin-shikishi {
+    block-size: 100%;
+    background-color: var(--color-surface);
+    background-image: var(--washi-fiber);
+    box-shadow:
+      inset 0 0 0 1px rgb(160 122 50 / 0.7),
+      inset 0 0 0 0.375rem var(--color-surface),
+      inset 0 0 0 calc(0.375rem + 1px) rgb(160 122 50 / 0.45);
+  }
+
+  .shuin-seal-spot {
+    position: absolute;
+    inset-block-end: 0.5rem;
+    inset-inline-end: 0.625rem;
+    inline-size: 5rem;
+    aspect-ratio: 1;
+  }
+
+  .shuin-seal-spot > :where(.shuin-shadow, .shuin-stamp, .shuin-bleed, .shuin-print) {
+    position: absolute;
+    inset: 0;
+  }
+
+  .shuin-seal {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+    color: var(--color-accent);
+  }
+
+  .shuin-shadow {
+    border-radius: 0.5rem;
+    background: radial-gradient(closest-side, rgb(27 19 20 / 0.55), rgb(27 19 20 / 0));
+  }
+
+  .shuin-thanks {
+    max-inline-size: 100%;
+    color: var(--color-surface);
+    font-family: var(--font-mincho);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    line-height: 1.8;
+    letter-spacing: var(--tracking-wa);
+    text-wrap: balance;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .wedding-stage {
+    .ceremony-stage {
       display: none;
     }
   }

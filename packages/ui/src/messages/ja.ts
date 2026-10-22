@@ -386,6 +386,23 @@ export const ja = {
       cancel: 'キャンセル',
     },
   },
+
+  /** 全画面の演出に添える言葉（design-guide.md「モーション」） */
+  ceremony: {
+    /** 初回ホーム: 金屏風が開いて、おふたりの名前の上に出る */
+    welcome: {
+      greeting: 'ようこそお越しくださいました',
+    },
+    /** 新郎新婦の初回入室: 二羽の鶴が並んだあとに出る */
+    couple: {
+      congrats: 'ご結婚おめでとうございます',
+      note: 'みなさまからの写真が届いています',
+    },
+    /** 投稿完了: 朱印を押したあとに出る */
+    upload: {
+      thanks: 'すてきな一枚を ありがとうございます',
+    },
+  },
 } as const
 
 export const messages = ja
