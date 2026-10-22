@@ -830,6 +830,24 @@
     text-align: center;
   }
 
+  /* 危険な操作（削除・停止・再発行）: 題を紅の文字にし、前に紅の菱を置く（色だけにしない） */
+  .modal-title[data-danger] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    color: var(--color-error);
+  }
+
+  .modal-title[data-danger]::before {
+    content: "";
+    flex: none;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+
   .modal-body {
     margin-block-end: 1.25rem;
     font-size: 0.9375rem;
@@ -1243,8 +1261,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    padding: max(0.625rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
-      0.5rem max(0.75rem, env(safe-area-inset-left));
+    padding: max(0.625rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) 0.5rem
+      max(0.75rem, env(safe-area-inset-left));
   }
 
   .viewer-button {
@@ -1278,10 +1296,6 @@
 
   .viewer-button[aria-busy="true"] {
     cursor: progress;
-  }
-
-  .viewer-button[aria-busy="true"] svg {
-    animation: wa-breathe 1.2s ease-in-out infinite;
   }
 
   .viewer-count {
@@ -1334,6 +1348,11 @@
   .viewer-arrow svg {
     inline-size: 1.25rem;
     block-size: 1.25rem;
+  }
+
+  /* 保存の準備中は、アイコンが静かに明滅する */
+  .viewer-button[aria-busy="true"] svg {
+    animation: wa-breathe 1.2s ease-in-out infinite;
   }
 
   .viewer-arrow:disabled {
@@ -1477,6 +1496,9 @@
     }
     .ui-button[data-variant="primary"][data-tone="beni"]:not(:disabled):hover {
       background-color: #921d27;
+    }
+    .ui-button[data-variant="primary"][data-danger="true"]:not(:disabled):hover {
+      background-color: #821717;
     }
     .ui-button[data-variant="secondary"]:not(:disabled):hover {
       background-color: var(--color-surface);

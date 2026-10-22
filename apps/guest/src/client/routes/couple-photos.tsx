@@ -271,7 +271,12 @@ export function CouplePhotosRoute() {
       <PullIndicator distance={distance} refreshing={refreshing} />
       <div>
         <div className="couple-tabs">
-          <Tabs tabs={tabs} value={tab} onChange={changeTab} aria-label={ja.couple.photos.tabs.all} />
+          <Tabs
+            tabs={tabs}
+            value={tab}
+            onChange={changeTab}
+            aria-label={ja.couple.photos.tabs.all}
+          />
         </div>
         <div id={PANEL_ID} role="tabpanel">
           {tab === 'all' ? (

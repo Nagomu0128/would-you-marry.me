@@ -103,17 +103,27 @@ export function HomeScreen({
           <span className="cover-knot">
             <MizuhikiKnot strands="five" tone="on-dark" />
           </span>
-          <h1 className="cover-names" aria-label={tenantName}>
-            {names.map((name, index) => (
-              <Fragment key={name}>
-                {index > 0 && separator ? (
-                  <span className="cover-sep" aria-hidden="true">
-                    {separator}
-                  </span>
-                ) : null}
-                <span className="cover-name">{name}</span>
-              </Fragment>
-            ))}
+          {/* 縦書きの列に分けたときは、読み上げ用にテナント名をそのまま 1 つの文字として持つ */}
+          <h1 className="cover-names">
+            {names.length > 1 ? (
+              <>
+                <span className="sr-only-text">{tenantName}</span>
+                <span className="cover-columns" aria-hidden="true">
+                  {names.map((name, index) => (
+                    <Fragment key={name}>
+                      {index > 0 && separator ? (
+                        <span className="cover-sep">{separator}</span>
+                      ) : null}
+                      <span className="cover-name">{name}</span>
+                    </Fragment>
+                  ))}
+                </span>
+              </>
+            ) : (
+              <span className="cover-columns">
+                <span className="cover-name">{tenantName}</span>
+              </span>
+            )}
           </h1>
           <p className="cover-date font-numeral wa-kin-text wa-kin-sheen">
             <time dateTime={eventDate}>{formatEventDate(eventDate)}</time>

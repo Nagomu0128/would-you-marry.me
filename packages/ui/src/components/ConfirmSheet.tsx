@@ -52,7 +52,9 @@ export function ConfirmSheet({
       initialFocus={input ? 'input' : '[data-cancel]'}
       testId="confirm-backdrop"
     >
-      <h2 className="modal-title">{confirmLabel}</h2>
+      <h2 className="modal-title" data-danger={danger || undefined}>
+        {confirmLabel}
+      </h2>
       <p className="modal-body">{body}</p>
       {input ? (
         <TextField

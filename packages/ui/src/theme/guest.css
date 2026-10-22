@@ -6,7 +6,6 @@
   /* ---------- 外枠: 一枚の紙（48rem 以上では臙脂と青海波の卓に置く） ---------- */
   .guest-table {
     min-block-size: 100vh;
-    min-block-size: 100dvh;
   }
 
   .guest-sheet {
@@ -15,10 +14,17 @@
     inline-size: 100%;
     max-inline-size: var(--container-guest);
     min-block-size: 100vh;
-    min-block-size: 100dvh;
     margin-inline: auto;
     background-color: var(--color-paper);
     background-image: var(--washi-fiber);
+  }
+
+  /* 高さは vh を下地に、使えるブラウザでは dvh（アドレスバーの出入りに合わせる） */
+  @supports (block-size: 100dvh) {
+    .guest-table,
+    .guest-sheet {
+      min-block-size: 100dvh;
+    }
   }
 
   .guest-sheet[data-nav] {
@@ -26,8 +32,9 @@
   }
 
   .guest-band {
-    padding: max(0.875rem, env(safe-area-inset-top)) max(var(--spacing-gutter), env(safe-area-inset-right))
-      0.375rem max(var(--spacing-gutter), env(safe-area-inset-left));
+    padding: max(0.875rem, env(safe-area-inset-top))
+      max(var(--spacing-gutter), env(safe-area-inset-right)) 0.375rem
+      max(var(--spacing-gutter), env(safe-area-inset-left));
   }
 
   .guest-main {
@@ -64,6 +71,24 @@
     .couple-lead,
     .error-title,
     .error-detail
+  ) {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  /*
+   * 名前（おふたりの名前・投稿者名・ニックネーム）も、姓と名の間の空白や区切りで折り、
+   * 「渡/辺」のような語の途中では折らない（入りきらないときだけ折る）
+   */
+  :where(
+    .cover-name,
+    .home-greeting-text,
+    .shugi-name,
+    .tsutsumi-to,
+    .couple-title,
+    .uploader-name,
+    .rank-name,
+    .viewer-uploader
   ) {
     word-break: keep-all;
     overflow-wrap: anywhere;
@@ -153,11 +178,6 @@
 
   /* おふたりの名前: 縦書きの列を右から並べる */
   .cover-names {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 0.875rem;
     margin: 0.25rem 0 0;
     font-family: var(--font-mincho);
     font-size: clamp(1.875rem, 1.3rem + 2.6vw, 2.5rem);
@@ -166,6 +186,14 @@
     letter-spacing: 0.24em;
     color: var(--color-surface);
     text-shadow: 0 1px 0 rgb(27 19 20 / 35%);
+  }
+
+  .cover-columns {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.875rem;
   }
 
   .cover-name {
@@ -207,10 +235,12 @@
   /* 表紙の幅が文字に対して狭いとき（文字の拡大など）は、名前を横書きに戻す */
   @container (max-width: 15em) {
     .cover-names {
+      letter-spacing: 0.12em;
+    }
+    .cover-columns {
       flex-direction: column;
       align-items: center;
       gap: 0.25rem;
-      letter-spacing: 0.12em;
     }
     .cover-name,
     .cover-sep {
@@ -514,6 +544,17 @@
     font-weight: 500;
     letter-spacing: 0.3em;
     color: var(--color-gold-deep);
+  }
+
+  /* 札が文字に対して細いとき（文字の拡大など）は、題と重ならないよう右上の題を省く */
+  .fuda[data-kind="menu"] {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 7.5em) {
+    .fuda-mark {
+      display: none;
+    }
   }
 
   /* みんなのアルバム: 傾いて重なる紙焼き写真 */
@@ -1073,8 +1114,7 @@
   .tsutsumi::after {
     background-color: var(--color-surface);
     background-image:
-      linear-gradient(100deg, transparent 60%, rgb(42 32 28 / 7%)),
-      var(--washi-fiber);
+      linear-gradient(100deg, transparent 60%, rgb(42 32 28 / 7%)), var(--washi-fiber);
     clip-path: polygon(0 0, 45% 0, 27% 100%, 0 100%);
   }
 
@@ -1202,9 +1242,14 @@
     display: flex;
     flex-direction: column;
     max-block-size: 50vh;
-    max-block-size: 50dvh;
     overflow-y: auto;
     border-block-start: 1px solid var(--color-rule);
+  }
+
+  @supports (block-size: 100dvh) {
+    .uploader-list {
+      max-block-size: 50dvh;
+    }
   }
 
   .uploader-row {

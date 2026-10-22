@@ -217,7 +217,11 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
               <Button fullWidth tone="beni" onClick={reset}>
                 {ja.guest.upload.another}
               </Button>
-              <Link to={paths.album(tenantId)} className="ui-button w-full" data-variant="secondary">
+              <Link
+                to={paths.album(tenantId)}
+                className="ui-button w-full"
+                data-variant="secondary"
+              >
                 {ja.guest.upload.toAlbum}
               </Link>
             </div>
