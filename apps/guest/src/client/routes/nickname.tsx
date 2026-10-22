@@ -73,6 +73,8 @@ function NicknameForm({ tenantId, initial }: { tenantId: string; initial: GuestM
   // 二重送信を防ぐ（状態の更新を待たずに、同じ操作の二度目を止める）
   const busy = useRef(false)
   const alive = useRef(true)
+  // エラーのあと、入力欄が戻って（inert が外れて）から欄に移る
+  const [focusTarget, setFocusTarget] = useState<'nickname' | 'terms' | null>(null)
 
   useEffect(() => {
     alive.current = true
@@ -80,6 +82,13 @@ function NicknameForm({ tenantId, initial }: { tenantId: string; initial: GuestM
       alive.current = false
     }
   }, [])
+
+  useEffect(() => {
+    if (!focusTarget || orizuru.active) return
+    if (focusTarget === 'terms') document.getElementById(termsId)?.focus()
+    else inputRef.current?.focus()
+    setFocusTarget(null)
+  }, [focusTarget, orizuru.active, termsId])
 
   const validation = validateNickname(value)
   const count = countNicknameChars(value.trim())
@@ -95,7 +104,7 @@ function NicknameForm({ tenantId, initial }: { tenantId: string; initial: GuestM
       setNicknameError(ja.errors.guest.NICKNAME_TAKEN)
     } else if (failure instanceof ApiClientError && failure.code === 'TERMS_NOT_AGREED') {
       setTermsError(ja.errors.guest.TERMS_NOT_AGREED)
-      document.getElementById(termsId)?.focus()
+      setFocusTarget('terms')
       return
     } else if (failure instanceof ApiClientError && failure.code === 'VALIDATION_ERROR') {
       setNicknameError(
@@ -106,7 +115,7 @@ function NicknameForm({ tenantId, initial }: { tenantId: string; initial: GuestM
     } else if (handleError(failure) === 'network') {
       setNetwork(true)
     }
-    inputRef.current?.focus()
+    setFocusTarget('nickname')
   }
 
   const submit = async (event?: FormEvent) => {
