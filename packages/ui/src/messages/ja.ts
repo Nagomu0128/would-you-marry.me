@@ -110,8 +110,17 @@ export const ja = {
   guest: {
     // SG-02
     nickname: {
-      welcomeHeading: 'Welcome',
-      welcomeDescription: 'アルバムに表示するニックネームを決めてください',
+      /** おふたりからの招き（初回）。名前と日付の下に置く */
+      welcomeHeading: '本日はようこそお越しくださいました',
+      welcomeDescription: '受付の芳名帳に、お名前をご記帳ください',
+      /** 入力欄のラベルと補足 */
+      label: 'ニックネーム',
+      hint: 'アルバムの写真に添えて表示されます。あとから変更できます',
+      /** 芳名帳の紙の見出し（縦書き）と、名前が空のときの薄墨の案内 */
+      sheetHeading: '御芳名',
+      sheetPlaceholder: 'お名前',
+      /** 送信してから画面が移るまで（読み上げと、通信を待つあいだの表示） */
+      sending: '記帳しています',
       /** 同意欄。リンクを差し込めるよう、リンクの前後で分けて持つ */
       agree: {
         terms: '利用規約',
@@ -119,7 +128,7 @@ export const ja = {
         privacy: 'プライバシーポリシー',
         after: ' に同意します',
       },
-      welcomeSubmit: 'はじめる',
+      welcomeSubmit: '記帳する',
       changeHeading: 'ニックネームの変更',
       changeSubmit: '変更する',
     },
