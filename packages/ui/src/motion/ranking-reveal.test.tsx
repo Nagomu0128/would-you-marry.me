@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import { domAnimation, LazyMotion } from 'motion/react'
 import type { ReactElement } from 'react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { RankingReveal, RankingRevealItem } from './RankingReveal'
+import { RankingReveal, RankingRevealItem, RankingRevealKnot } from './RankingReveal'
 
 const reducedMotion = vi.hoisted(() => ({ value: false }))
 
@@ -119,6 +119,71 @@ describe('RankingReveal', () => {
     expect(screen.getAllByTestId('ranking-item')).toHaveLength(5)
     expect(delayOf('四位')).toBe(0)
     expect(onComplete).toHaveBeenCalledTimes(1)
+  })
+
+  it('1 位の飾り（光と水引）が終わるまで onComplete を待つ', () => {
+    const onComplete = vi.fn()
+    render(layout(onComplete))
+    act(() => {
+      vi.advanceTimersByTime(2400)
+    })
+    expect(onComplete).not.toHaveBeenCalled()
+    act(() => {
+      vi.advanceTimersByTime(600)
+    })
+    expect(onComplete).toHaveBeenCalledTimes(1)
+  })
+
+  it('各項目は登場の遅れを CSS 変数 --ranking-delay に持つ（数字・額縁の光・水引がそれに合わせる）', () => {
+    render(layout())
+    for (const item of screen.getAllByTestId('ranking-item')) {
+      expect(item.style.getPropertyValue('--ranking-delay')).toBe(
+        `${item.getAttribute('data-delay')}s`,
+      )
+    }
+  })
+
+  it('1 位の水引の飾りは読み上げず、線で描く水引（3 本どり）を持つ', () => {
+    render(layout())
+    const knot = screen.getByTestId('crown')
+    expect(knot).toHaveAttribute('aria-hidden', 'true')
+    expect(knot).toHaveClass('wa-rank-knot')
+    // 3 本どり: 背景色・金・背景色・紅の 4 層 × （紐と交差の区間）
+    expect(knot.querySelectorAll('.wa-knot-cord path')).toHaveLength(4)
+    expect(knot.querySelector('path')).toHaveAttribute('pathLength', '1')
+  })
+
+  it('crown={false} なら自動では載せず、RankingRevealKnot を好きな場所に置ける', () => {
+    render(
+      wrap(
+        <RankingReveal count={1}>
+          <RankingRevealItem rank={1} crown={false}>
+            <div data-testid="frame">
+              <RankingRevealKnot className="frame-knot" />
+            </div>
+          </RankingRevealItem>
+        </RankingReveal>,
+      ),
+    )
+    const crowns = screen.getAllByTestId('crown')
+    expect(crowns).toHaveLength(1)
+    expect(screen.getByTestId('frame')).toContainElement(crowns[0] ?? null)
+    expect(crowns[0]).toHaveClass('wa-rank-knot', 'frame-knot')
+  })
+
+  it('crownClassName・crownStyle で飾りの位置を変えられる', () => {
+    render(
+      wrap(
+        <RankingReveal count={1}>
+          <RankingRevealItem rank={1} crownClassName="knot-here" crownStyle={{ top: 4 }}>
+            <p>一位</p>
+          </RankingRevealItem>
+        </RankingReveal>,
+      ),
+    )
+    const knot = screen.getByTestId('crown')
+    expect(knot).toHaveClass('knot-here')
+    expect(knot.style.top).toBe('4px')
   })
 
   it('アンマウントするとタイマーを片付ける', () => {

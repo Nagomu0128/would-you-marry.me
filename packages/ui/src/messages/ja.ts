@@ -93,6 +93,8 @@ export const ja = {
     retry: 'もう一度試す',
     /** 演出を飛ばすボタン（読み上げ用） */
     skipAnimation: '演出を飛ばす',
+    /** 画面の読み込み中（読み上げ用） */
+    loading: '読み込み中',
     photoAlt: ({ nickname }: { nickname: string }) => `${nickname} さんの写真`,
     likeCount: ({ count }: { count: number }) => `いいね ${count} 件`,
     /** 投稿者の表示（拡大表示・ランキング。screen-details.md のワイヤーフレーム） */

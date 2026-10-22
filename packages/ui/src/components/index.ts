@@ -23,7 +23,7 @@ export { ErrorState, type ErrorStateProps } from './ErrorState'
 export { Footer, type FooterProps } from './Footer'
 export { ListCard, type ListCardProps } from './ListCard'
 export { DefaultLink, type LinkComponent, type LinkProps } from './link'
-export { PageLoading } from './PageLoading'
+export { PageLoading, type PageLoadingProps } from './PageLoading'
 export { PageTransition, type PageTransitionProps } from './PageTransition'
 export { PhotoGrid, type PhotoGridItem, type PhotoGridProps } from './PhotoGrid'
 export {
