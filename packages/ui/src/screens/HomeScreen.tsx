@@ -1,9 +1,11 @@
-import { ArrowUpRight, Camera, Users, Utensils } from 'lucide-react'
-import { useEffect } from 'react'
+import { ChevronRight } from 'lucide-react'
+import { Fragment, useEffect, useId } from 'react'
 import { SectionHeading } from '../components/Editorial'
 import { DefaultLink, type LinkComponent } from '../components/link'
 import { ja } from '../messages/ja'
-import { WeddingMark } from '../motion/WeddingMark'
+import { Reveal } from '../motion/Reveal'
+import { MizuhikiKnot } from '../ornaments/MizuhikiKnot'
+import { Orizuru } from '../ornaments/Orizuru'
 
 export type HomeScreenPhoto = { id: string; src: string; nickname: string }
 export type HomeScreenProps = {
@@ -14,10 +16,68 @@ export type HomeScreenProps = {
   hrefs: { seating: string; course: string; album: string; upload: string; nickname: string }
   LinkComponent?: LinkComponent
 }
+
 export function formatEventDate(eventDate: string): string {
   return eventDate.replaceAll('-', '.')
 }
 
+/** おふたりの名前の区切り（「A & B」「A家・B家」「A と B」）。前から順に試す */
+const NAME_SEPARATORS = [/\s*[&＆]\s*/, /\s*・\s*/, /\s*×\s*/, /\s+と\s+/]
+
+/**
+ * 表紙に縦書きで並べるため、テナント名をおふたりの名前に分ける。
+ * 区切りが見つからないときは 1 つのまま返す（区切りは表示の飾りにだけ使う）。
+ */
+export function splitCoupleName(name: string): { names: string[]; separator: string | null } {
+  const trimmed = name.trim()
+  for (const pattern of NAME_SEPARATORS) {
+    const match = trimmed.match(pattern)
+    if (!match || match.index === undefined) continue
+    const before = trimmed.slice(0, match.index).trim()
+    const after = trimmed.slice(match.index + match[0].length).trim()
+    if (before && after) return { names: [before, after], separator: match[0].trim() }
+  }
+  return { names: [trimmed], separator: null }
+}
+
+/** 祝儀袋の右上の熨斗（のし）。装飾 */
+function Noshi() {
+  return (
+    <svg viewBox="0 0 24 44" width={24} height={44} className="shugi-noshi" aria-hidden="true">
+      <path
+        d="M12 1.5 21.5 10 19 42.5H5L2.5 10Z"
+        fill="var(--color-surface)"
+        stroke="var(--color-gold)"
+        strokeWidth="0.8"
+        strokeLinejoin="round"
+      />
+      <path d="M12 6.5 17.6 12 15.8 38.5H8.2L6.4 12Z" fill="var(--color-accent)" />
+      <path d="M10.8 12h2.4v22.5h-2.4Z" fill="var(--color-gold-light)" />
+    </svg>
+  )
+}
+
+/** 写真の四隅を留める金の写真コーナー。装飾 */
+function PhotoCorners() {
+  return (
+    <span className="photo-corners" aria-hidden="true">
+      <span data-corner="tl" />
+      <span data-corner="tr" />
+      <span data-corner="bl" />
+      <span data-corner="br" />
+    </span>
+  )
+}
+
+/**
+ * ホーム（SG-03）。式の表紙と、紙ものの入口。
+ * - 表紙: 臙脂の青海波に、縦書きのおふたりの名前・金の日付・水引
+ * - 宛名の札: あいさつと、ニックネームの変更
+ * - 祝儀袋: 写真を贈る（投稿）入口。表書きと水引、名入れはニックネーム
+ * - 席札・御品書き: 席次表と料理のコース
+ * - 紙焼き写真: みんなのアルバムの新着（なければ折り鶴が最初の一枚を待つ）
+ * データの取得はしない（管理面のプレビューでも使う）。
+ */
 export function HomeScreen({
   tenantName,
   eventDate,
@@ -27,96 +87,95 @@ export function HomeScreen({
   LinkComponent: Link = DefaultLink,
 }: HomeScreenProps) {
   const recent = recentPhotos.slice(0, 3)
+  const { names, separator } = splitCoupleName(tenantName)
+  const guideId = useId()
+  const albumId = useId()
+
   useEffect(() => {
-    document.title = `${tenantName} | The Wedding Journal`
+    document.title = tenantName
   }, [tenantName])
+
   return (
-    <div>
-      <section className="invitation">
-        <WeddingMark className="wedding-mark" />
-        <p className="eyebrow text-muted" lang="en">
-          Together, on this day
-        </p>
-        <p className="invitation-title" lang="en" aria-hidden="true">
-          Our wedding<em>journal.</em>
-        </p>
-        <h1 className="invitation-name">{tenantName}</h1>
-        <p className="invitation-date">
-          <time dateTime={eventDate}>{formatEventDate(eventDate)}</time>
-        </p>
-        <p className="invitation-note">
-          今日という日を、みなさまと。
-          <br />
-          かけがえのない一日をお楽しみください。
-        </p>
-      </section>
-      <div className="px-screen">
-        <div className="home-greeting">
-          <p>{ja.guest.home.greeting({ nickname })}</p>
-          <Link href={hrefs.nickname} className="text-link">
-            {ja.guest.home.change}
-          </Link>
+    <div className="home">
+      <section className="cover wa-seigaiha">
+        <div className="cover-frame">
+          <span className="cover-corners" aria-hidden="true" />
+          <span className="cover-knot wa-kin-sheen">
+            <MizuhikiKnot strands="five" tone="on-dark" />
+          </span>
+          <h1 className="cover-names" aria-label={tenantName}>
+            {names.map((name, index) => (
+              <Fragment key={name}>
+                {index > 0 && separator ? (
+                  <span className="cover-sep" aria-hidden="true">
+                    {separator}
+                  </span>
+                ) : null}
+                <span className="cover-name">{name}</span>
+              </Fragment>
+            ))}
+          </h1>
+          <p className="cover-date font-numeral wa-kin-text wa-kin-sheen">
+            <time dateTime={eventDate}>{formatEventDate(eventDate)}</time>
+          </p>
+          <p className="cover-line">{ja.guest.home.welcomeLine}</p>
         </div>
-        <section className="home-section">
-          <Link
-            href={hrefs.upload}
-            className="share-invitation"
-            aria-label={ja.guest.home.cards.upload}
-          >
-            <span>
-              <span className="eyebrow" lang="en">
-                A moment to keep
-              </span>
-              <strong>{ja.guest.home.cards.upload}</strong>
-              <small>あなたが見つけた、幸せの一瞬を。</small>
+      </section>
+
+      <Reveal className="home-greeting">
+        <p className="home-greeting-text">{ja.guest.home.greeting({ nickname })}</p>
+        <Link href={hrefs.nickname} className="home-greeting-change">
+          {ja.guest.home.change}
+        </Link>
+      </Reveal>
+
+      <Reveal className="home-gift">
+        <Link href={hrefs.upload} className="shugi-link">
+          <span className="shugi" aria-hidden="true">
+            <Noshi />
+            <span className="shugi-omote">{ja.guest.home.giftOmote}</span>
+            <span className="shugi-band">
+              <MizuhikiKnot strands="five" className="shugi-knot" />
             </span>
-            <Camera aria-hidden="true" strokeWidth={1.25} />
-          </Link>
-        </section>
-        <section className="home-section">
-          <SectionHeading title="本日のご案内" caption="For our guests" />
-          <div className="guide-links">
-            <Link
-              href={hrefs.seating}
-              className="guide-link"
-              aria-label={ja.guest.home.cards.seating}
-            >
-              <Users aria-hidden="true" strokeWidth={1.25} />
-              <span>
-                <strong>{ja.guest.home.cards.seating}</strong>
-                <small lang="en">Find your seat</small>
-              </span>
+            <span className="shugi-name">{nickname}</span>
+          </span>
+          <span className="shugi-cta">
+            {ja.guest.home.cards.upload}
+            <ChevronRight aria-hidden="true" strokeWidth={1.6} />
+          </span>
+        </Link>
+        <p className="shugi-note">{ja.guest.home.giftNote}</p>
+      </Reveal>
+
+      <Reveal className="home-section">
+        <section aria-labelledby={guideId}>
+          <SectionHeading id={guideId} title={ja.guest.home.guideHeading} />
+          <div className="fuda-pair">
+            <Link href={hrefs.seating} className="fuda" data-kind="seat">
+              <span className="fuda-fold" aria-hidden="true" />
+              <span className="fuda-title">{ja.guest.home.cards.seating}</span>
+              <span className="fuda-note">{ja.guest.home.seatingNote}</span>
             </Link>
-            <Link
-              href={hrefs.course}
-              className="guide-link"
-              aria-label={ja.guest.home.cards.course}
-            >
-              <Utensils aria-hidden="true" strokeWidth={1.25} />
-              <span>
-                <strong>{ja.guest.home.cards.course}</strong>
-                <small lang="en">At the table</small>
+            <Link href={hrefs.course} className="fuda" data-kind="menu">
+              <span className="fuda-mark" aria-hidden="true">
+                {ja.guest.home.courseMark}
               </span>
+              <span className="fuda-title">{ja.guest.home.cards.course}</span>
+              <span className="fuda-note">{ja.guest.home.courseNote}</span>
             </Link>
           </div>
         </section>
-        <section className="home-section pb-4">
-          <SectionHeading
-            title="みんなのアルバム"
-            caption="Collected memories"
-            action={
-              <Link href={hrefs.album} className="text-link" aria-label={ja.guest.home.cards.album}>
-                すべて見る
-                <ArrowUpRight size={14} aria-hidden="true" />
-              </Link>
-            }
-          />
+      </Reveal>
+
+      <Reveal className="home-section home-album">
+        <section aria-labelledby={albumId}>
+          <SectionHeading id={albumId} title={ja.guest.home.albumHeading} />
           {recent.length ? (
-            <>
-              <p className="mb-3 text-caption text-muted">{ja.guest.home.recent}</p>
-              <Link href={hrefs.album} className="recent-photos" aria-label="新着の写真を見る">
+            <Link href={hrefs.album} className="prints" aria-label={ja.guest.home.openAlbum}>
+              <span className="prints-tag">{ja.guest.home.recent}</span>
+              <span className="prints-stack">
                 {recent.map((photo) => (
-                  <div className="recent-photo" key={photo.id}>
+                  <span className="print" key={photo.id}>
                     <img
                       src={photo.src}
                       alt={ja.common.photoAlt({ nickname: photo.nickname })}
@@ -125,22 +184,30 @@ export function HomeScreen({
                       loading="lazy"
                       decoding="async"
                     />
-                  </div>
+                    <PhotoCorners />
+                  </span>
                 ))}
-              </Link>
-            </>
+              </span>
+              <span className="prints-cta">
+                {ja.guest.home.openAlbum}
+                <ChevronRight aria-hidden="true" strokeWidth={1.6} />
+              </span>
+            </Link>
           ) : (
-            <Link href={hrefs.album} className="album-invitation">
-              <span lang="en">The first page.</span>
-              <p>
-                これから集まる、今日の思い出。
-                <br />
-                みなさまの写真で、一冊のアルバムに。
-              </p>
+            <Link href={hrefs.album} className="prints prints-waiting">
+              <span className="waiting-mount" aria-hidden="true">
+                <PhotoCorners />
+                <Orizuru tone="beni" className="waiting-orizuru" />
+              </span>
+              <span className="waiting-text">{ja.guest.home.albumEmpty}</span>
+              <span className="prints-cta">
+                {ja.guest.home.openAlbum}
+                <ChevronRight aria-hidden="true" strokeWidth={1.6} />
+              </span>
             </Link>
           )}
         </section>
-      </div>
+      </Reveal>
     </div>
   )
 }
