@@ -21,5 +21,4 @@ export {
 } from './RankingReveal'
 export { Reveal, type RevealProps } from './Reveal'
 export { UploadComplete } from './UploadComplete'
-export { WeddingMark } from './WeddingMark'
 export { WelcomeAnimation } from './WelcomeAnimation'

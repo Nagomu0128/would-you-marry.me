@@ -124,6 +124,13 @@
     gap: 1.25rem;
     padding: 1.75rem 1rem 3.75rem;
     border: 1px solid rgb(226 201 143 / 55%);
+    /* 名前と言葉の背後だけ青海波を沈める（細い金の線が小さな文字を横切らないように） */
+    background: radial-gradient(
+      ellipse 72% 58% at 50% 56%,
+      rgb(92 22 33 / 94%) 0%,
+      rgb(92 22 33 / 86%) 48%,
+      rgb(92 22 33 / 0%) 82%
+    );
     text-align: center;
   }
 
@@ -225,12 +232,21 @@
 
   .cover-line {
     font-family: var(--font-mincho);
-    font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.8;
     letter-spacing: 0.12em;
     color: var(--color-gold-light);
     text-wrap: balance;
+    /* 幅 320px でも一行に収まる大きさ（「…ください／ました」で折れないように） */
+    font-size: clamp(0.75rem, 0.62rem + 0.9vw, 0.875rem);
+    /* 小さな金の文字の背後に臙脂を敷き、青海波の線から離す */
+    padding: 0.375rem 0.5rem;
+    background: radial-gradient(
+      closest-side,
+      rgb(92 22 33 / 97%) 0%,
+      rgb(92 22 33 / 90%) 70%,
+      rgb(92 22 33 / 0%) 100%
+    );
   }
 
   /* 表紙の幅が文字に対して狭いとき（文字の拡大など）は、名前を横書きに戻す */

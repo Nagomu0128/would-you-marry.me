@@ -1,11 +1,5 @@
 /* 全画面の儀式の演出（初回ホームの金屏風・新郎新婦の入室の向かい鶴・投稿完了の朱印）と水引の印。担当: ceremony */
 @layer components {
-  .wedding-mark {
-    display: block;
-    flex: none;
-    max-inline-size: 100%;
-  }
-
   /* ── 舞台 ───────────────────────────────────────── */
   .ceremony-stage {
     /* 金箔の継ぎ目（2×2 枚の箔と、重なりの縁の影と光） */
@@ -185,6 +179,14 @@
     text-wrap: balance;
     word-break: keep-all;
     overflow-wrap: anywhere;
+    /* 小さな金の文字の背後に臙脂を敷き、青海波の線から離す（表紙の言葉と同じ扱い） */
+    padding: 0.25rem 1rem;
+    background: radial-gradient(
+      closest-side,
+      rgb(92 22 33 / 97%) 0%,
+      rgb(92 22 33 / 90%) 70%,
+      rgb(92 22 33 / 0%) 100%
+    );
   }
 
   .byobu-names {

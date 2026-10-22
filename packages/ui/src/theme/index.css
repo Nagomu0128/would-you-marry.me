@@ -35,9 +35,6 @@
   --font-numeral: "Bodoni Moda Variable", "Shippori Mincho B1", Didot, serif;
   --font-sans: var(--font-gothic);
   --font-serif: var(--font-mincho);
-  /* 旧トークン（移行中だけ残す。各画面の作り直しが終わったら消す） */
-  --font-editorial: var(--font-mincho);
-  --font-accent: var(--font-mincho);
 
   /* 字の大きさ。ウェイトは明朝 500 / 800、ゴシック 400 / 700 の 2 段だけを使う */
   --text-display: clamp(2rem, 1.4rem + 3vw, 2.75rem);

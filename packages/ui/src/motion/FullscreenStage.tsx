@@ -67,7 +67,8 @@ export function FullscreenStage({
       className="ceremony-stage"
       data-scene={scene}
       initial={{ opacity: from }}
-      animate={{ opacity: [from, 1, 1, 0] }}
+      // 終わりは溶けながら少し上へ抜ける。同じ名前が別の位置にある下の画面と、重なって濁って見えないように
+      animate={{ opacity: [from, 1, 1, 0], y: [0, 0, 0, -36], scale: [1, 1, 1, 1.02] }}
       transition={{
         duration,
         times: [0, fadeIn / duration, (duration - CEREMONY_FADE_OUT) / duration, 1],
