@@ -1,11 +1,23 @@
 import { HOME_RECENT_PHOTO_COUNT } from '@wym/shared'
-import { ErrorState, HomeScreen, ja, ScreenHeader, Skeleton, WelcomeAnimation } from '@wym/ui'
+import { ErrorState, HomeScreen, ja, Skeleton, WelcomeAnimation } from '@wym/ui'
 import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router'
 import { getMe, getPhotos } from '../lib/api'
 import { paths, RouterLink } from '../lib/router-link'
 import { useApiResource } from '../lib/use-api-resource'
 import { hasPlayedWelcome, markWelcomePlayed } from '../lib/welcome-storage'
+
+/** 読み込み中: 表紙・宛名の札・祝儀袋の形 */
+function HomeSkeleton() {
+  return (
+    <div aria-busy="true" className="flex flex-col items-center gap-4 pb-6">
+      <Skeleton className="h-[26rem] w-full rounded-none" />
+      <Skeleton className="-mt-12 h-14 w-[min(22rem,80%)]" />
+      <Skeleton className="mt-10 h-64 w-44" />
+      <Skeleton className="h-12 w-48" />
+    </div>
+  )
+}
 
 // SG-03 ホーム
 export function HomeRoute() {
@@ -29,21 +41,7 @@ export function HomeRoute() {
   }, [tenantId])
   const [welcomeDone, setWelcomeDone] = useState(false)
 
-  if (resource.state === 'loading') {
-    return (
-      <div>
-        <ScreenHeader title="" />
-        <div className="flex flex-col gap-4 px-screen">
-          <Skeleton className="h-6 w-1/3" />
-          <Skeleton className="h-6 w-2/3" />
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-16 w-full" />
-        </div>
-      </div>
-    )
-  }
+  if (resource.state === 'loading') return <HomeSkeleton />
   if (resource.state === 'error') return <ErrorState onRetry={resource.reload} />
 
   const me = resource.data

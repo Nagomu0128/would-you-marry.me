@@ -6,7 +6,7 @@ import { fetchSeatingChartUrl } from '../lib/api'
 import { paths, RouterLink } from '../lib/router-link'
 import { useApiResource } from '../lib/use-api-resource'
 
-// SG-04 席次表
+// SG-04 席次表（額装した席次表の見立て）
 export function SeatingRoute() {
   const { tenantId = '' } = useParams()
   const resource = useApiResource(() => fetchSeatingChartUrl(tenantId), [tenantId])
@@ -22,18 +22,19 @@ export function SeatingRoute() {
     <div>
       <ScreenHeader
         title={ja.guest.home.cards.seating}
-        eyebrow="At the reception"
-        description="お席を見つけて、ゆっくりお過ごしください。"
+        description={ja.guest.seating.lead}
         backHref={paths.home(tenantId)}
         LinkComponent={RouterLink}
       />
-      <div className="px-screen pb-6">
-        <p className="content-note mb-5">2本の指、またはダブルタップで拡大できます。</p>
-        {resource.state === 'loading' ? <Skeleton className="aspect-[1/1.414] w-full" /> : null}
+      <div className="document-page">
+        {resource.state === 'loading' ? (
+          <Skeleton className="aspect-[1.414/1] w-full rounded-none" />
+        ) : null}
         {resource.state === 'error' ? <ErrorState onRetry={resource.reload} /> : null}
         {resource.state === 'ready' ? (
           <SeatingChartView pdfUrl={url} workerSrc={workerSrc} />
         ) : null}
+        {url ? <p className="document-hint">{ja.guest.seating.zoomHint}</p> : null}
       </div>
     </div>
   )

@@ -5,9 +5,9 @@ import {
   CoupleCelebration,
   ErrorState,
   ja,
+  MizuhikiKnot,
   Skeleton,
   TextField,
-  WeddingMark,
 } from '@wym/ui'
 import { type FormEvent, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
@@ -26,9 +26,10 @@ export function CoupleLoginRoute() {
 
   if (state.state === 'loading') {
     return (
-      <div className="flex flex-col gap-4 px-screen py-8">
-        <Skeleton className="h-8 w-1/2" />
-        <Skeleton className="h-12 w-full" />
+      <div className="flex flex-col items-center gap-4 px-screen py-6">
+        <Skeleton className="h-[13.5rem] w-[min(100%,18rem)] rounded-none" />
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="mt-6 h-12 w-full" />
         <Skeleton className="h-12 w-full" />
       </div>
     )
@@ -123,20 +124,15 @@ function CoupleLoginForm({
 
   return (
     <div>
-      <section className="invitation">
-        <WeddingMark className="wedding-mark" />
-        <p className="eyebrow text-muted" lang="en">
-          A keepsake for two
-        </p>
-        <h1 className="invitation-title" lang="en">
-          For<em>the couple.</em>
-        </h1>
-        <p className="invitation-name">{initial.tenantName}</p>
-        <p className="invitation-note">
-          みなさまのまなざしで綴る、
-          <br />
-          おふたりの一日。
-        </p>
+      <section className="tsutsumi-scene">
+        <div className="tsutsumi">
+          <h1 className="tsutsumi-omote">{ja.couple.entry.heading}</h1>
+          <span className="tsutsumi-band" aria-hidden="true">
+            <MizuhikiKnot strands="five" className="tsutsumi-knot" />
+          </span>
+        </div>
+        <p className="tsutsumi-to">{initial.tenantName}</p>
+        <p className="tsutsumi-note">{ja.couple.entry.note}</p>
       </section>
       <form onSubmit={submit} className="entry-form">
         <p className="entry-form-description">{ja.couple.entry.description}</p>
@@ -174,7 +170,7 @@ function CoupleLoginForm({
             }
           />
         ) : null}
-        <Button type="submit" fullWidth disabled={!canSubmit} loading={submitting}>
+        <Button type="submit" fullWidth tone="beni" disabled={!canSubmit} loading={submitting}>
           {ja.couple.entry.submit}
         </Button>
         {network ? <ErrorState onRetry={() => void submit()} /> : null}
