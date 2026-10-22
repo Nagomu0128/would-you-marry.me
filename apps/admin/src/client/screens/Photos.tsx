@@ -1,8 +1,8 @@
 import type { StaffPhoto } from '@wym/shared'
-import { EmptyState, ja, PhotoGrid, PhotoViewer, usePhotoSave, useToast } from '@wym/ui'
+import { ja, PhotoGrid, PhotoViewer, usePhotoSave, useToast } from '@wym/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router'
-import { LoadError, LoadingBlocks, Screen } from '../components/shell'
+import { AdminEmpty, LoadError, LoadingBlocks, Screen } from '../components/shell'
 import { ApiClientError, api } from '../lib/api'
 import { messageOf } from '../lib/errors'
 
@@ -103,16 +103,15 @@ export function Photos() {
 
   return (
     <Screen title={ja.admin.detail.photos} backHref={`/tenants/${tenantId}`}>
-      <p className="text-sub text-muted">
-        一枚ずつに残る、かけがえのない瞬間。写真を開くと保存・削除できます。
-      </p>
-      {state.status === 'loading' ? <LoadingBlocks /> : null}
+      {state.status === 'loading' ? <LoadingBlocks rows={3} /> : null}
       {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
       {state.status === 'ready' && photos.length === 0 ? (
-        <EmptyState message={ja.admin.photos.empty} />
+        <AdminEmpty message={ja.admin.photos.empty} />
       ) : null}
+      {photos.length > 0 ? <p className="admin-note">{ja.admin.book.photosNote}</p> : null}
       {photos.length > 0 ? (
         <PhotoGrid
+          className="admin-photos"
           photos={photos.map((p) => ({
             id: p.id,
             src: p.urls.thumb,

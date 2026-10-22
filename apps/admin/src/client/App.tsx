@@ -1,7 +1,8 @@
-import { PageLoading, RouteBoundary } from '@wym/ui'
-import { lazy, Suspense } from 'react'
+import { RouteBoundary } from '@wym/ui'
+import { lazy } from 'react'
 import { Route, Routes } from 'react-router'
 import { AuthGate } from './components/AuthGate'
+import { AdminLayout } from './components/shell'
 import { Login } from './screens/Login'
 
 const Guests = lazy(() => import('./screens/Guests').then((module) => ({ default: module.Guests })))
@@ -27,14 +28,15 @@ const TenantList = lazy(() =>
 
 /**
  * 管理面のルート。`AuthGate` の中の画面は、ログイン済みで許可された管理者だけが見られる。
+ * `AdminLayout`（準備帳の背表紙）は画面を移っても残り、頁の中だけを遅延読み込みする。
  */
 export function App() {
   return (
     <RouteBoundary>
-      <Suspense fallback={<PageLoading className="layout-admin" />}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route element={<AuthGate />}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route element={<AuthGate />}>
+          <Route element={<AdminLayout />}>
             <Route path="/" element={<TenantList />} />
             <Route path="/tenants/new" element={<TenantCreate />} />
             <Route path="/tenants/:tenantId" element={<TenantDetail />} />
@@ -44,8 +46,8 @@ export function App() {
             <Route path="/tenants/:tenantId/guests" element={<Guests />} />
             <Route path="/monitor" element={<Monitor />} />
           </Route>
-        </Routes>
-      </Suspense>
+        </Route>
+      </Routes>
     </RouteBoundary>
   )
 }

@@ -27,7 +27,7 @@ export function fieldErrorsFrom(error: ApiClientError): TenantFormErrors {
   return out
 }
 
-/** SA-03 テナント作成 */
+/** SA-03 テナント作成。帳面に新しい式の頁を起こす */
 export function TenantCreate() {
   const navigate = useNavigate()
   const toast = useToast()
@@ -57,9 +57,9 @@ export function TenantCreate() {
 
   return (
     <Screen title={ja.admin.create.heading} backHref="/">
-      <p className="text-sub text-muted">特別な一日のために、新しいページを用意しましょう。</p>
       <form onSubmit={handleSubmit} noValidate className="admin-form">
         <TextField
+          className="admin-field"
           label={ja.admin.create.name}
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -68,15 +68,19 @@ export function TenantCreate() {
           max={TENANT_NAME_MAX_LENGTH}
         />
         <TextField
+          className="admin-field admin-field-date"
           label={ja.admin.create.eventDate}
           type="date"
+          hint={ja.admin.book.createNote}
           value={eventDate}
           onChange={(e) => setEventDate(e.target.value)}
           error={errors.eventDate}
         />
-        <Button type="submit" fullWidth loading={submitting}>
-          {ja.admin.create.submit}
-        </Button>
+        <div className="admin-form-actions">
+          <Button type="submit" loading={submitting}>
+            {ja.admin.create.submit}
+          </Button>
+        </div>
       </form>
     </Screen>
   )

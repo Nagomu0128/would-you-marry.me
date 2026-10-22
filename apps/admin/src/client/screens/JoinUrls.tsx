@@ -1,8 +1,8 @@
 import type { CoupleAccessResponse, JoinUrlResponse } from '@wym/shared'
-import { Button, Card, ConfirmSheet, ja, useToast } from '@wym/ui'
+import { Button, ConfirmSheet, ja, useToast } from '@wym/ui'
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router'
-import { LoadError, LoadingBlocks, Screen } from '../components/shell'
+import { Ledger, LoadError, LoadingBlocks, Screen } from '../components/shell'
 import { api } from '../lib/api'
 import { messageOf } from '../lib/errors'
 import { joinPeriodLabels } from '../lib/format'
@@ -29,10 +29,7 @@ export function JoinUrls() {
 
   return (
     <Screen title={ja.admin.urls.heading} backHref={`/tenants/${tenantId}`}>
-      <p className="text-sub text-muted">
-        ゲストには受付のQRコードを、おふたりには専用のアルバムを。
-      </p>
-      {state.status === 'loading' ? <LoadingBlocks /> : null}
+      {state.status === 'loading' ? <LoadingBlocks rows={2} /> : null}
       {state.status === 'error' ? <LoadError error={state.error} onRetry={retry} /> : null}
       {state.status === 'ready' ? (
         <>
@@ -74,7 +71,7 @@ function QrView({ matrix }: { matrix: QrMatrix }) {
       aria-label={ja.admin.urls.qrAlt}
       viewBox={`0 0 ${total} ${total}`}
       shapeRendering="crispEdges"
-      className="size-64 max-w-full rounded-control border border-rule"
+      className="admin-qr-code"
     >
       <rect width={total} height={total} fill="#ffffff" />
       <path d={path} fill="#000000" />
@@ -117,44 +114,37 @@ function JoinSection({ tenantId, initial }: { tenantId: string; initial: JoinUrl
 
   const reissue = ja.confirms.reissueJoinUrl
   return (
-    <Card className="flex flex-col gap-3">
-      <p className="eyebrow text-accent">01 / For our guests</p>
-      <h2 className="font-editorial text-heading-md">{t.joinTitle}</h2>
+    <Ledger title={t.joinTitle} className="admin-urls-join">
       {join.url === null || matrix === null ? (
         <>
-          <p className="text-sub text-muted">{t.joinNone}</p>
-          <div>
+          <p className="admin-unissued-text">{t.joinNone}</p>
+          <div className="admin-actions">
             <Button loading={busy} onClick={() => void issue()}>
               {t.issue}
             </Button>
           </div>
         </>
       ) : (
-        <>
-          <div className="my-2 border border-rule bg-paper p-6 self-center">
+        <div className="admin-join">
+          {/* 受付に置く札のように、QR コードを白い紙に載せる */}
+          <figure className="admin-qr">
             <QrView matrix={matrix} />
-            <p className="mt-3 text-center text-caption text-muted">
-              カメラで読み取って、ご参加ください
+          </figure>
+          <div className="admin-join-detail">
+            <UrlLine url={join.url} onCopy={() => void copy(join.url ?? '')} />
+            <p className="admin-join-period">
+              {t.joinPeriod(joinPeriodLabels(join.joiningStart, join.joiningEnd))}
             </p>
+            <div className="admin-actions">
+              <Button variant="secondary" onClick={() => void saveQr()}>
+                {t.qrSave}
+              </Button>
+              <Button variant="secondary" className="admin-danger" onClick={() => setConfirm(true)}>
+                {t.reissue}
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="min-w-0 flex-1 break-all text-sub">{join.url}</p>
-            <Button variant="secondary" onClick={() => void copy(join.url ?? '')}>
-              {ja.admin.copy}
-            </Button>
-          </div>
-          <p className="text-sub">
-            {t.joinPeriod(joinPeriodLabels(join.joiningStart, join.joiningEnd))}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => void saveQr()}>
-              {t.qrSave}
-            </Button>
-            <Button variant="secondary" onClick={() => setConfirm(true)}>
-              {t.reissue}
-            </Button>
-          </div>
-        </>
+        </div>
       )}
       <ConfirmSheet
         open={confirm}
@@ -163,9 +153,22 @@ function JoinSection({ tenantId, initial }: { tenantId: string; initial: JoinUrl
         body={reissue.body}
         confirmLabel={reissue.confirm}
         cancelLabel={reissue.cancel}
+        danger
         loading={busy}
       />
-    </Card>
+    </Ledger>
+  )
+}
+
+/** URL の記入欄とコピー */
+function UrlLine({ url, onCopy }: { url: string; onCopy: () => void }) {
+  return (
+    <div className="admin-url">
+      <p className="admin-url-text">{url}</p>
+      <Button variant="secondary" onClick={onCopy}>
+        {ja.admin.copy}
+      </Button>
+    </div>
   )
 }
 
@@ -197,46 +200,40 @@ function CoupleSection({ tenantId, initial }: { tenantId: string; initial: Coupl
   const reissue = ja.confirms.reissueCoupleUrl
   const issued = couple.url !== null
   return (
-    <Card className="flex flex-col gap-3">
-      <p className="eyebrow text-accent">02 / For the couple</p>
-      <h2 className="font-editorial text-heading-md">{t.coupleTitle}</h2>
+    <Ledger title={t.coupleTitle} className="admin-urls-couple">
       {couple.url === null ? (
-        <p className="text-sub text-muted">{t.coupleNone}</p>
+        <p className="admin-unissued-text">{t.coupleNone}</p>
       ) : (
         <>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="min-w-0 flex-1 break-all text-sub">{couple.url}</p>
-            <Button variant="secondary" onClick={() => void copy(couple.url ?? '')}>
-              {ja.admin.copy}
-            </Button>
-          </div>
-          <p className="text-sub text-muted">
+          <UrlLine url={couple.url} onCopy={() => void copy(couple.url ?? '')} />
+          <p className="admin-terms" data-agreed={couple.termsAgreedAt ? true : undefined}>
             {couple.termsAgreedAt ? t.termsAgreed : t.termsNotAgreed}
           </p>
         </>
       )}
-      <div>
+      {passcode ? (
+        // 発行した直後だけ出す。この画面を離れると二度と表示できないので、紅の枠で目立たせる
+        <div className="admin-passcode">
+          <p className="admin-passcode-label">{t.passcode}</p>
+          <div className="admin-passcode-row">
+            <p className="admin-passcode-value">{passcode}</p>
+            <Button variant="secondary" onClick={() => void copy(passcode)}>
+              {ja.admin.copy}
+            </Button>
+          </div>
+          <p className="admin-passcode-notice">※ {ja.admin.passcodeNotice}</p>
+        </div>
+      ) : null}
+      <div className="admin-actions">
         <Button
           variant={issued ? 'secondary' : 'primary'}
+          className={issued ? 'admin-danger' : undefined}
           loading={busy}
           onClick={() => (issued ? setConfirm(true) : void issue())}
         >
           {issued ? t.reissue : t.issue}
         </Button>
       </div>
-      {passcode ? (
-        <div className="flex flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <p>
-              {t.passcode}: <span className="font-mono text-heading-md">{passcode}</span>
-            </p>
-            <Button variant="secondary" onClick={() => void copy(passcode)}>
-              {ja.admin.copy}
-            </Button>
-          </div>
-          <p className="text-sub text-error">※ {ja.admin.passcodeNotice}</p>
-        </div>
-      ) : null}
       <ConfirmSheet
         open={confirm}
         onClose={() => setConfirm(false)}
@@ -244,8 +241,9 @@ function CoupleSection({ tenantId, initial }: { tenantId: string; initial: Coupl
         body={reissue.body}
         confirmLabel={reissue.confirm}
         cancelLabel={reissue.cancel}
+        danger
         loading={busy}
       />
-    </Card>
+    </Ledger>
   )
 }

@@ -335,6 +335,21 @@ export const ja = {
       storage: '容量',
       openTool: '外部の監視ツールを開く',
     },
+    // --- 準備帳（2026-10 の再構成で足した、管理画面の補助と見出しの文言）---
+    book: {
+      skipToMain: '本文へ移動',
+      nav: '管理メニュー',
+      loading: '読み込み中',
+      loginNote: '許可された Google アカウントでログインしてください',
+      createNote: '開催日から、参加受付と閲覧の期間が自動で決まります',
+      materials: '当日の資料',
+      records: '参加者と写真',
+      danger: '取り消せない操作',
+      seatingRegistered: '登録済み',
+      photosNote: '写真を開くと、保存と削除ができます',
+      previewNote: '参加者と同じ画面を表示します。リンクとボタンは押せません',
+      monitorCaption: '結婚式ごとの利用状況',
+    },
   },
 
   toasts: {

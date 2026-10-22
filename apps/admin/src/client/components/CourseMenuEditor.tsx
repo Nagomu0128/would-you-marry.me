@@ -15,7 +15,7 @@ type Props = {
   onClose: () => void
 }
 
-/** コース表の画像の編集: 追加・削除（確認あり）・ドラッグでの並べ替え */
+/** コース表の画像の編集: 追加・削除（確認あり）・ドラッグでの並べ替え。御品書きの頁を綴じ直すように並べる */
 export function CourseMenuEditor({ tenantId, initialImages, onChange, onClose }: Props) {
   const toast = useToast()
   const [images, setImages] = useState(initialImages)
@@ -103,55 +103,58 @@ export function CourseMenuEditor({ tenantId, initialImages, onChange, onClose }:
 
   const t = ja.admin.detail
   return (
-    <div className="flex flex-col gap-3">
+    <div className="admin-course">
       {/* Reorder は全機能版の Motion を使うため、この中だけ厳格モードを外して読み込む */}
       <LazyMotion features={domMax}>
         <Reorder.Group
           axis="y"
           values={images.map((i) => i.id)}
           onReorder={handleReorder}
-          className="flex flex-col gap-2"
+          className="admin-course-list"
         >
           {images.map((image, index) => (
             <Reorder.Item
               key={image.id}
               value={image.id}
               onDragEnd={() => void persistOrder(latest.current)}
-              className="editor-row cursor-grab"
+              className="admin-course-item"
             >
+              <span className="admin-course-no" aria-hidden="true">
+                {index + 1}
+              </span>
               <img
                 src={image.url}
                 alt={t.courseImageAlt({ index: index + 1 })}
                 draggable={false}
-                className="size-16 shrink-0 rounded-photo object-cover"
+                className="admin-course-thumb"
               />
-              <span className="flex-1 text-sub text-muted">{index + 1}</span>
-              <Button
-                variant="text"
-                className="px-2"
-                disabled={index === 0}
-                onClick={() => move(index, -1)}
-                aria-label={`${ja.admin.moveUp} ${index + 1}`}
-              >
-                {ja.admin.moveUp}
-              </Button>
-              <Button
-                variant="text"
-                className="px-2"
-                disabled={index === images.length - 1}
-                onClick={() => move(index, 1)}
-                aria-label={`${ja.admin.moveDown} ${index + 1}`}
-              >
-                {ja.admin.moveDown}
-              </Button>
-              <Button
-                variant="text"
-                className="px-2 text-error"
-                onClick={() => setDeleting(image)}
-                aria-label={`${ja.admin.remove} ${index + 1}`}
-              >
-                {ja.admin.remove}
-              </Button>
+              <span className="admin-course-grip" aria-hidden="true" />
+              <div className="admin-course-actions">
+                <Button
+                  variant="text"
+                  disabled={index === 0}
+                  onClick={() => move(index, -1)}
+                  aria-label={`${ja.admin.moveUp} ${index + 1}`}
+                >
+                  {ja.admin.moveUp}
+                </Button>
+                <Button
+                  variant="text"
+                  disabled={index === images.length - 1}
+                  onClick={() => move(index, 1)}
+                  aria-label={`${ja.admin.moveDown} ${index + 1}`}
+                >
+                  {ja.admin.moveDown}
+                </Button>
+                <Button
+                  variant="text"
+                  className="admin-danger-text"
+                  onClick={() => setDeleting(image)}
+                  aria-label={`${ja.admin.remove} ${index + 1}`}
+                >
+                  {ja.admin.remove}
+                </Button>
+              </div>
             </Reorder.Item>
           ))}
         </Reorder.Group>
@@ -166,15 +169,15 @@ export function CourseMenuEditor({ tenantId, initialImages, onChange, onClose }:
         onChange={(e) => void handleAdd(e.target.files?.[0])}
       />
       {fileError ? (
-        <p role="alert" className="text-sub text-error">
+        <p role="alert" className="admin-row-error">
           {fileError}
         </p>
       ) : null}
-      <div className="flex gap-2">
+      <div className="admin-course-foot">
         <Button variant="secondary" loading={busy} onClick={() => fileInput.current?.click()}>
           {ja.admin.add}
         </Button>
-        <Button variant="text" onClick={onClose}>
+        <Button variant="text" className="admin-quiet" onClick={onClose}>
           {t.done}
         </Button>
       </div>
