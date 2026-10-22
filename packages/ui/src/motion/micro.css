@@ -1,41 +1,522 @@
-/* 小さな演出（いいね・ランキング・画面遷移・読み込み）。担当: micro */
+/* 小さな演出（いいね・ランキング・画面の切り替え・読み込み・金のきらめき）。担当: micro
+ * 長さは durations.ts の注記と揃える。動かすのは transform・opacity・clip-path と、水引の線の描画だけ。
+ * 位置・はみ出しの指定は :where() で詳細度を 0 にし、付けた側のクラスで上書きできるようにする。 */
 @layer components {
-  .wedding-like {
+  /* ---------- 水引の線（DrawnKnot）---------- */
+  /* 各線は pathLength=1。--wa-knot-draw が 1 で何も描かれず、0 で結び終わる */
+  .wa-knot {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    overflow: visible;
+  }
+  .wa-knot path {
+    stroke-dasharray: 1 2;
+  }
+  .wa-knot-cord path {
+    stroke-dashoffset: var(--wa-knot-draw, 0);
+  }
+
+  /* ---------- 読み込み（PageLoading）---------- */
+  .wa-loading {
+    display: grid;
+    place-items: center;
+    min-block-size: min(50vh, 22rem);
+    padding: 3rem 1.5rem;
+    --knot-gap: var(--color-paper);
+  }
+  .wa-loading-knot {
+    inline-size: 5.5rem;
+    opacity: 0;
+    /* 速い読み込みでちらつかないよう、少し待ってから現れる */
+    animation: wa-fade-in 0.4s ease-out 0.3s forwards;
+  }
+  .wa-loading-knot .wa-knot-cord path {
+    animation: wa-knot-loop 2.8s 0.3s infinite both;
+  }
+  .wa-loading-knot .wa-knot-weave {
+    animation: wa-knot-loop-weave 2.8s linear 0.3s infinite both;
+  }
+
+  /* 結んで（0〜52%）、結び目を見せて（〜72%）、結び目の手前からほどく（〜100%） */
+  @keyframes wa-knot-loop {
+    0% {
+      stroke-dashoffset: 1.01;
+      animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    52% {
+      stroke-dashoffset: 0;
+      animation-timing-function: linear;
+    }
+    72% {
+      stroke-dashoffset: 0;
+      animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5);
+    }
+    100% {
+      stroke-dashoffset: -1.01;
+    }
+  }
+  /* 交差の上下を入れ替える区間は、線がそこ（全長の 2 割の位置）を通っている間だけ出す */
+  @keyframes wa-knot-loop-weave {
+    0%,
+    18% {
+      opacity: 0;
+    }
+    20%,
+    83% {
+      opacity: 1;
+    }
+    85%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes wa-knot-draw {
+    from {
+      stroke-dashoffset: 1.01;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes wa-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* ---------- スケルトン（Skeleton）---------- */
+  /* 和紙のブロックの上を、金を含んだ淡い光がゆっくり通る（3.2 秒ごと） */
+  .wa-skeleton {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background-color: color-mix(in srgb, var(--color-rule) 60%, var(--color-paper));
+    background-image: var(--washi-fiber);
+  }
+  .wa-skeleton::after {
+    content: "";
     position: absolute;
     inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      100deg,
+      transparent 12%,
+      color-mix(in srgb, var(--color-gold-light) 16%, transparent) 34%,
+      color-mix(in srgb, var(--color-surface) 42%, transparent) 50%,
+      color-mix(in srgb, var(--color-gold-light) 16%, transparent) 66%,
+      transparent 88%
+    );
+    transform: translateX(-100%);
+    animation: wa-skeleton-light 3.2s cubic-bezier(0.45, 0, 0.4, 1) infinite;
+  }
+  @keyframes wa-skeleton-light {
+    0% {
+      transform: translateX(-100%);
+    }
+    68%,
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* ---------- いいね（LikeBurst）---------- */
+  /* 親（ハートのアイコンを包む position: relative の箱）の中央から散る */
+  .wa-like {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
     display: grid;
     place-items: center;
     pointer-events: none;
-    color: var(--color-accent, #a64d3c);
+    --wa-like-gold: var(--color-gold-light);
   }
-
-  .wedding-like-ray {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 0.35rem;
-    background: currentColor;
+  .wa-like > * {
+    grid-area: 1 / 1;
   }
-
-  .wedding-like-heart {
-    fill: currentColor;
+  /* 弾んだ瞬間の光。ぼかしではなく放射状のグラデーションを拡大して消す */
+  .wa-like-glow {
+    inline-size: 2.5rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--wa-like-gold) 75%, transparent),
+      color-mix(in srgb, var(--wa-like-gold) 18%, transparent) 50%,
+      transparent 92%
+    );
+    mix-blend-mode: screen;
   }
-
-  .wedding-rosette {
-    position: absolute;
-    inset-block-start: -1rem;
-    inset-inline-start: 0.625rem;
-    z-index: 1;
-    color: var(--color-accent, #a64d3c);
+  .wa-like-ring {
+    inline-size: 2.25rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--wa-like-gold);
+    border-radius: 50%;
   }
-
-  .wedding-rosette svg {
+  .wa-like-piece {
     display: block;
+  }
+  /* 金箔の粒（菱形） */
+  .wa-like-piece[data-kind="grain"] {
+    background: var(--kin-foil);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  }
+  .wa-like-shape {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
     overflow: visible;
   }
+  .wa-like-shape[data-tone="beni"] {
+    fill: var(--color-accent);
+  }
+  .wa-like-shape[data-tone="kinari"] {
+    fill: var(--color-surface);
+    stroke: var(--color-gold);
+    stroke-width: 0.8;
+  }
+  .wa-like-stamen {
+    fill: var(--color-gold-light);
+    stroke: none;
+  }
+  .wa-like-shape[data-tone="kinari"] .wa-like-stamen {
+    fill: var(--color-gold);
+  }
+  /* ハートのアイコン（LikeBurst と同じ親の直下の svg）が、小さく沈んでから弾む */
+  :where(*):has(> .wa-like) > svg {
+    transform-origin: 50% 55%;
+    animation: wa-like-heart 0.75s both;
+  }
+  @keyframes wa-like-heart {
+    0% {
+      transform: scale(1);
+      animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1);
+    }
+    14% {
+      transform: scale(0.74);
+      animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1);
+    }
+    40% {
+      transform: scale(1.24);
+      animation-timing-function: ease-in-out;
+    }
+    58% {
+      transform: scale(0.94);
+      animation-timing-function: ease-in-out;
+    }
+    74% {
+      transform: scale(1.03);
+      animation-timing-function: ease-out;
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 
+  /* ---------- ランキング（RankingReveal）---------- */
+  /* 各項目の --ranking-delay（登場の遅れ）に合わせて動く */
+
+  /* 順位の数字が、下の線から立ち上がる。数字（font-numeral）の要素に付ける */
+  .wa-rank-numeral {
+    display: inline-block;
+    animation: wa-rank-rise 0.62s var(--ease-wa) calc(var(--ranking-delay, 0s) + 0.12s) both;
+  }
+  @keyframes wa-rank-rise {
+    from {
+      transform: translateY(100%);
+      clip-path: inset(-0.3em -0.3em 100% -0.3em);
+    }
+    to {
+      transform: translateY(0);
+      clip-path: inset(-0.3em -0.3em -0.3em -0.3em);
+    }
+  }
+
+  /* 金の額縁に光が一度だけ走る。1 位の額縁（写真を包む金の枠）の要素に付ける。::after を使う */
+  :where(.wa-rank-sheen) {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .wa-rank-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      color-mix(in srgb, var(--color-gold-light) 24%, transparent) 42%,
+      color-mix(in srgb, var(--color-surface) 58%, transparent) 50%,
+      color-mix(in srgb, var(--color-gold-light) 24%, transparent) 58%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    animation: wa-sheen-pass 1s cubic-bezier(0.45, 0, 0.25, 1)
+      calc(var(--ranking-delay, 0s) + 0.38s) both;
+  }
+
+  /* 1 位の水引の飾り（RankingRevealKnot）。置かれたあとに線が描かれ、結び終わりにきゅっと締まる */
+  :where(.wa-rank-knot) {
+    position: absolute;
+    z-index: 2;
+    inset-block-start: -1.25rem;
+    inset-inline: 0;
+    margin-inline: auto;
+    inline-size: 4.25rem;
+  }
+  .wa-rank-knot {
+    display: block;
+    pointer-events: none;
+    --knot-gap: var(--color-surface);
+  }
+  .wa-rank-knot .wa-knot {
+    transform-origin: 50% 55%;
+    animation:
+      wa-fade-in 0.12s linear calc(var(--ranking-delay, 0s) + 0.45s) both,
+      wa-knot-cinch 0.38s var(--ease-wa) calc(var(--ranking-delay, 0s) + 1.12s) both;
+  }
+  .wa-rank-knot .wa-knot-cord path {
+    animation: wa-knot-draw 0.75s cubic-bezier(0.65, 0, 0.35, 1)
+      calc(var(--ranking-delay, 0s) + 0.45s) both;
+  }
+  .wa-rank-knot .wa-knot-weave {
+    animation: wa-fade-in 0.01s linear calc(var(--ranking-delay, 0s) + 0.75s) both;
+  }
+
+  /* ---------- 引っぱって更新（PullIndicator）---------- */
+  .wa-pull {
+    position: relative;
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-card);
+    --knot-gap: var(--color-surface);
+  }
+  .wa-pull .wa-knot {
+    inline-size: 1.875rem;
+  }
+  .wa-pull[data-state="pulling"] .wa-knot-weave {
+    opacity: 0;
+  }
+  /* しきい値を越えたら、残りを一息に結んで、きゅっと締める。金の輪が一度ひらく */
+  .wa-pull[data-state="tied"] .wa-knot-cord path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.22s var(--ease-wa);
+  }
+  .wa-pull[data-state="tied"] .wa-knot {
+    animation: wa-knot-cinch 0.42s var(--ease-wa) both;
+  }
+  .wa-pull[data-state="tied"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--color-gold);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: wa-pull-ring 0.6s var(--ease-wa) both;
+  }
+  /* 更新中は、結んだ姿から始めて、ほどいては結ぶ */
+  .wa-pull[data-state="refreshing"] .wa-knot-cord path {
+    animation: wa-knot-loop 2.2s -1.144s infinite;
+  }
+  .wa-pull[data-state="refreshing"] .wa-knot-weave {
+    animation: wa-knot-loop-weave 2.2s linear -1.144s infinite;
+  }
+  @keyframes wa-knot-cinch {
+    0% {
+      transform: scale(1);
+    }
+    45% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes wa-pull-ring {
+    from {
+      opacity: 0.9;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.55);
+    }
+  }
+
+  /* ---------- 金のきらめき（.wa-kin-sheen）---------- */
+  /* 付けた要素の上を光の帯が、表示時に一度（1.4 秒）、その後は 11 秒ごとにごく控えめに通る。
+   * 画面の外にある間は MotionProvider の見張りが data-wa-offscreen を付けて止める。
+   * 金箔の面（帯・罫・額。--kin-foil の背景）に向く。光は要素の箱の上を通り、上下の端はぼかす */
+  :where(.wa-kin-sheen) {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .wa-kin-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      112deg,
+      transparent 34%,
+      color-mix(in srgb, var(--color-gold-light) 24%, transparent) 44%,
+      color-mix(in srgb, var(--color-surface) 54%, transparent) 50%,
+      color-mix(in srgb, var(--color-gold-light) 24%, transparent) 56%,
+      transparent 66%
+    );
+    mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+    opacity: 0;
+    animation:
+      wa-kin-sheen-first 1.4s cubic-bezier(0.45, 0, 0.25, 1) 0.5s both,
+      wa-kin-sheen-idle 11s linear 2.4s infinite;
+  }
+  .wa-kin-sheen[data-wa-offscreen]::after {
+    animation-play-state: paused;
+  }
+  @keyframes wa-sheen-pass {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+  /* 帯は要素の端では消えていて、中ほどで最も明るくなる（箱の端で光が切れて見えないように） */
+  @keyframes wa-kin-sheen-first {
+    from {
+      transform: translateX(-45%);
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    to {
+      transform: translateX(45%);
+      opacity: 0;
+    }
+  }
+  @keyframes wa-kin-sheen-idle {
+    0%,
+    86% {
+      transform: translateX(-45%);
+      opacity: 0;
+      animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1);
+    }
+    /* 86〜100%（約 1.5 秒）の間に、0.45 まで明るくなって消える */
+    93% {
+      opacity: 0.45;
+    }
+    100% {
+      transform: translateX(45%);
+      opacity: 0;
+    }
+  }
+  /* 金箔の文字（.wa-kin-text）に付けたときは、箱ではなく字の形の中だけを光が通る。
+   * 字に切り抜いた背景の一番上に光の帯を重ね、その位置を動かす（小さな文字の範囲だけを描き直す） */
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    .wa-kin-text.wa-kin-sheen {
+      overflow: visible;
+      background-image:
+        linear-gradient(
+          105deg,
+          transparent 42%,
+          color-mix(in srgb, var(--color-surface) 78%, transparent) 50%,
+          transparent 58%
+        ),
+        var(--kin-foil);
+      background-size:
+        300% 100%,
+        100% 100%;
+      background-repeat: no-repeat;
+      background-position:
+        100% 0,
+        0 0;
+      animation:
+        wa-kin-text-pass 1.4s cubic-bezier(0.45, 0, 0.25, 1) 0.5s both,
+        wa-kin-text-idle 11s ease-in-out 2.4s infinite;
+    }
+    .wa-kin-text.wa-kin-sheen::after {
+      content: none;
+    }
+    .wa-kin-text.wa-kin-sheen[data-wa-offscreen] {
+      animation-play-state: paused;
+    }
+  }
+  @keyframes wa-kin-text-pass {
+    from {
+      background-position:
+        100% 0,
+        0 0;
+    }
+    to {
+      background-position:
+        0% 0,
+        0 0;
+    }
+  }
+  @keyframes wa-kin-text-idle {
+    0%,
+    84% {
+      background-position:
+        100% 0,
+        0 0;
+    }
+    100% {
+      background-position:
+        0% 0,
+        0 0;
+    }
+  }
+
+  /* ---------- 動きを減らす設定・強制カラー ---------- */
   @media (prefers-reduced-motion: reduce) {
-    .wedding-like {
+    .wa-like {
       display: none;
+    }
+    :where(*):has(> .wa-like) > svg,
+    .wa-rank-numeral,
+    .wa-rank-knot .wa-knot,
+    .wa-rank-knot .wa-knot-cord path,
+    .wa-rank-knot .wa-knot-weave,
+    .wa-loading-knot .wa-knot-cord path,
+    .wa-loading-knot .wa-knot-weave,
+    .wa-pull[data-state] .wa-knot,
+    .wa-pull[data-state] .wa-knot-cord path,
+    .wa-pull[data-state] .wa-knot-weave,
+    .wa-pull[data-state]::after {
+      animation: none;
+      transition: none;
+    }
+    .wa-skeleton::after,
+    .wa-rank-sheen::after,
+    .wa-kin-sheen::after {
+      animation: none;
+      display: none;
+    }
+    .wa-kin-text.wa-kin-sheen {
+      animation: none;
+    }
+  }
+  @media (forced-colors: active) {
+    .wa-skeleton::after,
+    .wa-rank-sheen::after,
+    .wa-kin-sheen::after {
+      display: none;
+    }
+    .wa-kin-text.wa-kin-sheen {
+      background: none;
+      animation: none;
     }
   }
 }

@@ -1,4 +1,4 @@
-import { m, useReducedMotion } from 'motion/react'
+import { type MotionStyle, m, type TargetAndTransition, useReducedMotion } from 'motion/react'
 import {
   type CSSProperties,
   createContext,
@@ -7,7 +7,8 @@ import {
   useEffect,
   useMemo,
 } from 'react'
-import { RANKING_ITEM_DURATION, RANKING_STEP } from './durations'
+import { DrawnKnot } from './DrawnKnot'
+import { RANKING_FIRST_FLOURISH, RANKING_ITEM_DURATION, RANKING_STEP } from './durations'
 import { useCompleteOnce } from './use-complete-once'
 
 const TOP = 3
@@ -26,7 +27,12 @@ export type RankingRevealProps = {
   children: ReactNode
 }
 
-// ランキングの登場演出のコンテナ。3 位 → 2 位 → 1 位（王冠）→ 4 位以下の順に登場させる
+/**
+ * ランキングの登場演出のコンテナ。3 位 → 2 位 → 1 位 → 4 位以下の順に、紙焼き写真を置くように登場させる。
+ * 1 位は最後に置かれ、続いて金の額縁に光が一度走り（.wa-rank-sheen）、水引の飾りが結ばれる。
+ * 各項目は CSS 変数 --ranking-delay（登場の遅れ）を持ち、micro.css の
+ * .wa-rank-numeral（順位の数字が立ち上がる）・.wa-rank-sheen（額縁の光）がそれに合わせて動く。
+ */
 export function RankingReveal({
   count,
   onComplete,
@@ -39,7 +45,11 @@ export function RankingReveal({
 
   const topCount = Math.min(TOP, count)
   const restDelay = topCount * RANKING_STEP + 0.1
-  const total = restDelay + RANKING_ITEM_DURATION
+  const firstDelay = Math.max(0, topCount - 1) * RANKING_STEP
+  const total = Math.max(
+    restDelay + RANKING_ITEM_DURATION,
+    count > 0 ? firstDelay + RANKING_FIRST_FLOURISH : 0,
+  )
 
   useEffect(() => {
     if (reduced) {
@@ -61,58 +71,49 @@ export function RankingReveal({
   )
 }
 
+export type RankingRevealKnotProps = {
+  className?: string
+  style?: CSSProperties
+}
+
+/**
+ * 1 位の水引の飾り。1 位が置かれたあとに線が描かれて結ばれる（micro.css の .wa-rank-knot）。
+ * RankingRevealItem（rank=1）が自動で載せる。額縁の中など別の場所に置くときは、
+ * RankingRevealItem に crown={false} を渡し、1 位の項目の中にこれを置く。
+ * 交差の切れ目は背景色で描くので、置く面の色を CSS の --knot-gap に渡す（既定は surface）。
+ */
+export function RankingRevealKnot({ className, style }: RankingRevealKnotProps) {
+  return (
+    <span
+      data-testid="crown"
+      aria-hidden="true"
+      className={['wa-rank-knot', className].filter(Boolean).join(' ')}
+      style={style}
+    >
+      <DrawnKnot strands="three" />
+    </span>
+  )
+}
+
 export type RankingRevealItemProps = {
   /** 順位（1 始まり） */
   rank: number
   className?: string
   as?: 'li' | 'div'
-  /** 1 位の王冠の位置の調整 */
+  /** 1 位の水引の飾りの位置の調整 */
   crownClassName?: string
   crownStyle?: CSSProperties
+  /** 1 位に水引の飾りを自動で載せる（既定 true）。false なら RankingRevealKnot を自分で置く */
+  crown?: boolean
   children: ReactNode
 }
 
-// 1 位の写真に押す記念のロゼット。
-function Crown({
-  reduced,
-  delay,
-  className,
-  style,
-}: {
-  reduced: boolean
-  delay: number
-  className?: string
-  style?: CSSProperties
-}) {
-  return (
-    <m.div
-      data-testid="crown"
-      aria-hidden="true"
-      className={['wedding-rosette', className].filter(Boolean).join(' ')}
-      style={style}
-      initial={reduced ? false : { scale: 1.2, rotate: -8, opacity: 0 }}
-      animate={reduced ? { opacity: 1 } : { scale: 1, rotate: 0, opacity: 1 }}
-      transition={{
-        delay: reduced ? 0 : delay + 0.35,
-        duration: reduced ? 0 : 0.4,
-        ease: 'easeOut',
-      }}
-    >
-      <svg viewBox="0 0 36 44" width={36} height={44} aria-hidden="true" focusable="false">
-        <path
-          d="M10 27L6 42L14 38L18 43L21 28M24 27L30 42L23 38L19 43L15 28"
-          fill="var(--color-paper, #f5f2eb)"
-          stroke="currentColor"
-        />
-        <circle cx="18" cy="17" r="15" fill="var(--color-paper, #f5f2eb)" stroke="currentColor" />
-        <circle cx="18" cy="17" r="11" fill="none" stroke="currentColor" strokeDasharray="1 3" />
-        <path
-          d="M18 11L20 15L24 16L21 19L22 23L18 21L14 23L15 19L12 16L16 15Z"
-          fill="currentColor"
-        />
-      </svg>
-    </m.div>
-  )
+// 置かれる前の姿勢。2・3 位は紙焼きを置くように少し傾けて、落ち着かせる
+function entranceFrom(rank: number): TargetAndTransition {
+  if (rank === 1) return { opacity: 0, y: 28, scale: 0.96 }
+  if (rank === 2) return { opacity: 0, y: 20, rotate: -1.6, scale: 0.98 }
+  if (rank === 3) return { opacity: 0, y: 20, rotate: 1.6, scale: 0.98 }
+  return { opacity: 0, y: 12 }
 }
 
 // 順位から登場の遅延が決まる。どこに置いても順番は変わらない
@@ -122,6 +123,7 @@ export function RankingRevealItem({
   as = 'div',
   crownClassName,
   crownStyle,
+  crown = true,
   children,
 }: RankingRevealItemProps) {
   const ctx = useContext(RevealContext)
@@ -130,24 +132,36 @@ export function RankingRevealItem({
 
   const delay = reduced ? 0 : rank <= TOP ? (topCount - rank) * RANKING_STEP : restDelay
   const Item = as === 'li' ? m.li : m.div
+  // CSS の演出（数字・額縁の光・水引）が同じ時刻に合わせるための変数
+  const style = { position: 'relative', '--ranking-delay': `${delay}s` } as MotionStyle
 
   return (
     <Item
       data-testid="ranking-item"
+      data-rank={rank}
       data-delay={delay}
       className={className}
-      style={{ position: 'relative' }}
-      initial={reduced ? false : { opacity: 0, y: 12 }}
-      animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
-      transition={{
-        delay,
-        duration: reduced ? 0 : RANKING_ITEM_DURATION,
-        ease: 'easeOut',
-      }}
+      style={style}
+      initial={reduced ? false : entranceFrom(rank)}
+      animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, rotate: 0, scale: 1 }}
+      transition={
+        reduced
+          ? { duration: 0 }
+          : {
+              type: 'spring',
+              bounce: 0.2,
+              duration: RANKING_ITEM_DURATION,
+              delay,
+              opacity: { type: 'tween', delay, duration: 0.3, ease: 'easeOut' },
+            }
+      }
     >
-      {rank === 1 && (
-        <Crown reduced={reduced} delay={delay} className={crownClassName} style={crownStyle} />
-      )}
+      {rank === 1 && crown ? (
+        <RankingRevealKnot
+          {...(crownClassName ? { className: crownClassName } : {})}
+          {...(crownStyle ? { style: crownStyle } : {})}
+        />
+      ) : null}
       {children}
     </Item>
   )

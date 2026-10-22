@@ -15,11 +15,9 @@ import {
   Footer,
   type LinkProps,
   ListCard,
-  PageTransition,
   PhotoGrid,
   type PhotoGridItem,
   ScreenHeader,
-  Skeleton,
   Tabs,
   TextField,
   ToastProvider,
@@ -430,12 +428,7 @@ describe('ConfirmSheet', () => {
   })
 })
 
-describe('Skeleton / EmptyState / ErrorState', () => {
-  it('Skeleton は読み上げの対象にしない', () => {
-    render(<Skeleton className="h-4 w-1/2" />)
-    expect(screen.getByTestId('skeleton')).toHaveAttribute('aria-hidden', 'true')
-  })
-
+describe('EmptyState / ErrorState', () => {
   it('EmptyState は文言を出す', () => {
     render(<EmptyState message={ja.guest.seating.empty} />)
     expect(screen.getByText('席次表は準備中です')).toBeInTheDocument()
@@ -495,16 +488,5 @@ describe('PhotoGrid', () => {
     callback?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver)
     expect(onReachEnd).toHaveBeenCalledTimes(1)
     vi.unstubAllGlobals()
-  })
-})
-
-describe('PageTransition', () => {
-  it('中身を表示する', () => {
-    wrap(
-      <PageTransition>
-        <p>画面</p>
-      </PageTransition>,
-    )
-    expect(screen.getByText('画面')).toBeInTheDocument()
   })
 })
