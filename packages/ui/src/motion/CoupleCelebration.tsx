@@ -23,8 +23,8 @@ const SKY_HEIGHT = 280
  * 終点の向きは水平。x は単調に進むので、鶴が裏返らない
  */
 const FLIGHTS = {
-  kin: 'M-80 232C-6 236 22 62 72 58C112 55 96 140 124 140',
-  beni: 'M440 214C368 220 342 76 292 72C250 69 266 140 236 140',
+  kin: 'M-66 168C-30 148 2 90 40 90C82 90 96 140 124 140',
+  beni: 'M424 156C390 136 358 80 320 80C278 80 264 140 236 140',
 } as const
 
 /**
@@ -32,14 +32,14 @@ const FLIGHTS = {
  * 舞台が暗くなる → 二羽が舞い込む → 向かい合って寄り添う → 紙吹雪 → 名前と祝いの言葉
  */
 const TIMELINE = {
-  kin: 0.18,
-  beni: 0.3,
+  kin: 0.12,
+  beni: 0.24,
   flight: 1.5,
-  nestle: 1.86,
-  confetti: 1.84,
-  names: 1.95,
-  congrats: 2.3,
-  note: 2.5,
+  nestle: 1.6,
+  confetti: 1.62,
+  names: 1.72,
+  congrats: 2.08,
+  note: 2.28,
 } as const
 
 /** 舞い込む鶴の進み方。勢いよく入り、降りながら速度を落として止まる */
@@ -198,9 +198,9 @@ function Crane({ side }: { side: keyof typeof FLIGHTS }) {
         className="tsuru-body"
         initial={{ x: 0, rotate: 0, rotateX: 0 }}
         animate={{
-          rotateX: [0, 26, -14, 8, 0],
-          x: [0, 0, toward * 6],
-          rotate: [0, 0, toward * 5, 0],
+          rotateX: [0, 14, -8, 0],
+          x: [0, 0, toward * 2.5],
+          rotate: [0, 0, toward * 6, 0],
         }}
         transition={{
           rotateX: { delay: start, duration: TIMELINE.flight, ease: 'easeInOut' },

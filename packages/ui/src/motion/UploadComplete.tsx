@@ -183,15 +183,15 @@ function KotobukiSeal({ blur = false }: { blur?: boolean }) {
         <filter id={`${id}-grain`} x="0" y="0" width="100%" height="100%">
           <feTurbulence
             type="fractalNoise"
-            baseFrequency="0.05 0.42"
-            numOctaves={2}
+            baseFrequency="0.12 0.22"
+            numOctaves={3}
             seed={7}
             result="noise"
           />
           <feColorMatrix
             in="noise"
             type="matrix"
-            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -7.5 0 0 0 4.9"
+            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -10 0 0 0 7.6"
           />
         </filter>
         <mask id={`${id}-kasure`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
@@ -214,14 +214,14 @@ function KotobukiSeal({ blur = false }: { blur?: boolean }) {
         {/* 枠: 角の丸い四角を、辺ごとにわずかにふくらませる */}
         <path
           d="M14 9.5C30 8.4 70 8.9 86.5 9.8C90.4 10 90.6 12.6 90.6 15C91.2 33 91 68 90.2 85.4C90 89.6 87.8 90.6 84.5 90.6C67 91.3 32 91 15.2 90.2C11 90 9.6 88 9.4 84.6C8.8 67 9 32 9.6 15.2C9.8 11.2 11.2 9.7 14 9.5Z"
-          strokeWidth={6.2}
+          strokeWidth={6.6}
         />
         {/* 寿: 三の横画と、それを貫いて左へ払う縦画、右下に寸 */}
-        <path d="M33 23.5H67M26.5 34H73.5M19 45H81" strokeWidth={6.4} />
-        <path d="M50 16V45C50 61 42 74 23 84" strokeWidth={6.4} />
+        <path d="M33 23.5H67M26.5 34H73.5M19 45H81" strokeWidth={7.2} />
+        <path d="M50 16V45C50 61 42 74 23 84" strokeWidth={7.2} />
         <path
           d="M37 60H83M67.5 51V82.5C67.5 85 66.2 86 63.5 85.6L58.5 84.6M45.5 67.5L51 75"
-          strokeWidth={6.4}
+          strokeWidth={7.2}
         />
       </g>
     </svg>

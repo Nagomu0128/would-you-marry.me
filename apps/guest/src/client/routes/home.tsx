@@ -74,6 +74,7 @@ export function HomeRoute() {
       {showWelcome ? (
         <WelcomeAnimation
           tenantName={me.tenant.name}
+          eventDate={me.tenant.eventDate}
           skipLabel={ja.common.skipAnimation}
           onComplete={() => {
             markWelcomePlayed(tenantId)
