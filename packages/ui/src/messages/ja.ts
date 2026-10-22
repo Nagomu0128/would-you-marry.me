@@ -279,17 +279,6 @@ export const ja = {
       guests: '参加者管理',
       preview: '参加者画面のプレビュー',
       usage: '利用状況',
-      usageLine: ({
-        guests,
-        photos,
-        likes,
-        storage,
-      }: {
-        guests: string
-        photos: string
-        likes: string
-        storage: string
-      }) => `参加者 ${guests} / 写真 ${photos} / いいね ${likes} / ${storage}`,
       delete: 'このテナントを削除する',
       deleteConfirmLabel: 'テナント名',
       courseImageAlt: ({ index }: { index: number }) => `コース表の画像 ${index}`,
