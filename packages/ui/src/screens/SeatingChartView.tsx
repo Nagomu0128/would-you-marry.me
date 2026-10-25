@@ -73,7 +73,11 @@ function PdfPages({ pdfUrl, workerSrc }: { pdfUrl: string; workerSrc: string }) 
     const load = async () => {
       const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
       pdfjs.GlobalWorkerOptions.workerSrc = workerSrc
-      const task = pdfjs.getDocument({ url: pdfUrl })
+      const task = pdfjs.getDocument({
+        url: pdfUrl,
+        cMapUrl: `${window.location.origin}/pdfjs-cmaps/`,
+        cMapPacked: true,
+      })
       destroy = () => {
         void task.destroy()
       }

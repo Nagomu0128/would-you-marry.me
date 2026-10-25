@@ -20,6 +20,17 @@ export function readSessionCookie(c: Context, kind: SessionKind, tenantId: strin
   return getCookie(c, sessionCookieName(kind, tenantId))
 }
 
+/** LAN 上の HTTP 開発サーバーでもセッションを保存できるようにする。公開ホストでは Secure を維持する。 */
+function shouldSetSecureCookie(c: Context): boolean {
+  const url = new URL(c.req.url)
+  if (url.protocol !== 'http:') return true
+  const host = url.hostname
+  if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]') return false
+  if (/^10\./.test(host) || /^192\.168\./.test(host)) return false
+  const secondOctet = /^172\.(\d{1,3})\./.exec(host)?.[1]
+  return secondOctet === undefined || Number(secondOctet) < 16 || Number(secondOctet) > 31
+}
+
 export function setSessionCookie(
   c: Context,
   kind: SessionKind,
@@ -28,7 +39,7 @@ export function setSessionCookie(
 ): void {
   setCookie(c, sessionCookieName(kind, tenantId), sessionId, {
     httpOnly: true,
-    secure: true,
+    secure: shouldSetSecureCookie(c),
     sameSite: 'Lax',
     path: '/',
     maxAge: SESSION_COOKIE_MAX_AGE_SECONDS,
@@ -42,7 +53,7 @@ export function readCouplePendingCookie(c: Context) {
 export function setCouplePendingCookie(c: Context, token: string): void {
   setCookie(c, COUPLE_PENDING_COOKIE, token, {
     httpOnly: true,
-    secure: true,
+    secure: shouldSetSecureCookie(c),
     sameSite: 'Lax',
     path: COUPLE_PENDING_COOKIE_PATH,
     maxAge: COUPLE_PENDING_COOKIE_MAX_AGE_SECONDS,
@@ -52,6 +63,6 @@ export function setCouplePendingCookie(c: Context, token: string): void {
 export function deleteCouplePendingCookie(c: Context): void {
   deleteCookie(c, COUPLE_PENDING_COOKIE, {
     path: COUPLE_PENDING_COOKIE_PATH,
-    secure: true,
+    secure: shouldSetSecureCookie(c),
   })
 }
