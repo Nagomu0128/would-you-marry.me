@@ -181,7 +181,9 @@ export const ja = {
     seating: {
       empty: '席次表は準備中です',
       lead: 'お席をご確認のうえ、どうぞごゆっくりお過ごしください',
-      zoomHint: '二本の指で広げるか、ダブルタップで拡大できます',
+      zoomHint: '席次表をタップして拡大し、指で動かせます',
+      openHint: 'タップで拡大・指で移動',
+      openPage: ({ page }: { page: number }) => `席次表 ${page} ページ目を拡大`,
       /** PDF の各ページの代替テキスト */
       pageAlt: ({ page }: { page: number }) => `席次表 ${page} ページ目`,
       /** 額の題箋（装飾） */

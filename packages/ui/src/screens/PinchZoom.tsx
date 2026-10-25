@@ -7,6 +7,8 @@ export type PinchZoomProps = {
   maxScale?: number
   /** ダブルタップで拡大するときの倍率（既定 2.5。最大倍率を超えない） */
   doubleTapScale?: number
+  /** 最初に表示する倍率（既定 1） */
+  initialScale?: number
   /** 外側の枠。大きさは呼び出し側が決める（中身はこの枠の中で拡大・移動する） */
   className?: string
   /** 中身を包む要素のクラス。枠いっぱいに広げて中央に置くときなどに使う */
@@ -76,6 +78,7 @@ export function PinchZoom({
   children,
   maxScale = DEFAULT_MAX_SCALE,
   doubleTapScale = DEFAULT_DOUBLE_TAP_SCALE,
+  initialScale = 1,
   className,
   contentClassName,
   onZoomChange,
@@ -218,15 +221,25 @@ export function PinchZoom({
     frame.addEventListener('pointerup', onPointerEnd)
     frame.addEventListener('pointercancel', onPointerEnd)
     frame.addEventListener('wheel', onWheel, { passive: false })
-    apply(IDENTITY, false)
+    let initialFrame = 0
+    if (initialScale > 1) {
+      // Dialog が showModal() でレイアウトされたあとに、表示領域の中央を基準に拡大する
+      initialFrame = requestAnimationFrame(() => {
+        const center = { x: frame.clientWidth / 2, y: frame.clientHeight / 2 }
+        apply(zoomAround(IDENTITY, center, initialScale), false)
+      })
+    } else {
+      apply(IDENTITY, false)
+    }
     return () => {
+      cancelAnimationFrame(initialFrame)
       frame.removeEventListener('pointerdown', onPointerDown)
       frame.removeEventListener('pointermove', onPointerMove)
       frame.removeEventListener('pointerup', onPointerEnd)
       frame.removeEventListener('pointercancel', onPointerEnd)
       frame.removeEventListener('wheel', onWheel)
     }
-  }, [maxScale, doubleTapScale, idleTouchAction])
+  }, [maxScale, doubleTapScale, initialScale, idleTouchAction])
 
   return (
     <div
