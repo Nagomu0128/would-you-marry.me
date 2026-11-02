@@ -12,6 +12,8 @@ describe('limits（docs の仮置きを含む値）', () => {
     expect(limits.THUMB_MAX_EDGE_PX).toBe(480)
     expect(limits.PHOTO_LIMIT_PER_GUEST).toBe(500)
     expect(limits.PHOTO_BATCH_MAX).toBe(20)
+    expect(limits.UPLOAD_STALL_TIMEOUT_MS).toBe(30 * 1000)
+    expect(limits.UPLOAD_CONSECUTIVE_FAILURES_MAX).toBe(2)
     expect(limits.RANKING_SIZE).toBe(10)
     expect(limits.LIST_LIMIT_DEFAULT).toBe(30)
     expect(limits.LIST_LIMIT_MAX).toBe(50)
