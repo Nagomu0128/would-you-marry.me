@@ -74,6 +74,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  // 途中で落ちたテストの fake timers を、後のテストに持ち越さない
+  vi.useRealTimers()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
 })

@@ -1,6 +1,10 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach } from 'vitest'
+
+// findBy* / waitFor の待ち時間。既定の 1 秒では、全パッケージのテストを並行して流したとき
+// （pnpm test・CI）に描画が間に合わず落ちることがあるため延ばす。単独で流せば 100ms もかからない
+configure({ asyncUtilTimeout: 5000 })
 
 // happy-dom の Web Animations は、アンマウント時に AbortError を投げる。
 // Motion は animate がないと JavaScript のアニメーションに切り替わるので、テストでは無効にする
