@@ -226,6 +226,104 @@ describe('UploadComplete（朱印）', () => {
     expect(container.querySelector('img')).toBeNull()
     expect(container.querySelector('.shuin-shikishi')).not.toBeNull()
   })
+
+  it('複数枚のときは、主の写真の下に 2 枚を重ね、御礼を複数枚の言葉にする', () => {
+    const { container } = render(
+      wrap(
+        <UploadComplete
+          onComplete={() => {}}
+          skipLabel="スキップ"
+          photoSrc="blob:photo-1"
+          extraPhotoSrcs={['blob:photo-2', 'blob:photo-3']}
+          photoCount={3}
+        />,
+      ),
+    )
+    const under = Array.from(container.querySelectorAll('.shuin-under img'))
+    // 下のものから描き、主の写真を最後（一番上）に置く
+    expect(under.map((img) => img.getAttribute('src'))).toEqual(['blob:photo-3', 'blob:photo-2'])
+    for (const img of under) expect(img).toHaveAttribute('alt', '')
+    const photo = container.querySelector('.shuin-photo')
+    if (!photo) throw new Error('photo not found')
+    for (const print of container.querySelectorAll('.shuin-under')) {
+      expect(print.compareDocumentPosition(photo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    }
+    expect(photo.querySelector('img')).toHaveAttribute('src', 'blob:photo-1')
+    expect(screen.getByText(ja.ceremony.upload.thanksMany)).toBeInTheDocument()
+    expect(screen.queryByText(ja.ceremony.upload.thanks)).toBeNull()
+  })
+
+  it('重ねる写真を 3 枚以上渡しても、使うのは先頭の 2 枚だけ', () => {
+    const { container } = render(
+      wrap(
+        <UploadComplete
+          onComplete={() => {}}
+          skipLabel="スキップ"
+          photoSrc="blob:photo-1"
+          extraPhotoSrcs={['blob:photo-2', 'blob:photo-3', 'blob:photo-4', 'blob:photo-5']}
+          photoCount={5}
+        />,
+      ),
+    )
+    const under = Array.from(container.querySelectorAll('.shuin-under img'))
+    expect(under.map((img) => img.getAttribute('src'))).toEqual(['blob:photo-3', 'blob:photo-2'])
+    expect(container.querySelectorAll('img')).toHaveLength(3)
+  })
+
+  it.each([
+    ['渡さない', undefined],
+    ['空', []],
+  ])('1 枚のとき（重ねる写真を%s）は重ねた写真を描かない', (_label, extraPhotoSrcs) => {
+    const { container } = render(
+      wrap(
+        <UploadComplete
+          onComplete={() => {}}
+          skipLabel="スキップ"
+          photoSrc="blob:photo"
+          extraPhotoSrcs={extraPhotoSrcs}
+        />,
+      ),
+    )
+    expect(container.querySelector('.shuin-under')).toBeNull()
+    expect(container.querySelectorAll('img')).toHaveLength(1)
+    expect(screen.getByText(ja.ceremony.upload.thanks)).toBeInTheDocument()
+  })
+
+  it('複数枚でも、時間が来たら onComplete を一度だけ呼んで消える', () => {
+    const onComplete = vi.fn()
+    render(
+      wrap(
+        <UploadComplete
+          onComplete={onComplete}
+          skipLabel="スキップ"
+          photoSrc="blob:photo-1"
+          extraPhotoSrcs={['blob:photo-2', 'blob:photo-3']}
+          photoCount={3}
+        />,
+      ),
+    )
+    advance(UPLOAD_COMPLETE_DURATION * 1000)
+    expect(onComplete).toHaveBeenCalledTimes(1)
+    expect(screen.queryByTestId('motion-stage')).toBeNull()
+  })
+
+  it('複数枚でも、動きを減らす設定では何も表示しない', () => {
+    reducedMotion.value = true
+    const onComplete = vi.fn()
+    const { container } = render(
+      wrap(
+        <UploadComplete
+          onComplete={onComplete}
+          skipLabel="スキップ"
+          photoSrc="blob:photo-1"
+          extraPhotoSrcs={['blob:photo-2', 'blob:photo-3']}
+          photoCount={3}
+        />,
+      ),
+    )
+    expect(onComplete).toHaveBeenCalledTimes(1)
+    expect(container).toBeEmptyDOMElement()
+  })
 })
 
 describe('LikeBurst', () => {
