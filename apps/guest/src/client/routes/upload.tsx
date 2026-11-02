@@ -1,4 +1,4 @@
-import type { GuestMeResponse } from '@wym/shared'
+import { type GuestMeResponse, UPLOAD_CONSECUTIVE_FAILURES_MAX } from '@wym/shared'
 import {
   Button,
   CameraIcon,
@@ -27,6 +27,7 @@ import { checkImageFile } from '../lib/image-file'
 import { createResizedImages, type ResizedImages } from '../lib/resize'
 import { paths, RouterLink } from '../lib/router-link'
 import { uploadPhoto } from '../lib/upload'
+import { createUploadKey } from '../lib/upload-key'
 import {
   type FileRejection,
   focusAfterRemove,
@@ -122,6 +123,8 @@ type Entry = {
   /** 縮小の結果。失敗したら null に戻し、再送のときに作り直す */
   prepared: Promise<ResizedImages> | null
   removed: boolean
+  /** 投稿キー（D-41）。この写真の再送でも同じ値を送る */
+  uploadKey: string
 }
 
 /**
@@ -288,6 +291,7 @@ function useUploadQueue(tenantId: string, limit: number, initialCount: number) {
           resized: null,
           prepared: null,
           removed: false,
+          uploadKey: createUploadKey(),
         })
       }
       dispatch({ type: 'add', items: added, limit: queueLimit(remainingNow) })
@@ -353,6 +357,8 @@ function useUploadQueue(tenantId: string, limit: number, initialCount: number) {
     const sentIds: string[] = []
     const rejected: FileRejection[] = []
     let stop: 'limit' | 'redirect' | null = null
+    // 応答が返らない・通信できない失敗が続いた数（D-42）
+    let consecutiveFailures = 0
     try {
       for (const [index, item] of queue.entries()) {
         if (signal.aborted) return
@@ -364,9 +370,14 @@ function useUploadQueue(tenantId: string, limit: number, initialCount: number) {
           await uploadPhoto(
             tenantId,
             { original: item.file, ...images },
-            { onProgress: setProgress, signal },
+            {
+              onProgress: setProgress,
+              signal,
+              uploadKey: entries.current.get(item.id)?.uploadKey,
+            },
           )
           if (signal.aborted) return
+          consecutiveFailures = 0
           sentNow += 1
           sentIds.push(item.id)
           sentTotalRef.current += 1
@@ -389,6 +400,7 @@ function useUploadQueue(tenantId: string, limit: number, initialCount: number) {
             break
           }
           if (isFileRejection(code)) {
+            consecutiveFailures = 0
             rejected.push(code)
             dispatch({ type: 'remove', id: item.id })
             release(item.id)
@@ -399,6 +411,12 @@ function useUploadQueue(tenantId: string, limit: number, initialCount: number) {
             break
           }
           dispatch({ type: 'status', id: item.id, status: 'failed' })
+          consecutiveFailures += 1
+          if (consecutiveFailures >= UPLOAD_CONSECUTIVE_FAILURES_MAX) {
+            // 残りは送らずに失敗として残す。「もう一度送る」で送り直せる
+            dispatch({ type: 'failWaiting' })
+            break
+          }
         }
       }
 

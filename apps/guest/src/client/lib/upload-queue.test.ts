@@ -178,3 +178,11 @@ describe('queueReducer', () => {
     expect(queueReducer([item('a'), item('b')], { type: 'reset' })).toEqual([])
   })
 })
+
+describe('続けて失敗したときの reducer', () => {
+  it('failWaiting は送信待ちの写真だけをまとめて失敗にする', () => {
+    const items = [item('a', 'sent'), item('b', 'failed'), item('c'), item('d')]
+    const next = queueReducer(items, { type: 'failWaiting' })
+    expect(next.map((i) => i.status)).toEqual(['sent', 'failed', 'failed', 'failed'])
+  })
+})

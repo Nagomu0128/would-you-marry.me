@@ -95,6 +95,8 @@ export type QueueAction =
   | { type: 'keepFailed' }
   /** 送信の中断（画面遷移）。送信中の写真を送信待ちに戻す */
   | { type: 'interrupt' }
+  /** 続けての失敗で送るのをやめたとき。送信待ちの写真をまとめて失敗にする */
+  | { type: 'failWaiting' }
   | { type: 'reset' }
 
 export function queueReducer(
@@ -129,6 +131,10 @@ export function queueReducer(
     case 'interrupt':
       return items.map((item) =>
         item.status === 'sending' ? { ...item, status: 'waiting' as const } : item,
+      )
+    case 'failWaiting':
+      return items.map((item) =>
+        item.status === 'waiting' ? { ...item, status: 'failed' as const } : item,
       )
     case 'reset':
       return []
