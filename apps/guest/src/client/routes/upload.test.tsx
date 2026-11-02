@@ -78,6 +78,9 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+const KEY_HEADER = 'Idempotency-Key'
+const keyOf = (n: number) => FakeXhr.instances[n - 1]?.headers[KEY_HEADER]
+
 const submitButton = () => screen.getByRole('button', { name: '投稿する' })
 
 describe('SG-07 フォトアップロード', () => {
@@ -412,9 +415,10 @@ describe('SG-07 フォトアップロード', () => {
     await respondAt(1, 201, ok)
     const second = await xhrAt(2)
     act(() => second.fail())
-    const third = await xhrAt(3)
-    act(() => third.fail())
-    await respondAt(4, 201, ok)
+    // 失敗が続くと残りを送らない（D-42）ので、失敗の間に成功をはさむ
+    await respondAt(3, 201, ok)
+    const fourth = await xhrAt(4)
+    act(() => fourth.fail())
 
     expect(await screen.findByText('2 枚の写真を投稿しました')).toBeInTheDocument()
     expect(await screen.findByText('2 枚を送信できませんでした')).toBeInTheDocument()
@@ -515,5 +519,92 @@ describe('SG-07 フォトアップロード', () => {
     expect(vi.mocked(URL.revokeObjectURL).mock.calls.length).toBe(
       vi.mocked(URL.createObjectURL).mock.calls.length,
     )
+  })
+
+  it('写真ごとに違う投稿キーが付き、「もう一度送る」では同じキーで再送する', async () => {
+    setup()
+    const user = userEvent.setup()
+    await pickMany(jpegs(2))
+    await user.click(await screen.findByRole('button', { name: '2 枚を投稿する' }))
+    act(() => FakeXhr.instances[0]?.fail())
+    const second = await xhrAt(2)
+    act(() => second.fail())
+    await user.click(await screen.findByRole('button', { name: 'もう一度送る' }))
+    await respondAt(3, 201, ok)
+    await xhrAt(4)
+    const [k1, k2] = [keyOf(1), keyOf(2)]
+    expect(k1).toBeTruthy()
+    expect(k2).toBeTruthy()
+    expect(k1).not.toBe(k2)
+    expect(keyOf(3)).toBe(k1)
+    expect(keyOf(4)).toBe(k2)
+  })
+
+  it('応答が返らない写真は 30 秒で「送信失敗」になり、次の写真へ進み、ボタンが戻る', async () => {
+    setup()
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    await pickMany(jpegs(3))
+    await user.click(await screen.findByRole('button', { name: '3 枚を投稿する' }))
+    const first = await xhrAt(1)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000)
+    })
+    vi.useRealTimers()
+    expect(first.aborted).toBe(true)
+    const second = await xhrAt(2)
+    act(() => second.respond(201, ok))
+    await respondAt(3, 201, ok)
+    expect(await screen.findByText('送信できませんでした')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'もう一度送る' })).toBeEnabled()
+  })
+
+  it('続けて 2 枚失敗したら残りは送らず、「もう一度送る」で全部を同じキーで送る', async () => {
+    setup()
+    const user = userEvent.setup()
+    await pickMany(jpegs(4))
+    await user.click(await screen.findByRole('button', { name: '4 枚を投稿する' }))
+    act(() => FakeXhr.instances[0]?.fail())
+    const second = await xhrAt(2)
+    act(() => second.fail())
+    expect(await screen.findByText('4 枚を送信できませんでした')).toBeInTheDocument()
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(FakeXhr.instances).toHaveLength(2)
+    expect(statusesOnScreen()).toEqual(['failed', 'failed', 'failed', 'failed'])
+
+    await user.click(screen.getByRole('button', { name: 'もう一度送る' }))
+    for (const n of [3, 4, 5, 6]) await respondAt(n, 201, ok)
+    expect(FakeXhr.instances).toHaveLength(6)
+    for (const n of [1, 2]) expect(keyOf(n + 2)).toBe(keyOf(n))
+    expect(keyOf(5)).toBeTruthy()
+    expect(new Set([3, 4, 5, 6].map(keyOf)).size).toBe(4)
+    expect(await screen.findByText('4 枚の写真をアルバムに届けました')).toBeInTheDocument()
+  })
+
+  it('失敗、成功、失敗は続けての失敗ではなく、最後の写真まで送る', async () => {
+    setup()
+    const user = userEvent.setup()
+    await pickMany(jpegs(3))
+    await user.click(await screen.findByRole('button', { name: '3 枚を投稿する' }))
+    act(() => FakeXhr.instances[0]?.fail())
+    await respondAt(2, 201, ok)
+    const third = await xhrAt(3)
+    act(() => third.fail())
+    expect(await screen.findByText('2 枚を送信できませんでした')).toBeInTheDocument()
+    expect(FakeXhr.instances).toHaveLength(3)
+  })
+
+  it('再送で 200 が返った写真も送信済みになり、残り枚数は 1 枚分だけ減る', async () => {
+    setup(12)
+    const user = userEvent.setup()
+    await pick(jpeg())
+    await user.click(await screen.findByRole('button', { name: '投稿する' }))
+    act(() => FakeXhr.instances[0]?.fail())
+    await user.click(await screen.findByRole('button', { name: 'もう一度送る' }))
+    await respondAt(2, 200, ok)
+    expect(await screen.findByText('写真をアルバムに届けました')).toBeInTheDocument()
+    expect(keyOf(2)).toBe(keyOf(1))
+    await user.click(screen.getByRole('button', { name: '続けて投稿する' }))
+    expect(screen.getByText('あと 487 枚投稿できます')).toBeInTheDocument()
   })
 })
