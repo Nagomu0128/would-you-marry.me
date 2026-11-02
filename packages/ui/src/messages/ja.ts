@@ -243,7 +243,7 @@ export const ja = {
         waiting: '送信待ち',
         sending: '送信中',
         sent: '送信済み',
-        failed: '送れませんでした',
+        failed: '送信失敗',
       },
       /** 複数枚を選んだうち、形式・サイズで投稿できない写真を外したとき */
       rejected: ({ count }: { count: number }) => `${count} 枚は投稿できない写真のため、外しました`,

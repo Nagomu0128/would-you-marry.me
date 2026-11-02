@@ -421,7 +421,7 @@ describe('SG-07 フォトアップロード', () => {
     expect(screen.getByText('2 枚を選んでいます')).toBeInTheDocument()
     expect(screen.getByText('あと 86 枚投稿できます')).toBeInTheDocument()
     expect(statusesOnScreen()).toEqual(['failed', 'failed'])
-    expect(screen.getAllByText('送れませんでした')).toHaveLength(2)
+    expect(screen.getAllByText('送信失敗')).toHaveLength(2)
     expect(screen.queryByText('寿')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'もう一度送る' }))

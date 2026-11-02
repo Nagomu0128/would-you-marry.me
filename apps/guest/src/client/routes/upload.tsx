@@ -372,12 +372,12 @@ function useUploadQueue(tenantId: string, limit: number, initialCount: number) {
           sentTotalRef.current += 1
           setSentTotal(sentTotalRef.current)
           setPhotoCount((count) => count + 1)
-          // 送れた写真の縮小画像は手放す。完了の台紙に重ねる 3 枚だけ、一覧用の URL を残す
+          // 送れた写真の縮小画像は手放す。完了の台紙と演出に重ねる 3 枚だけは、
+          // 高精細の画面でも粗く見えないよう拡大表示用（長辺 1,600px）の URL を作って残す
           const entry = entries.current.get(item.id)
           if (entry) entry.resized = null
-          const url = thumbUrls.current.get(item.id)
-          if (url && pileRef.current.length < PILE_MAX) {
-            pileRef.current = [...pileRef.current, url]
+          if (mounted.current && pileRef.current.length < PILE_MAX) {
+            pileRef.current = [...pileRef.current, URL.createObjectURL(images.display)]
             setPile(pileRef.current)
           }
           dispatch({ type: 'status', id: item.id, status: 'sent' })
