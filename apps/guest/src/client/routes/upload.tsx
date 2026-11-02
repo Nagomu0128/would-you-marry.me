@@ -56,6 +56,17 @@ function PhotoCorners() {
   )
 }
 
+/** 「外す」ボタンの丸い札（装飾）。× は墨の細い線で描く */
+function RemoveMark() {
+  return (
+    <span className="upload-item-remove-mark" aria-hidden="true">
+      <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M4.75 4.75l6.5 6.5M11.25 4.75l-6.5 6.5" />
+      </svg>
+    </span>
+  )
+}
+
 // SG-07 フォトアップロード
 export function UploadRoute() {
   const { tenantId = '' } = useParams()
@@ -631,7 +642,7 @@ function UploadScreen({ tenantId, initial }: { tenantId: string; initial: GuestM
                     disabled={sending}
                     onClick={() => items[0] && onRemove(items[0].id, 0)}
                   >
-                    <span aria-hidden="true">×</span>
+                    <RemoveMark />
                   </button>
                 </figure>
               ) : (
@@ -747,6 +758,16 @@ function UploadItem({
       ) : (
         <span className="upload-item-placeholder" aria-hidden="true" />
       )}
+      <PhotoCorners />
+      {/* 読み上げは 写真 → 状態 → 外す の順。状態は紙焼きの下の余白に、外すは右上に置く */}
+      {showStatus ? (
+        <span className="upload-item-status">{ja.guest.upload.itemStatus[item.status]}</span>
+      ) : null}
+      {item.status === 'sent' ? (
+        <span className="kotobuki-seal upload-item-seal" aria-hidden="true">
+          {ja.guest.upload.seal}
+        </span>
+      ) : null}
       <button
         type="button"
         className="upload-item-remove"
@@ -754,11 +775,8 @@ function UploadItem({
         disabled={disabled}
         onClick={() => onRemove(item.id, index)}
       >
-        <span aria-hidden="true">×</span>
+        <RemoveMark />
       </button>
-      {showStatus ? (
-        <span className="upload-item-status">{ja.guest.upload.itemStatus[item.status]}</span>
-      ) : null}
     </li>
   )
 }
