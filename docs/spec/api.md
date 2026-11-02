@@ -186,6 +186,8 @@ type RankedPhoto = Photo & { rank: number } // 1 から順に振る（同数で�
 
 #### `POST /photos`
 
+1 リクエストに写真 1 枚。複数枚を投稿するときは、ブラウザが 1 枚ずつ順に送る（D-39）。
+
 `multipart/form-data`:
 
 | 項目 | 内容 | 制限 |

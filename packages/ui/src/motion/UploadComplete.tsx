@@ -11,6 +11,10 @@ export type UploadCompleteProps = {
   skipLabel: string
   /** 投稿した写真のプレビュー URL。なければ色紙を置く */
   photoSrc?: string
+  /** 複数枚を投稿したとき、主の写真の下に重ねる写真のプレビュー URL（2 枚まで使う） */
+  extraPhotoSrcs?: readonly string[]
+  /** 投稿した枚数。2 枚以上なら御礼の言葉を複数枚のものにする */
+  photoCount?: number
 }
 
 /**
@@ -28,7 +32,12 @@ const TIMELINE = {
 /** 押す瞬間までの降り方。重さで加速して紙に当たる */
 const PRESS_EASE = [0.55, 0, 0.85, 0.45] as const
 
-export function UploadComplete({ onComplete, skipLabel, photoSrc }: UploadCompleteProps) {
+export function UploadComplete({
+  onComplete,
+  skipLabel,
+  photoSrc,
+  photoCount = 1,
+}: UploadCompleteProps) {
   const pressFor = TIMELINE.press - TIMELINE.approach
   return (
     <FullscreenStage
@@ -152,7 +161,7 @@ export function UploadComplete({ onComplete, skipLabel, photoSrc }: UploadComple
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: TIMELINE.thanks, duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
         >
-          {ja.ceremony.upload.thanks}
+          {photoCount > 1 ? ja.ceremony.upload.thanksMany : ja.ceremony.upload.thanks}
         </m.p>
       </div>
     </FullscreenStage>
