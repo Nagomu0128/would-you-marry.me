@@ -2,6 +2,7 @@
 import {
   countGuestPhotos,
   deleteOwnPhoto,
+  findPhotoByUploadKey,
   getLikedPhotoIds,
   getPhoto,
   InvalidCursorError,
@@ -21,6 +22,7 @@ import {
   type ErrorFields,
   type GuestPhotoListResponse,
   type GuestRankingResponse,
+  isUploadKey,
   LIST_LIMIT_DEFAULT,
   LIST_LIMIT_MAX,
   type LikeResponse,
@@ -28,6 +30,7 @@ import {
   PHOTO_LIMIT_PER_GUEST,
   RANKING_SIZE,
   THUMB_MAX_BYTES,
+  UPLOAD_KEY_HEADER,
   type UploadPhotoResponse,
 } from '@wym/shared'
 import { type Context, Hono } from 'hono'
@@ -159,7 +162,20 @@ photoRoutes.post('/', async (c) => {
     throw new ApiError('FILE_TOO_LARGE', 'request body too large')
   }
 
-  // 2. 投稿枚数（最終的な判定は登録時の insertPhotoWithLimit。ここは無駄な処理を省く早期判定）
+  // 2. 投稿キー（D-41）。同じ参加者・同じキーの写真がすでにあれば、保存せずにその写真を返す。
+  // 500 枚目の再送が上限のエラーにならないよう、投稿枚数の判定より前に行う
+  const uploadKey = c.req.header(UPLOAD_KEY_HEADER) ?? null
+  if (uploadKey !== null) {
+    if (!isUploadKey(uploadKey)) {
+      throw new ApiError('VALIDATION_ERROR', 'invalid upload key', {
+        fields: { idempotencyKey: 'INVALID' },
+      })
+    }
+    const existing = await findPhotoByUploadKey(db, tenant.id, guest.id, uploadKey)
+    if (existing) return replayUpload(c, existing)
+  }
+
+  // 2'. 投稿枚数（最終的な判定は登録時の insertPhotoWithLimit。ここは無駄な処理を省く早期判定）
   if ((await countGuestPhotos(db, tenant.id, guest.id)) >= PHOTO_LIMIT_PER_GUEST) {
     throw new ApiError('UPLOAD_LIMIT_REACHED', 'upload limit reached')
   }
@@ -257,6 +273,7 @@ photoRoutes.post('/', async (c) => {
         storedSizeBytes,
         width,
         height,
+        uploadKey,
       },
       PHOTO_LIMIT_PER_GUEST,
     )
@@ -265,7 +282,10 @@ photoRoutes.post('/', async (c) => {
     throw err
   }
   if (!result.inserted) {
+    // 今回保存した画像は使わない
     await discardStored()
+    // 並行した同じキーの送信が先に登録していた
+    if (result.reason === 'duplicate') return replayUpload(c, result.photo)
     throw new ApiError('UPLOAD_LIMIT_REACHED', 'upload limit reached')
   }
 
@@ -276,6 +296,15 @@ photoRoutes.post('/', async (c) => {
   const body: UploadPhotoResponse = { photo }
   return c.json(body, 201)
 })
+
+/** 保存済みの写真を 200 で返す（D-41。いいね済みなどは今の状態） */
+async function replayUpload(c: Context<GuestEnv>, stored: Photo) {
+  logEvent('photo_upload_replayed', { tenantId: c.var.tenant.id, status: 200 })
+  const [photo] = await toGuestPhotos(c, [{ photo: stored, uploader: guestUploader(c) }])
+  if (!photo) throw new ApiError('INTERNAL_ERROR', 'failed to build response')
+  const body: UploadPhotoResponse = { photo }
+  return c.json(body, 200)
+}
 
 function guestUploader(c: Context<GuestEnv>): PhotoWithUploader['uploader'] {
   const { guest } = c.var

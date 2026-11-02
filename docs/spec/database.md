@@ -125,6 +125,7 @@
 | `width` | INTEGER | NOT NULL | 拡大表示用画像の幅（一覧のレイアウト用） |
 | `height` | INTEGER | NOT NULL | 拡大表示用画像の高さ |
 | `like_count` | INTEGER | NOT NULL DEFAULT 0 | いいね数（集計値） |
+| `upload_key` | TEXT | NULL | 投稿キー（D-41）。ブラウザが写真ごとに作り、再送でも同じ値を送る。キーなしで投稿された写真は NULL |
 | `created_at` | INTEGER | NOT NULL | |
 
 インデックス:
@@ -132,6 +133,7 @@
 - `(tenant_id, created_at DESC, id DESC)`: タイムライン
 - `(tenant_id, like_count DESC, created_at ASC)`: ランキング
 - `(guest_id, created_at DESC)`: 自分の投稿、投稿枚数
+- `UNIQUE (guest_id, upload_key)`: 再送で同じ写真を二重に登録しない（NULL どうしは重複にならない）
 
 ### likes
 
@@ -191,7 +193,8 @@
 | ランキング | `WHERE tenant_id = ? AND like_count > 0 ORDER BY like_count DESC, created_at ASC LIMIT 10` |
 | いいね | バッチ（トランザクション）で `INSERT INTO likes ... ON CONFLICT DO NOTHING` と、`UPDATE photos SET like_count = (SELECT COUNT(*) FROM likes WHERE photo_id = ?) WHERE id = ? AND tenant_id = ?` を実行する |
 | いいねの取り消し | バッチで `DELETE FROM likes WHERE photo_id = ? AND guest_id = ?` と、上と同じ数え直しを実行する |
-| 投稿枚数の上限 | `INSERT INTO photos (...) SELECT ... WHERE (SELECT COUNT(*) FROM photos WHERE guest_id = ?) < 100` で、上限内のときだけ登録する。登録されなかった場合は上限超過 |
+| 投稿枚数の上限 | `INSERT INTO photos (...) SELECT ... WHERE (SELECT COUNT(*) FROM photos WHERE guest_id = ?) < 500` で、上限内のときだけ登録する。登録されなかった場合は上限超過 |
+| 投稿キー（D-41） | 登録の前に `WHERE tenant_id = ? AND guest_id = ? AND upload_key = ?` で探し、あればそれを返す。上の登録も、同じキーの行がすでにあれば何もしない（`UNIQUE (guest_id, upload_key)`）。登録されなかったときは同じキーで探し直し、見つかれば並行した送信が先に登録したもの、なければ上限超過 |
 | 保存容量 | `photos.stored_size_bytes`、`seating_charts.size_bytes`、`course_menu_images.size_bytes` の合計 |
 
 ## R2 のキー設計

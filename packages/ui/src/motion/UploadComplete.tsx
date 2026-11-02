@@ -11,15 +11,21 @@ export type UploadCompleteProps = {
   skipLabel: string
   /** 投稿した写真のプレビュー URL。なければ色紙を置く */
   photoSrc?: string
+  /** 複数枚を投稿したとき、主の写真の下に重ねる写真のプレビュー URL（2 枚まで使う） */
+  extraPhotoSrcs?: readonly string[]
+  /** 投稿した枚数。2 枚以上なら御礼の言葉を複数枚のものにする */
+  photoCount?: number
 }
 
 /**
  * 時間割（秒）。合計は UPLOAD_COMPLETE_DURATION（2.4 秒）で、最後の 0.5 秒で舞台が溶ける。
  * 台紙が現れる → 写真が置かれる → 印が降りてきて押される（紙が沈み、朱がにじむ）→ 紙吹雪 → 御礼
+ * 複数枚のときは、主の写真より先に、下に重ねる写真が deal 秒おきに下から順に置かれる
  */
 const TIMELINE = {
   sheet: 0.06,
   photo: 0.26,
+  deal: 0.09,
   approach: 0.72,
   press: 1.02,
   thanks: 1.22,
@@ -28,8 +34,53 @@ const TIMELINE = {
 /** 押す瞬間までの降り方。重さで加速して紙に当たる */
 const PRESS_EASE = [0.55, 0, 0.85, 0.45] as const
 
-export function UploadComplete({ onComplete, skipLabel, photoSrc }: UploadCompleteProps) {
+/**
+ * 主の写真の下に重ねる紙焼きの置き方（上から順）。傾きを互い違いにし、重なりの下のものほど少し下へずらして、
+ * 束の縁を左右と下にのぞかせる（朱印が束の角にかかる）。台紙の余白からはみ出さない量に留める。
+ * from は手から離れたときの姿勢、rest は置かれた姿勢、settle は上に写真が置かれた風圧で少しずれる量
+ */
+const UNDER_PRINTS = [
+  {
+    id: 'under-1',
+    from: { x: 20, y: -30, rotate: 9 },
+    rest: { x: 1, y: 4, rotate: 3 },
+    settle: { x: 0.5, rotate: 0.4 },
+  },
+  {
+    id: 'under-2',
+    from: { x: -18, y: -26, rotate: -10 },
+    rest: { x: -1.5, y: 8, rotate: -3.4 },
+    settle: { x: -0.5, rotate: -0.3 },
+  },
+] as const
+
+/** 主の写真が置かれたときの傾き */
+const PHOTO_REST_ROTATE = -1.2
+
+/**
+ * 写真が現れるときの不透明度。1 枚のときは台紙の上でゆっくり現れる。
+ * 重ねるときは下の写真が透けて二重写しに見えないよう、手から離れた瞬間にほぼ不透明になる
+ */
+const SINGLE_FADE = { duration: 0.18 } as const
+const STACKED_FADE = { duration: 0.1, ease: [0.1, 0.9, 0.3, 1] } as const
+
+/** 主の写真が紙に触れて、下の写真が押されるころ */
+const SETTLE_AT = TIMELINE.photo + 0.16
+
+export function UploadComplete({
+  onComplete,
+  skipLabel,
+  photoSrc,
+  extraPhotoSrcs,
+  photoCount = 1,
+}: UploadCompleteProps) {
   const pressFor = TIMELINE.press - TIMELINE.approach
+  // 上から順に、主の写真のすぐ下・いちばん下。DOM には下のものから置き、主の写真を最後（一番上）に描く
+  const underPrints = UNDER_PRINTS.flatMap((pose, index) => {
+    const src = extraPhotoSrcs?.[index]
+    return src ? [{ pose, src, delay: TIMELINE.photo - TIMELINE.deal * (index + 1) }] : []
+  }).reverse()
+  const photoFade = underPrints.length > 0 ? STACKED_FADE : SINGLE_FADE
   return (
     <FullscreenStage
       duration={UPLOAD_COMPLETE_DURATION}
@@ -61,13 +112,36 @@ export function UploadComplete({ onComplete, skipLabel, photoSrc }: UploadComple
             },
           }}
         >
+          {underPrints.map(({ pose, src, delay }) => (
+            // 外側は上の写真が置かれたときのずれ、内側は手から離れて置かれるまで
+            <m.div
+              key={pose.id}
+              className="shuin-under"
+              initial={{ x: 0, rotate: 0 }}
+              animate={{ x: pose.settle.x, rotate: pose.settle.rotate }}
+              transition={{ delay: SETTLE_AT, duration: 0.42, ease: [0.2, 0.8, 0.3, 1] }}
+            >
+              <m.div
+                className="shuin-under-print"
+                initial={{ opacity: 0, ...pose.from, scale: 1.05 }}
+                animate={{ opacity: 1, ...pose.rest, scale: 1 }}
+                transition={{
+                  opacity: { delay, ...STACKED_FADE },
+                  default: { type: 'spring', bounce: 0.16, duration: 0.5, delay },
+                }}
+              >
+                <img src={src} alt="" className="shuin-under-image" />
+              </m.div>
+            </m.div>
+          ))}
+
           <m.div
             className="shuin-photo"
             initial={{ opacity: 0, y: -34, rotate: 4, scale: 1.06 }}
-            animate={{ opacity: 1, y: 0, rotate: -1.2, scale: 1 }}
+            animate={{ opacity: 1, y: 0, rotate: PHOTO_REST_ROTATE, scale: 1 }}
             transition={{
               delay: TIMELINE.photo,
-              opacity: { delay: TIMELINE.photo, duration: 0.18 },
+              opacity: { delay: TIMELINE.photo, ...photoFade },
               default: { type: 'spring', bounce: 0.18, duration: 0.55, delay: TIMELINE.photo },
             }}
           >
@@ -152,7 +226,7 @@ export function UploadComplete({ onComplete, skipLabel, photoSrc }: UploadComple
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: TIMELINE.thanks, duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
         >
-          {ja.ceremony.upload.thanks}
+          {photoCount > 1 ? ja.ceremony.upload.thanksMany : ja.ceremony.upload.thanks}
         </m.p>
       </div>
     </FullscreenStage>

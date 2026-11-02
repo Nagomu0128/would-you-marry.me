@@ -6,6 +6,7 @@ import type {
   LikeResponse,
   UploadPhotoResponse,
 } from '@wym/shared'
+import { PHOTO_LIMIT_PER_GUEST, UPLOAD_KEY_HEADER } from '@wym/shared'
 import { describe, expect, it, vi } from 'vitest'
 import { buildJpeg, buildPng, containsText, SECRETS } from '../src/worker/lib/image-fixtures'
 import { db, errorCode, makeGuestSession, makeTenant, request } from './helpers'
@@ -41,8 +42,13 @@ function uploadForm(parts: UploadParts = {}): FormData {
   return form
 }
 
-const upload = (tenantId: string, cookie: string, parts?: UploadParts) =>
-  request(`/api/t/${tenantId}/photos`, { method: 'POST', cookie, body: uploadForm(parts) })
+const upload = (tenantId: string, cookie: string, parts?: UploadParts, uploadKey?: string) =>
+  request(`/api/t/${tenantId}/photos`, {
+    method: 'POST',
+    cookie,
+    body: uploadForm(parts),
+    headers: uploadKey === undefined ? undefined : { [UPLOAD_KEY_HEADER]: uploadKey },
+  })
 
 async function r2Bytes(key: string): Promise<Uint8Array | null> {
   const object = await env.BUCKET.get(key)
@@ -88,7 +94,7 @@ async function seedPhoto(
       width: 800,
       height: 600,
     },
-    100,
+    PHOTO_LIMIT_PER_GUEST,
     options.createdAt ?? Date.now(),
   )
   if (!result.inserted) throw new Error('seed failed')
@@ -288,25 +294,25 @@ describe('POST /photos', () => {
     expect(await errorCode(notForm)).toBe('VALIDATION_ERROR')
   })
 
-  it('100 枚に達したら 409 UPLOAD_LIMIT_REACHED で、R2 に残骸が残らない', async () => {
+  it(`${PHOTO_LIMIT_PER_GUEST} 枚に達したら 409 UPLOAD_LIMIT_REACHED で、R2 に残骸が残らない`, async () => {
     const { tenant, cookie, guest } = await setup()
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < PHOTO_LIMIT_PER_GUEST; i++) {
       await seedPhoto(tenant.id, guest.id, { createdAt: 1000 + i, withFiles: false })
     }
     const res = await upload(tenant.id, cookie)
     expect(res.status).toBe(409)
     expect(await errorCode(res)).toBe('UPLOAD_LIMIT_REACHED')
     expect(await r2KeysOf(tenant.id)).toEqual([])
-    expect(await photoRowCount(tenant.id)).toBe(100)
+    expect(await photoRowCount(tenant.id)).toBe(PHOTO_LIMIT_PER_GUEST)
 
     // 他の参加者は投稿できる
     const other = await makeGuestSession(tenant.id, 'はなこ')
     expect((await upload(tenant.id, other.cookie)).status).toBe(201)
   })
 
-  it('99 枚なら 100 枚目を投稿できる', async () => {
+  it(`${PHOTO_LIMIT_PER_GUEST - 1} 枚なら ${PHOTO_LIMIT_PER_GUEST} 枚目を投稿できる`, async () => {
     const { tenant, cookie, guest } = await setup()
-    for (let i = 0; i < 99; i++) {
+    for (let i = 0; i < PHOTO_LIMIT_PER_GUEST - 1; i++) {
       await seedPhoto(tenant.id, guest.id, { createdAt: 1000 + i, withFiles: false })
     }
     expect((await upload(tenant.id, cookie)).status).toBe(201)
@@ -350,6 +356,104 @@ describe('POST /photos', () => {
 })
 
 // ------------------------------------------------------------ 一覧
+
+describe('POST /photos: 投稿キー（D-41）', () => {
+  const KEY = 'a1b2c3d4-e5f6-4789-8abc-0123456789ab'
+
+  it('同じキーで 2 回送ると、1 回目は 201、2 回目は 200 で同じ写真。保存は 1 枚分だけ', async () => {
+    const { tenant, cookie } = await setup()
+    const first = await upload(tenant.id, cookie, undefined, KEY)
+    expect(first.status).toBe(201)
+    const firstBody = await first.json<UploadPhotoResponse>()
+    const keysAfterFirst = await r2KeysOf(tenant.id)
+    expect(keysAfterFirst).toHaveLength(3)
+
+    const second = await upload(tenant.id, cookie, undefined, KEY)
+    expect(second.status).toBe(200)
+    const secondBody = await second.json<UploadPhotoResponse>()
+    expect(secondBody.photo.id).toBe(firstBody.photo.id)
+    expect(await photoRowCount(tenant.id)).toBe(1)
+    expect(await r2KeysOf(tenant.id)).toEqual(keysAfterFirst)
+  })
+
+  it('再送の応答は、いいね済みなど今の状態を返す', async () => {
+    const { tenant, cookie } = await setup()
+    const first = await (
+      await upload(tenant.id, cookie, undefined, KEY)
+    ).json<UploadPhotoResponse>()
+    await request(`/api/t/${tenant.id}/photos/${first.photo.id}/like`, { method: 'PUT', cookie })
+    const again = await (
+      await upload(tenant.id, cookie, undefined, KEY)
+    ).json<UploadPhotoResponse>()
+    expect(again.photo.likedByMe).toBe(true)
+    expect(again.photo.likeCount).toBe(1)
+  })
+
+  it('本文が壊れていても、保存済みのキーなら 200 で返す（本文は解析しない）', async () => {
+    const { tenant, cookie } = await setup()
+    const first = await (
+      await upload(tenant.id, cookie, undefined, KEY)
+    ).json<UploadPhotoResponse>()
+    const res = await request(`/api/t/${tenant.id}/photos`, {
+      method: 'POST',
+      cookie,
+      json: { a: 1 },
+      headers: { [UPLOAD_KEY_HEADER]: KEY },
+    })
+    expect(res.status).toBe(200)
+    expect((await res.json<UploadPhotoResponse>()).photo.id).toBe(first.photo.id)
+  })
+
+  it(`${PHOTO_LIMIT_PER_GUEST} 枚目の再送は上限のエラーにならず、別のキーなら UPLOAD_LIMIT_REACHED`, async () => {
+    const { tenant, cookie, guest } = await setup()
+    for (let i = 0; i < PHOTO_LIMIT_PER_GUEST - 1; i++) {
+      await seedPhoto(tenant.id, guest.id, { createdAt: 1000 + i, withFiles: false })
+    }
+    const first = await upload(tenant.id, cookie, undefined, KEY)
+    expect(first.status).toBe(201)
+    const firstBody = await first.json<UploadPhotoResponse>()
+
+    const again = await upload(tenant.id, cookie, undefined, KEY)
+    expect(again.status).toBe(200)
+    expect((await again.json<UploadPhotoResponse>()).photo.id).toBe(firstBody.photo.id)
+    expect(await photoRowCount(tenant.id)).toBe(PHOTO_LIMIT_PER_GUEST)
+
+    const other = await upload(tenant.id, cookie, undefined, 'ffffffff-e5f6-4789-8abc-0123456789ab')
+    expect(other.status).toBe(409)
+    expect(await errorCode(other)).toBe('UPLOAD_LIMIT_REACHED')
+  })
+
+  it.each(['short', 'abcdefgh-ijkl-mnop-qrst!', 'あ'.repeat(20), 'a'.repeat(65)])(
+    '形式が不正なキー（%s）は 400 VALIDATION_ERROR で、何も保存されない',
+    async (badKey) => {
+      const { tenant, cookie } = await setup()
+      const res = await upload(tenant.id, cookie, undefined, badKey)
+      expect(res.status).toBe(400)
+      const body = await res.json<{ error: { code: string; fields?: Record<string, string> } }>()
+      expect(body.error.code).toBe('VALIDATION_ERROR')
+      expect(body.error.fields?.idempotencyKey).toBe('INVALID')
+      expect(await photoRowCount(tenant.id)).toBe(0)
+      expect(await r2KeysOf(tenant.id)).toEqual([])
+    },
+  )
+
+  it('キーなしは今までどおり 201 で、2 回送ると 2 枚になる', async () => {
+    const { tenant, cookie } = await setup()
+    expect((await upload(tenant.id, cookie)).status).toBe(201)
+    expect((await upload(tenant.id, cookie)).status).toBe(201)
+    expect(await photoRowCount(tenant.id)).toBe(2)
+  })
+
+  it('他の参加者が同じキーで送っても、その参加者の写真として新しく登録される', async () => {
+    const { tenant, cookie } = await setup()
+    const other = await makeGuestSession(tenant.id, 'はなこ')
+    const mine = await (await upload(tenant.id, cookie, undefined, KEY)).json<UploadPhotoResponse>()
+    const res = await upload(tenant.id, other.cookie, undefined, KEY)
+    expect(res.status).toBe(201)
+    expect((await res.json<UploadPhotoResponse>()).photo.id).not.toBe(mine.photo.id)
+    expect(await photoRowCount(tenant.id)).toBe(2)
+  })
+})
 
 describe('GET /photos', () => {
   const list = (tenantId: string, cookie: string, query = '') =>

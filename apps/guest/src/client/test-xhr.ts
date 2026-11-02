@@ -12,7 +12,13 @@ export class FakeXhr {
   withCredentials = false
   body: unknown
   aborted = false
-  upload: { onprogress: ((event: ProgressEvent) => void) | null } = { onprogress: null }
+  headers: Record<string, string> = {}
+  upload: {
+    onprogress: ((event: ProgressEvent) => void) | null
+    onload: (() => void) | null
+  } = { onprogress: null, onload: null }
+  onprogress: (() => void) | null = null
+  onreadystatechange: (() => void) | null = null
   onload: (() => void) | null = null
   onerror: (() => void) | null = null
   ontimeout: (() => void) | null = null
@@ -26,7 +32,9 @@ export class FakeXhr {
     this.method = method
     this.url = url
   }
-  setRequestHeader() {}
+  setRequestHeader(name: string, value: string) {
+    this.headers[name] = value
+  }
   send(body: unknown) {
     this.body = body
   }
@@ -37,6 +45,10 @@ export class FakeXhr {
 
   progress(loaded: number, total: number) {
     this.upload.onprogress?.({ lengthComputable: true, loaded, total } as ProgressEvent)
+  }
+  /** 送り終えた（サーバーの処理を待つ間に入る） */
+  uploaded() {
+    this.upload.onload?.()
   }
   respond(status: number, body: unknown) {
     this.status = status

@@ -113,7 +113,7 @@ describe('GET /me', () => {
     const res = await request(`/api/t/${tenant.id}/me`, { cookie })
     expect(await res.json()).toEqual({
       tenant: { id: tenant.id, name: tenant.name, eventDate: tenant.eventDate, phase: 'joining' },
-      me: { id: guest.id, nickname: 'たろう', termsAgreed: false, photoCount: 0, photoLimit: 100 },
+      me: { id: guest.id, nickname: 'たろう', termsAgreed: false, photoCount: 0, photoLimit: 500 },
     })
   })
 })

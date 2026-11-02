@@ -37,7 +37,7 @@ guest Worker（`https://would-you-marry.me`）と admin Worker（`https://admin.
 | `VALIDATION_ERROR` | 400 | 入力が不正（`fields` に詳細） |
 | `FILE_TOO_LARGE` | 413 | ファイルサイズの上限超過 |
 | `UNSUPPORTED_FILE_TYPE` | 415 | 受け付けない形式 |
-| `UPLOAD_LIMIT_REACHED` | 409 | 投稿枚数の上限（100 枚）に達している |
+| `UPLOAD_LIMIT_REACHED` | 409 | 投稿枚数の上限（500 枚）に達している |
 | `COUPLE_LINK_INVALID` | 403 | 新郎新婦用 URL が無効、または入場の手続きの有効期限切れ |
 | `PASSCODE_INVALID` | 401 | パスコードが違う（`remainingAttempts` を返す） |
 | `PASSCODE_LOCKED` | 429 | 入力回数の上限に達した（`retryAfterSeconds` を返す） |
@@ -186,6 +186,14 @@ type RankedPhoto = Photo & { rank: number } // 1 から順に振る（同数で�
 
 #### `POST /photos`
 
+1 リクエストに写真 1 枚。複数枚を投稿するときは、ブラウザが 1 枚ずつ順に送る（D-39）。
+
+ヘッダー:
+
+| 項目 | 内容 | 制限 |
+|---|---|---|
+| `Idempotency-Key` | 投稿キー（D-41）。ブラウザが写真ごとに `crypto.randomUUID()` で作り、その写真の再送でも同じ値を送る | 英数字とハイフンで 16〜64 文字。省略できる（省略したときは二重の確認をしない） |
+
 `multipart/form-data`:
 
 | 項目 | 内容 | 制限 |
@@ -197,14 +205,20 @@ type RankedPhoto = Photo & { rank: number } // 1 から順に振る（同数で�
 
 処理:
 
-1. 期間・停止・ニックネームを確認し、投稿枚数が 100 枚未満かを確認する（`UPLOAD_LIMIT_REACHED`）
-2. ファイルの先頭のバイト列で形式を確認する（`UNSUPPORTED_FILE_TYPE`）。サイズを確認する（`FILE_TOO_LARGE`）
-3. オリジナルからメタデータを取り除く（再圧縮しない）
+1. 期間・停止・ニックネームを確認する。投稿キーの形式が正しくなければ `VALIDATION_ERROR`（`fields.idempotencyKey: "INVALID"`）
+2. 同じ参加者・同じ投稿キーの写真がすでにあれば、何も保存せずに `200` で `{ "photo": Photo }`（保存済みの写真）を返す（D-41）。投稿枚数の確認より先に行うので、500 枚目の写真の再送でも上限のエラーにならない
+3. 投稿枚数が 500 枚未満かを確認する（`UPLOAD_LIMIT_REACHED`）
+4. ファイルの先頭のバイト列で形式を確認する（`UNSUPPORTED_FILE_TYPE`）。サイズを確認する（`FILE_TOO_LARGE`）
+5. オリジナルからメタデータを取り除く（再圧縮しない）
    - JPEG: EXIF は向き（Orientation）だけを残す。XMP、IPTC などのメタデータは削除する。色を正しく表示するため ICC プロファイルは残す
    - PNG: `eXIf`、`tEXt`、`iTXt`、`zTXt` のチャンクを削除する
-4. R2 に 3 つの画像を保存する
-5. 上限を確かめながら D1 に登録する（[database.md](database.md#主なクエリ)）。上限で登録できなかった場合は、保存した画像を消して `UPLOAD_LIMIT_REACHED` を返す
-6. `201` で `{ "photo": Photo }` を返す
+6. R2 に 3 つの画像を保存する
+7. 上限と投稿キーを確かめながら D1 に登録する（[database.md](database.md#主なクエリ)）。登録できなかった場合は、保存した画像を消す
+   - 同じ投稿キーの写真が先に登録されていた（同じ写真の送信が並行していた）: その写真を `200` で返す
+   - それ以外（上限に達していた）: `UPLOAD_LIMIT_REACHED`
+8. `201` で `{ "photo": Photo }` を返す
+
+ブラウザは、30 秒間（仮置き）進捗も応答もなければ送信を打ち切り、その写真を失敗にする（D-42）。打ち切った送信がサーバーでは保存まで進んでいても、再送は同じ投稿キーなので二重にならない。
 
 HEIC は、早期検証（[architecture.md](../design/architecture.md#早めに検証すること)）の結果を見て扱いを決める。それまでは `UNSUPPORTED_FILE_TYPE` とする。
 
