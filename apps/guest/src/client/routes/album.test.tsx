@@ -60,7 +60,7 @@ function renderAlbum(search = '') {
 
 const me = (photoCount = 12) => {
   const base = meResponse('たろう')
-  return json({ ...base, me: { ...base.me, photoCount, photoLimit: 100 } })
+  return json({ ...base, me: { ...base.me, photoCount, photoLimit: 500 } })
 }
 
 const tile = (id: string) => document.querySelector<HTMLElement>(`[data-photo-id="${id}"]`)
@@ -120,7 +120,7 @@ describe('SG-06 タイムライン', () => {
         json({ photos: [photo('m1', { isMine: true })], nextCursor: null }),
     })
     renderAlbum('?mine=1')
-    expect(await screen.findByText('あと 88 枚投稿できます')).toBeInTheDocument()
+    expect(await screen.findByText('あと 488 枚投稿できます')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '自分の投稿' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -351,7 +351,7 @@ describe('SG-06 拡大表示・いいね・削除', () => {
     })
     renderAlbum('?mine=1')
     await waitFor(() => expect(tileIds()).toEqual(['a', 'b']))
-    expect(screen.getByText('あと 88 枚投稿できます')).toBeInTheDocument()
+    expect(screen.getByText('あと 488 枚投稿できます')).toBeInTheDocument()
 
     await user.click(tile('a') as HTMLElement)
     let dialog = await screen.findByRole('dialog')
@@ -368,6 +368,6 @@ describe('SG-06 拡大表示・いいね・削除', () => {
     expect(await screen.findByText('写真を削除しました')).toBeInTheDocument()
     await waitFor(() => expect(tileIds()).toEqual(['a']))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByText('あと 89 枚投稿できます')).toBeInTheDocument()
+    expect(screen.getByText('あと 489 枚投稿できます')).toBeInTheDocument()
   })
 })

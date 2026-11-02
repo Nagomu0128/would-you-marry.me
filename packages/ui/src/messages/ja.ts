@@ -41,7 +41,7 @@ const guestErrors = {
   NICKNAME_TAKEN: 'この名前は使われています。別の名前を入力してください',
   FILE_TOO_LARGE: '写真のサイズが大きすぎます（10MB まで）',
   UNSUPPORTED_FILE_TYPE: 'この形式の写真は投稿できません（JPEG・PNG のみ）',
-  UPLOAD_LIMIT_REACHED: '投稿できる枚数（100 枚）に達しました',
+  UPLOAD_LIMIT_REACHED: '投稿できる枚数（500 枚）に達しました',
 } as const
 
 /** 新郎新婦向けのエラー文言（messages.md「エラー」） */
@@ -218,19 +218,52 @@ export const ja = {
       camera: '撮影する',
       choose: '写真を選ぶ',
       submit: '投稿する',
+      /** 複数枚を選んだときの投稿ボタン */
+      submitMany: ({ count }: { count: number }) => `${count} 枚を投稿する`,
       sending: '送信中…',
+      /** 複数枚の送信中の全体の進み（読み上げにも使う） */
+      sendingCount: ({ current, total }: { current: number; total: number }) =>
+        `${total} 枚中 ${current} 枚目を送信中…`,
       failed: '送信できませんでした',
+      /** 複数枚のうち送れなかった写真があるとき */
+      failedCount: ({ count }: { count: number }) => `${count} 枚を送信できませんでした`,
       retry: 'もう一度送る',
       another: '続けて投稿する',
       toAlbum: 'アルバムを見る',
       /** プレビュー画像の代替テキスト（読み上げ用） */
       previewAlt: '選んだ写真',
+      /** 複数枚のときのプレビュー画像の代替テキスト */
+      previewAltIndexed: ({ index }: { index: number }) => `選んだ写真 ${index} 枚目`,
+      /** 選んだ写真を一覧から外すボタン（読み上げ用） */
+      remove: ({ index }: { index: number }) => `${index} 枚目の写真を外す`,
+      /** 選んだ枚数 */
+      selected: ({ count }: { count: number }) => `${count} 枚を選んでいます`,
+      /** 選んだ写真ごとの送信の状態 */
+      itemStatus: {
+        waiting: '送信待ち',
+        sending: '送信中',
+        sent: '送信済み',
+        failed: '送信失敗',
+      },
+      /** 複数枚を選んだうち、形式・サイズで投稿できない写真を外したとき */
+      rejected: ({ count }: { count: number }) => `${count} 枚は投稿できない写真のため、外しました`,
+      /** 選んだ枚数が 1 回の上限（20 枚）を超えたとき */
+      cappedByBatch: ({ added }: { added: number }) =>
+        `一度に選べるのは 20 枚までのため、${added} 枚を加えました`,
+      /** 選んだ枚数が残りの投稿枚数を超えたとき */
+      cappedByRemaining: ({ remaining, added }: { remaining: number; added: number }) =>
+        `投稿できるのはあと ${remaining} 枚のため、${added} 枚を加えました`,
+      /** 選べる枚数がいっぱいで、選ぶボタンを押せないとき */
+      batchFull: '一度に選べるのは 20 枚までです',
+      quotaFull: ({ remaining }: { remaining: number }) =>
+        `投稿できるのはあと ${remaining} 枚までです`,
       lead: '笑顔も、乾杯も、何気ないひとときも。あなたの一枚を、おふたりのアルバムへ',
-      rules: '1 回に 1 枚・JPEG / PNG・10MB まで',
+      rules: '1 回に 20 枚まで・JPEG / PNG・1 枚 10MB まで',
       /** 台紙の空いた枠に添える言葉 */
-      slot: 'ここに一枚を',
+      slot: 'ここに写真を',
       doneHeading: '思い出を、ありがとうございます',
       doneNote: '写真をアルバムに届けました',
+      doneNoteMany: ({ count }: { count: number }) => `${count} 枚の写真をアルバムに届けました`,
       /** 貼った写真に押す朱印の文字（装飾） */
       seal: '寿',
     },
@@ -407,6 +440,7 @@ export const ja = {
 
   toasts: {
     photoUploaded: '写真を投稿しました',
+    photosUploaded: ({ count }: { count: number }) => `${count} 枚の写真を投稿しました`,
     photoDeleted: '写真を削除しました',
     nicknameChanged: 'ニックネームを変更しました',
     downloadStarted: 'ダウンロードを開始しました',
@@ -471,6 +505,8 @@ export const ja = {
     /** 投稿完了: 朱印を押したあとに出る */
     upload: {
       thanks: 'すてきな一枚を ありがとうございます',
+      /** 複数枚を投稿したとき */
+      thanksMany: 'すてきな写真を ありがとうございます',
     },
   },
 } as const

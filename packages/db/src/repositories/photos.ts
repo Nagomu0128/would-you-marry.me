@@ -19,17 +19,24 @@ export type NewPhotoInput = {
   storedSizeBytes: number
   width: number
   height: number
+  /** 投稿キー（D-41）。同じ参加者・同じキーの写真は 1 枚しか登録されない */
+  uploadKey?: string | null
 }
 
-export type InsertPhotoResult = { inserted: true; photo: Photo } | { inserted: false }
+export type InsertPhotoResult =
+  | { inserted: true; photo: Photo }
+  | { inserted: false; reason: 'duplicate'; photo: Photo }
+  | { inserted: false; reason: 'limit' }
 
 /**
  * 投稿枚数の上限を確かめながら写真を登録する。
  * 1 つの `INSERT ... SELECT ... WHERE (SELECT COUNT(*) ...) < ?` で行うので、
  * 同時に投稿しても上限を超えない。
  * 参加者がこのテナントにいない場合も登録されない。
- * @param limit 1 人あたりの上限（100 枚。packages/shared の定数を渡す）
- * @returns 登録できなかった（上限に達している）ときは `{ inserted: false }`
+ * @param limit 1 人あたりの上限（500 枚。packages/shared の定数を渡す）
+ * 同じ参加者・同じ投稿キーの写真がすでにあるときは登録せず、その写真を `duplicate` で返す
+ * （上限に達していても `duplicate` を優先する）。
+ * @returns 登録できなかったときは、`duplicate`（先に登録済み）か `limit`（上限に達している）
  */
 export async function insertPhotoWithLimit(
   db: Db,
@@ -38,22 +45,56 @@ export async function insertPhotoWithLimit(
   limit: number,
   now: number = Date.now(),
 ): Promise<InsertPhotoResult> {
+  const uploadKey = input.uploadKey ?? null
   const result = await db.run(sql`
     INSERT INTO photos (
       id, tenant_id, guest_id, original_key, display_key, thumb_key, original_content_type,
-      stored_size_bytes, width, height, like_count, created_at
+      stored_size_bytes, width, height, upload_key, like_count, created_at
     )
     SELECT
       ${input.id}, ${tenantId}, ${input.guestId}, ${input.originalKey}, ${input.displayKey},
       ${input.thumbKey}, ${input.originalContentType}, ${input.storedSizeBytes}, ${input.width},
-      ${input.height}, 0, ${now}
+      ${input.height}, ${uploadKey}, 0, ${now}
     WHERE EXISTS (SELECT 1 FROM guests WHERE id = ${input.guestId} AND tenant_id = ${tenantId})
       AND (SELECT COUNT(*) FROM photos WHERE guest_id = ${input.guestId} AND tenant_id = ${tenantId}) < ${limit}
+      AND (
+        ${uploadKey} IS NULL
+        OR NOT EXISTS (
+          SELECT 1 FROM photos WHERE guest_id = ${input.guestId} AND upload_key = ${uploadKey}
+        )
+      )
+    ON CONFLICT (guest_id, upload_key) DO NOTHING
   `)
-  if (result.meta.changes === 0) return { inserted: false }
+  if (result.meta.changes === 0) {
+    if (uploadKey !== null) {
+      const existing = await findPhotoByUploadKey(db, tenantId, input.guestId, uploadKey)
+      if (existing) return { inserted: false, reason: 'duplicate', photo: existing }
+    }
+    return { inserted: false, reason: 'limit' }
+  }
   const photo = await getPhoto(db, tenantId, input.id)
   if (!photo) throw new Error('failed to read the inserted photo')
   return { inserted: true, photo }
+}
+
+/** 投稿キーで、この参加者の写真を探す（D-41）。なければ undefined */
+export async function findPhotoByUploadKey(
+  db: Db,
+  tenantId: string,
+  guestId: string,
+  uploadKey: string,
+): Promise<Photo | undefined> {
+  const [row] = await db
+    .select()
+    .from(photos)
+    .where(
+      and(
+        eq(photos.tenantId, tenantId),
+        eq(photos.guestId, guestId),
+        eq(photos.uploadKey, uploadKey),
+      ),
+    )
+  return row
 }
 
 export async function getPhoto(

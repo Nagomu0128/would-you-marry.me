@@ -151,4 +151,91 @@ describe('送信（XMLHttpRequest）', () => {
     controller.abort()
     await expect(promise).rejects.toMatchObject({ name: 'AbortError' })
   })
+
+  it('uploadKey を渡すと Idempotency-Key が付き、渡さなければ付かない', () => {
+    installFakeXhr()
+    void uploadPhoto('t1', parts, { uploadKey: 'abcdef0123456789abcd' })
+    expect(lastXhr()?.headers['Idempotency-Key']).toBe('abcdef0123456789abcd')
+    void uploadPhoto('t1', parts)
+    expect(lastXhr()?.headers['Idempotency-Key']).toBeUndefined()
+  })
+
+  it('200 の応答も成功として photo を返す', async () => {
+    installFakeXhr()
+    const promise = uploadPhoto('t1', parts)
+    lastXhr()?.respond(200, { photo: { id: 'p1' } })
+    await expect(promise).resolves.toEqual({ photo: { id: 'p1' } })
+  })
+
+  describe('無通信の打ち切り', () => {
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('30 秒何もなければ NetworkError で reject し、XHR を abort する', async () => {
+      vi.useFakeTimers()
+      installFakeXhr()
+      const promise = uploadPhoto('t1', parts)
+      const assertion = expect(promise).rejects.toBeInstanceOf(NetworkError)
+      vi.advanceTimersByTime(29_999)
+      expect(lastXhr()?.aborted).toBe(false)
+      vi.advanceTimersByTime(1)
+      await assertion
+      expect(lastXhr()?.aborted).toBe(true)
+      expect(vi.getTimerCount()).toBe(0)
+    })
+
+    it('進捗があれば数え直し、送り終えたあとも応答を 30 秒待つ', async () => {
+      vi.useFakeTimers()
+      installFakeXhr()
+      const promise = uploadPhoto('t1', parts)
+      const settled = vi.fn()
+      promise.catch(settled)
+      vi.advanceTimersByTime(29_000)
+      lastXhr()?.upload.onprogress?.({ lengthComputable: false } as ProgressEvent)
+      vi.advanceTimersByTime(29_000)
+      expect(lastXhr()?.aborted).toBe(false)
+      lastXhr()?.uploaded()
+      vi.advanceTimersByTime(29_000)
+      expect(lastXhr()?.aborted).toBe(false)
+      vi.advanceTimersByTime(1_000)
+      await Promise.resolve()
+      expect(lastXhr()?.aborted).toBe(true)
+      expect(settled).toHaveBeenCalledWith(expect.any(NetworkError))
+    })
+
+    it('stallTimeoutMs で時間を変えられる', async () => {
+      vi.useFakeTimers()
+      installFakeXhr()
+      const promise = uploadPhoto('t1', parts, { stallTimeoutMs: 1000 })
+      const assertion = expect(promise).rejects.toBeInstanceOf(NetworkError)
+      vi.advanceTimersByTime(1000)
+      await assertion
+    })
+
+    it('成功・失敗・中断のあとはタイマーが残らず、中断は AbortError のまま', async () => {
+      vi.useFakeTimers()
+      installFakeXhr()
+      const ok = uploadPhoto('t1', parts)
+      lastXhr()?.respond(201, { photo: { id: 'p1' } })
+      await ok
+      expect(vi.getTimerCount()).toBe(0)
+
+      const failed = uploadPhoto('t1', parts)
+      lastXhr()?.fail()
+      await expect(failed).rejects.toBeInstanceOf(NetworkError)
+      expect(vi.getTimerCount()).toBe(0)
+
+      const rejected = uploadPhoto('t1', parts)
+      lastXhr()?.respond(413, { error: { code: 'FILE_TOO_LARGE', message: 'x' } })
+      await expect(rejected).rejects.toBeInstanceOf(ApiClientError)
+      expect(vi.getTimerCount()).toBe(0)
+
+      const controller = new AbortController()
+      const aborted = uploadPhoto('t1', parts, { signal: controller.signal })
+      controller.abort()
+      await expect(aborted).rejects.toMatchObject({ name: 'AbortError' })
+      expect(vi.getTimerCount()).toBe(0)
+    })
+  })
 })

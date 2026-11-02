@@ -19,8 +19,17 @@ export const DISPLAY_MAX_EDGE_PX = 1600
 export const THUMB_MAX_BYTES = 512 * KB
 /** 一覧用画像の長辺（px） */
 export const THUMB_MAX_EDGE_PX = 480
-/** 1 人あたりの投稿枚数の上限 */
-export const PHOTO_LIMIT_PER_GUEST = 100
+/** 1 人あたりの投稿枚数の上限（D-40） */
+export const PHOTO_LIMIT_PER_GUEST = 500
+/** 1 回の操作で選んで投稿できる枚数（D-39、仮置き）。送信は 1 枚ずつ順に行う */
+export const PHOTO_BATCH_MAX = 20
+/**
+ * 写真 1 枚の送信で、進捗も応答もないまま待つ最長の時間（ミリ秒、D-42、仮置き）。
+ * 過ぎたら送信を打ち切り、その写真を失敗にする
+ */
+export const UPLOAD_STALL_TIMEOUT_MS = 30 * 1000
+/** 複数枚の送信で、この枚数続けて失敗したら、残りの写真は送らずに失敗として残す（D-42、仮置き） */
+export const UPLOAD_CONSECUTIVE_FAILURES_MAX = 2
 
 // --- 一覧 ---
 /** ランキングの件数 */

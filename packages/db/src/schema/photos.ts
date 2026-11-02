@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { guests } from './guests'
 import { tenants } from './tenants'
 
@@ -23,6 +23,8 @@ export const photos = sqliteTable(
     storedSizeBytes: integer('stored_size_bytes').notNull(),
     width: integer('width').notNull(),
     height: integer('height').notNull(),
+    /** 投稿キー（D-41）。再送で二重に保存しないための、ブラウザが写真ごとに作る値。ない投稿は NULL */
+    uploadKey: text('upload_key'),
     likeCount: integer('like_count').notNull().default(0),
     createdAt: integer('created_at').notNull(),
   },
@@ -30,6 +32,7 @@ export const photos = sqliteTable(
     index('photos_timeline_idx').on(t.tenantId, sql`${t.createdAt} DESC`, sql`${t.id} DESC`),
     index('photos_ranking_idx').on(t.tenantId, sql`${t.likeCount} DESC`, sql`${t.createdAt} ASC`),
     index('photos_guest_idx').on(t.guestId, sql`${t.createdAt} DESC`),
+    uniqueIndex('photos_upload_key_idx').on(t.guestId, t.uploadKey),
   ],
 )
 

@@ -3,6 +3,7 @@ import {
   countGuestPhotos,
   deleteOwnPhoto,
   deletePhotoAsAdmin,
+  findPhotoByUploadKey,
   getLikedPhotoIds,
   getPhoto,
   InvalidCursorError,
@@ -65,7 +66,10 @@ describe('photos: 登録と上限', () => {
     expect(await countGuestPhotos(db, tenant.id, guest.id)).toBe(LIMIT)
 
     const rejected = photoInput(tenant.id, guest.id)
-    expect(await insertPhotoWithLimit(db, tenant.id, rejected, LIMIT)).toEqual({ inserted: false })
+    expect(await insertPhotoWithLimit(db, tenant.id, rejected, LIMIT)).toEqual({
+      inserted: false,
+      reason: 'limit',
+    })
     expect(await getPhoto(db, tenant.id, rejected.id)).toBeUndefined()
     expect(await countGuestPhotos(db, tenant.id, guest.id)).toBe(LIMIT)
 
@@ -102,8 +106,110 @@ describe('photos: 登録と上限', () => {
     const b = await makeTenant()
     const guest = await makeGuest(a.id, 'a')
     const result = await insertPhotoWithLimit(db, b.id, photoInput(b.id, guest.id), 100)
-    expect(result).toEqual({ inserted: false })
+    expect(result).toEqual({ inserted: false, reason: 'limit' })
     expect(await count('photos', `guest_id = '${guest.id}'`)).toBe(0)
+  })
+})
+
+describe('photos: 投稿キー（D-41）', () => {
+  const KEY = 'a1b2c3d4-e5f6-4789-8abc-0123456789ab'
+
+  it('同じキーで登録すると duplicate と最初の写真が返り、行は 1 つのまま', async () => {
+    const tenant = await makeTenant()
+    const guest = await makeGuest(tenant.id, 'a')
+    const first = photoInput(tenant.id, guest.id)
+    const inserted = await insertPhotoWithLimit(db, tenant.id, { ...first, uploadKey: KEY }, 100)
+    expect(inserted.inserted).toBe(true)
+    const second = photoInput(tenant.id, guest.id)
+    const result = await insertPhotoWithLimit(db, tenant.id, { ...second, uploadKey: KEY }, 100)
+    expect(result).toMatchObject({ inserted: false, reason: 'duplicate', photo: { id: first.id } })
+    expect(await getPhoto(db, tenant.id, second.id)).toBeUndefined()
+    expect(await count('photos', `guest_id = '${guest.id}'`)).toBe(1)
+  })
+
+  it('同じキー文字列でも、参加者が違えばそれぞれ登録される', async () => {
+    const tenant = await makeTenant()
+    const a = await makeGuest(tenant.id, 'a')
+    const b = await makeGuest(tenant.id, 'b')
+    const ra = await insertPhotoWithLimit(
+      db,
+      tenant.id,
+      { ...photoInput(tenant.id, a.id), uploadKey: KEY },
+      100,
+    )
+    const rb = await insertPhotoWithLimit(
+      db,
+      tenant.id,
+      { ...photoInput(tenant.id, b.id), uploadKey: KEY },
+      100,
+    )
+    expect(ra.inserted).toBe(true)
+    expect(rb.inserted).toBe(true)
+  })
+
+  it('キーなし（NULL）の写真は何枚でも登録できる', async () => {
+    const tenant = await makeTenant()
+    const guest = await makeGuest(tenant.id, 'a')
+    for (let i = 0; i < 3; i++) {
+      const r = await insertPhotoWithLimit(db, tenant.id, photoInput(tenant.id, guest.id), 100)
+      expect(r.inserted).toBe(true)
+    }
+    const r = await insertPhotoWithLimit(
+      db,
+      tenant.id,
+      { ...photoInput(tenant.id, guest.id), uploadKey: null },
+      100,
+    )
+    expect(r.inserted).toBe(true)
+    expect(await countGuestPhotos(db, tenant.id, guest.id)).toBe(4)
+  })
+
+  it('上限に達していてもキーが重複していれば duplicate。重複していなければ limit', async () => {
+    const tenant = await makeTenant()
+    const guest = await makeGuest(tenant.id, 'a')
+    const first = photoInput(tenant.id, guest.id)
+    await insertPhotoWithLimit(db, tenant.id, { ...first, uploadKey: KEY }, 1)
+    const dup = await insertPhotoWithLimit(
+      db,
+      tenant.id,
+      { ...photoInput(tenant.id, guest.id), uploadKey: KEY },
+      1,
+    )
+    expect(dup).toMatchObject({ inserted: false, reason: 'duplicate', photo: { id: first.id } })
+    const other = await insertPhotoWithLimit(
+      db,
+      tenant.id,
+      { ...photoInput(tenant.id, guest.id), uploadKey: 'ffffffff-e5f6-4789-8abc-0123456789ab' },
+      1,
+    )
+    expect(other).toEqual({ inserted: false, reason: 'limit' })
+  })
+
+  it('同時に同じキーで登録しても 1 つだけ登録される', async () => {
+    const tenant = await makeTenant()
+    const guest = await makeGuest(tenant.id, 'a')
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () =>
+        insertPhotoWithLimit(
+          db,
+          tenant.id,
+          { ...photoInput(tenant.id, guest.id), uploadKey: KEY },
+          100,
+        ),
+      ),
+    )
+    expect(results.filter((r) => r.inserted)).toHaveLength(1)
+    expect(await count('photos', `guest_id = '${guest.id}'`)).toBe(1)
+  })
+
+  it('findPhotoByUploadKey は他のテナントの写真を返さない', async () => {
+    const a = await makeTenant()
+    const b = await makeTenant()
+    const guest = await makeGuest(a.id, 'a')
+    const input = photoInput(a.id, guest.id)
+    await insertPhotoWithLimit(db, a.id, { ...input, uploadKey: KEY }, 100)
+    expect((await findPhotoByUploadKey(db, a.id, guest.id, KEY))?.id).toBe(input.id)
+    expect(await findPhotoByUploadKey(db, b.id, guest.id, KEY)).toBeUndefined()
   })
 })
 
