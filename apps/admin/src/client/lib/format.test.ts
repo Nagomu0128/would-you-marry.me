@@ -30,9 +30,9 @@ describe('期間のラベル', () => {
 
 describe('日付の表示', () => {
   it('終わりの日は境界の前日（日本時間）', () => {
-    expect(periodEndLabel('joining', BOUNDARIES)).toBe('11/1')
+    expect(periodEndLabel('joining', BOUNDARIES)).toBe('4/30')
     expect(periodEndLabel('preparation', BOUNDARIES)).toBe('10/30')
-    expect(periodEndLabel('viewing', BOUNDARIES)).toBe('1/31')
+    expect(periodEndLabel('viewing', BOUNDARIES)).toBe('4/30')
     expect(periodEndLabel('couple_only', BOUNDARIES)).toBe('4/30')
     expect(periodEndLabel('expired', BOUNDARIES)).toBeNull()
   })
@@ -44,7 +44,7 @@ describe('日付の表示', () => {
   it('参加できる期間は日本時間で、終わりは 23:59', () => {
     expect(joinPeriodLabels(BOUNDARIES.joiningStart, BOUNDARIES.viewingStart)).toEqual({
       from: '10/31 0:00',
-      to: '11/1 23:59',
+      to: '4/30 23:59',
     })
   })
 

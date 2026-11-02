@@ -76,7 +76,7 @@ export function tenant(overrides: Partial<AdminTenant> = {}): AdminTenant {
 
 export const BOUNDARIES: TenantBoundaries = {
   joiningStart: '2026-10-30T15:00:00.000Z',
-  viewingStart: '2026-11-01T15:00:00.000Z',
-  coupleOnlyStart: '2027-01-31T15:00:00.000Z',
+  viewingStart: '2027-04-30T15:00:00.000Z',
+  coupleOnlyStart: '2027-04-30T15:00:00.000Z',
   deletionAt: '2027-04-30T15:00:00.000Z',
 }

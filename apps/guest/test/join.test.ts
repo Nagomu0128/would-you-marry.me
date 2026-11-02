@@ -108,12 +108,24 @@ describe('GET /join/:tenantId', () => {
     expect(await countGuests(tenant.id)).toBe(1)
   })
 
-  it('参加受付期間が過ぎていても、トークンなしで既存のセッションなら遷移できる（新規は作らない）', async () => {
+  it('開催日の10日後でも、トークンなしで既存のセッションなら遷移できる（新規は作らない）', async () => {
     const tenant = await makeTenant(EVENT.viewing)
     const { cookie } = await makeGuestSession(tenant.id, 'はなこ')
     const res = await join(tenant.id, null, cookie)
     expect(res.headers.get('location')).toBe(`/t/${tenant.id}`)
   })
+
+  it.each([EVENT.viewing, EVENT.coupleOnly])(
+    '開催日から %i 日ずれた日にもQRから新規参加できる',
+    async (days) => {
+      const tenant = await makeTenant(days)
+      const token = await makeJoinToken(tenant.id)
+      const res = await join(tenant.id, token)
+      expect(res.headers.get('location')).toBe(`/t/${tenant.id}/nickname`)
+      expect(res.headers.get('set-cookie')).not.toBeNull()
+      expect(await countGuests(tenant.id)).toBe(1)
+    },
+  )
 
   describe('エラーは /error?code=... へリダイレクトする', () => {
     async function expectError(res: Response, code: string) {
@@ -129,8 +141,8 @@ describe('GET /join/:tenantId', () => {
       expect(await countGuests(tenant.id)).toBe(0)
     })
 
-    it('参加受付期間より後（閲覧期間）', async () => {
-      const tenant = await makeTenant(EVENT.viewing)
+    it('参加受付期間より後（6か月経過）', async () => {
+      const tenant = await makeTenant(EVENT.expired)
       const token = await makeJoinToken(tenant.id)
       await expectError(await join(tenant.id, token), 'OUTSIDE_JOINING_PERIOD')
       expect(await countGuests(tenant.id)).toBe(0)

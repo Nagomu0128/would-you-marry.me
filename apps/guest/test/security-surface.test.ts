@@ -376,19 +376,21 @@ describe('画像・PDF の配信（Worker 経由のみ。URL を流用しても�
     expect(pdf.status).toBe(200)
   })
 
-  it('参加者: 閲覧期間が終わると拒否される。新郎新婦は続けて見られ、期限切れで拒否される', async () => {
+  it('参加者も新郎新婦も120日後は閲覧でき、6か月経過後は拒否される', async () => {
     const { tenant, guest, couple, guestUrls, coupleUrls } = await setup()
     await setTenant(tenant.id, { eventDate: eventDateOffset(EVENT.coupleOnly) })
     for (const url of guestUrls) {
       const res = await request(url, { cookie: guest.cookie, headers: { 'If-None-Match': '"x"' } })
-      expect(res.status, url).toBe(403)
-      expect(await errorCode(res)).toBe('PERIOD_ENDED')
+      expect(res.status, url).toBe(200)
     }
     for (const url of coupleUrls) {
       expect((await request(url, { cookie: couple.cookie })).status, url).toBe(200)
     }
 
     await setTenant(tenant.id, { eventDate: eventDateOffset(EVENT.expired) })
+    for (const url of guestUrls) {
+      expect(await errorCode(await request(url, { cookie: guest.cookie }))).toBe('PERIOD_ENDED')
+    }
     for (const url of coupleUrls) {
       const res = await request(url, { cookie: couple.cookie })
       expect(res.status, url).toBe(403)

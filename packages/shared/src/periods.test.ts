@@ -56,24 +56,24 @@ describe('getPhaseBoundaries（計算例）', () => {
   it('2026-10-31', () => {
     const b = getPhaseBoundaries('2026-10-31')
     expect(iso(b.joiningStart)).toBe('2026-10-30T15:00:00.000Z') // 10/31 0:00 JST
-    expect(iso(b.viewingStart)).toBe('2026-11-01T15:00:00.000Z') // 11/02 0:00 JST
-    expect(iso(b.coupleOnlyStart)).toBe('2027-01-31T15:00:00.000Z') // 2027-02-01 0:00 JST
+    expect(iso(b.viewingStart)).toBe('2027-04-30T15:00:00.000Z') // 2027-05-01 0:00 JST
+    expect(iso(b.coupleOnlyStart)).toBe('2027-04-30T15:00:00.000Z') // 2027-05-01 0:00 JST
     expect(iso(b.deletionAt)).toBe('2027-04-30T15:00:00.000Z') // 2027-05-01 0:00 JST
   })
 
   it('2026-11-30（2/28 に繰り下げ）', () => {
     const b = getPhaseBoundaries('2026-11-30')
     expect(toJstDateTimeString(b.joiningStart)).toBe('2026-11-30 00:00')
-    expect(toJstDateTimeString(b.viewingStart)).toBe('2026-12-02 00:00')
-    expect(toJstDateTimeString(b.coupleOnlyStart)).toBe('2027-03-01 00:00')
+    expect(toJstDateTimeString(b.viewingStart)).toBe('2027-05-31 00:00')
+    expect(toJstDateTimeString(b.coupleOnlyStart)).toBe('2027-05-31 00:00')
     expect(toJstDateTimeString(b.deletionAt)).toBe('2027-05-31 00:00')
   })
 
   it('2027-08-31（うるう年の 2/29）', () => {
     const b = getPhaseBoundaries('2027-08-31')
     expect(toJstDateTimeString(b.joiningStart)).toBe('2027-08-31 00:00')
-    expect(toJstDateTimeString(b.viewingStart)).toBe('2027-09-02 00:00')
-    expect(toJstDateTimeString(b.coupleOnlyStart)).toBe('2027-12-01 00:00')
+    expect(toJstDateTimeString(b.viewingStart)).toBe('2028-03-01 00:00')
+    expect(toJstDateTimeString(b.coupleOnlyStart)).toBe('2028-03-01 00:00')
     expect(toJstDateTimeString(b.deletionAt)).toBe('2028-03-01 00:00')
   })
 
@@ -97,10 +97,10 @@ describe('getTenantPhase（各境界の 1 ミリ秒前と境界ちょうど）',
       expect(getTenantPhase(eventDate, at(b.joiningStart, -1))).toBe('preparation')
       expect(getTenantPhase(eventDate, b.joiningStart)).toBe('joining')
       expect(getTenantPhase(eventDate, at(b.viewingStart, -1))).toBe('joining')
-      expect(getTenantPhase(eventDate, b.viewingStart)).toBe('viewing')
-      expect(getTenantPhase(eventDate, at(b.coupleOnlyStart, -1))).toBe('viewing')
-      expect(getTenantPhase(eventDate, b.coupleOnlyStart)).toBe('couple_only')
-      expect(getTenantPhase(eventDate, at(b.deletionAt, -1))).toBe('couple_only')
+      expect(getTenantPhase(eventDate, b.viewingStart)).toBe('expired')
+      expect(getTenantPhase(eventDate, at(b.coupleOnlyStart, -1))).toBe('joining')
+      expect(getTenantPhase(eventDate, b.coupleOnlyStart)).toBe('expired')
+      expect(getTenantPhase(eventDate, at(b.deletionAt, -1))).toBe('joining')
       expect(getTenantPhase(eventDate, b.deletionAt)).toBe('expired')
       expect(getTenantPhase(eventDate, new Date('2100-01-01T00:00:00Z'))).toBe('expired')
     })
@@ -119,8 +119,8 @@ describe('canJoin / canGuestUse / canCoupleUse', () => {
   const times = {
     preparation: new Date(b.joiningStart.getTime() - 1),
     joining: b.joiningStart,
-    viewing: b.viewingStart,
-    couple_only: b.coupleOnlyStart,
+    viewing: jstMidnight('2026-11-02'),
+    couple_only: jstMidnight('2027-02-01'),
     expired: b.deletionAt,
   }
 
@@ -132,9 +132,17 @@ describe('canJoin / canGuestUse / canCoupleUse', () => {
     ]
     expect(row(times.preparation)).toEqual([false, false, true])
     expect(row(times.joining)).toEqual([true, true, true])
-    expect(row(times.viewing)).toEqual([false, true, true])
-    expect(row(times.couple_only)).toEqual([false, false, true])
+    expect(row(times.viewing)).toEqual([true, true, true])
+    expect(row(times.couple_only)).toEqual([true, true, true])
     expect(row(times.expired)).toEqual([false, false, false])
+  })
+
+  it('6か月後の終了境界の直前まで新規参加・利用できる', () => {
+    const last = new Date(b.deletionAt.getTime() - 1)
+    expect(canJoin(tenant, last)).toBe(true)
+    expect(canGuestUse(tenant, last)).toBe(true)
+    expect(canJoin(tenant, b.deletionAt)).toBe(false)
+    expect(canGuestUse(tenant, b.deletionAt)).toBe(false)
   })
 
   it('停止中は期間にかかわらずすべて false', () => {

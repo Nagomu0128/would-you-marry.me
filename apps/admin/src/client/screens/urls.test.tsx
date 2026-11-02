@@ -56,7 +56,7 @@ describe('URL の発行（SA-05）', () => {
     await userEvent.click(within(card).getByRole('button', { name: '発行' }))
     expect(await screen.findByRole('img', { name: '参加 URL の QR コード' })).toBeInTheDocument()
     expect(calls.some((c) => c.method === 'POST' && c.path.endsWith('/join-url'))).toBe(true)
-    expect(screen.getByText('参加できる期間: 10/31 0:00 〜 11/1 23:59')).toBeInTheDocument()
+    expect(screen.getByText('参加できる期間: 10/31 0:00 〜 4/30 23:59')).toBeInTheDocument()
     expect(screen.getByText(JOIN_URL)).toBeInTheDocument()
     // 確認ダイアログなしで発行する（初回）
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()

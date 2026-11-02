@@ -33,7 +33,7 @@ describe('テナント詳細（SA-04）', () => {
   it('期間と終わりの日、削除予定日、利用状況を表示する', async () => {
     mockFetch(detailRoutes())
     renderApp(`/tenants/${TENANT_ID}`)
-    expect(await screen.findByText('期間: 参加受付中（11/1 まで）')).toBeInTheDocument()
+    expect(await screen.findByText('期間: 参加受付中（4/30 まで）')).toBeInTheDocument()
     expect(screen.getByText('データの削除予定日: 2027-05-01')).toBeInTheDocument()
     // 利用状況は集計欄（項目名と数の組）で並べる
     const usage = screen.getByRole('region', { name: '利用状況' })

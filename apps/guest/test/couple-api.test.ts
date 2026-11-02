@@ -418,11 +418,11 @@ describe('共通の確認', () => {
     expect(await errorCode(res)).toBe('PERIOD_ENDED')
   })
 
-  it('新郎新婦閲覧期間は参加者は使えない（新郎新婦は使える）', async () => {
+  it('開催日から120日後も参加者と新郎新婦の両方が使える', async () => {
     const tenant = await makeTenant(EVENT.coupleOnly)
     const guest = await makeGuestSession(tenant.id, 'たろう')
     const g = await request(`/api/t/${tenant.id}/photos`, { cookie: guest.cookie })
-    expect(await errorCode(g)).toBe('PERIOD_ENDED')
+    expect(g.status).toBe(200)
     const c = await request(`/api/couple/${tenant.id}/photos`, { cookie: await sessionFor(tenant) })
     expect(c.status).toBe(200)
   })

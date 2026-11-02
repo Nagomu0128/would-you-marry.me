@@ -182,7 +182,7 @@ describe('エラー画面', () => {
     expect(
       await screen.findByRole('heading', { name: '参加の受付期間ではありません' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('受付は結婚式の当日と翌日です。')).toBeInTheDocument()
+    expect(screen.getByText('受付は結婚式の当日から 6 か月後までです。')).toBeInTheDocument()
     const contact = await waitFor(() => {
       const links = screen.getAllByRole('link', { name: 'お問い合わせ' })
       expect(links.length).toBeGreaterThan(0)

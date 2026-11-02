@@ -41,7 +41,7 @@ describe('参加者向け API の共通処理', () => {
   })
 
   it('閲覧期間の後は PERIOD_ENDED', async () => {
-    const tenant = await makeTenant(EVENT.coupleOnly)
+    const tenant = await makeTenant(EVENT.expired)
     const { cookie } = await makeGuestSession(tenant.id, 'たろう')
     const res = await request(`/api/t/${tenant.id}/me`, { cookie })
     expect(res.status).toBe(403)
