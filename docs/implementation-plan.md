@@ -107,4 +107,4 @@ subagent への指示（[.claude/agents/implementer.md](../.claude/agents/implem
 | 25 | 同じ投稿キーの並行した登録 | `INSERT ... SELECT` の WHERE に同じキーの `NOT EXISTS` を加え、`ON CONFLICT (guest_id, upload_key) DO NOTHING` も付ける。1 文なので D1 でも原子的で、一意のインデックスが最後の砦になる。登録されなかったときはキーで探し直し、あれば保存済みの写真、なければ上限超過とする | T22 |
 | 26 | 投稿キーの作り方 | `crypto.randomUUID()`。HTTPS でない画面（開発中にスマートフォンから LAN の IP で開くとき）にはないので、`crypto.getRandomValues()` で UUID v4 の形を作る | T22 |
 | 27 | 続けての失敗に数えるもの | 「送信失敗」にした写真（通信の失敗、無通信での打ち切り、その他のエラー）。成功したときと、サーバーが形式・サイズで拒否したとき（応答は返っている）は 0 に戻す。上限・認証切れは今までどおり送信をやめる | T22 |
-| 28 | 画面のテストの待ち時間 | `findBy*` / `waitFor` の既定の 1 秒を 5 秒に延ばした。全パッケージのテストを並行して流すと（`pnpm test`・CI）、`upload.test.tsx` が 1 秒に間に合わず落ちることがあった（単独なら 100ms もかからない） | T22 |
+| 28 | 投稿画面の「表示中」の印 | `useEffect` ではなく `useLayoutEffect` で立てる。描画から effect が走るまでの間に写真を選ぶと、選んだ写真が捨てられていた。人の操作では起こりにくいが、負荷の高い CI では `upload.test.tsx` がまれに落ちる原因になっていた（並行して 24 回流すと 10 回落ち、直したあとは 36 回とも成功） | T22 |

@@ -163,12 +163,19 @@ function useUploadQueue(tenantId: string, limit: number, initialCount: number) {
   const sentTotalRef = useRef(0)
   const nextId = useRef(0)
 
-  useEffect(() => {
+  // 画面に出た時点（描画と同じコミット）で「表示中」にする。useEffect だと、描画から effect が
+  // 走るまでの間に写真を選ばれたとき、add が「画面を離れた」と判断して選んだ写真を捨ててしまう
+  useLayoutEffect(() => {
     mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
+
+  useEffect(() => {
     const urls = thumbUrls.current
     const entryMap = entries.current
     return () => {
-      mounted.current = false
       abort.current?.abort()
       for (const entry of entryMap.values()) entry.removed = true
       entryMap.clear()
