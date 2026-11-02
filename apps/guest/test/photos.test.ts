@@ -6,6 +6,7 @@ import type {
   LikeResponse,
   UploadPhotoResponse,
 } from '@wym/shared'
+import { PHOTO_LIMIT_PER_GUEST } from '@wym/shared'
 import { describe, expect, it, vi } from 'vitest'
 import { buildJpeg, buildPng, containsText, SECRETS } from '../src/worker/lib/image-fixtures'
 import { db, errorCode, makeGuestSession, makeTenant, request } from './helpers'
@@ -88,7 +89,7 @@ async function seedPhoto(
       width: 800,
       height: 600,
     },
-    100,
+    PHOTO_LIMIT_PER_GUEST,
     options.createdAt ?? Date.now(),
   )
   if (!result.inserted) throw new Error('seed failed')
@@ -288,25 +289,25 @@ describe('POST /photos', () => {
     expect(await errorCode(notForm)).toBe('VALIDATION_ERROR')
   })
 
-  it('100 枚に達したら 409 UPLOAD_LIMIT_REACHED で、R2 に残骸が残らない', async () => {
+  it(`${PHOTO_LIMIT_PER_GUEST} 枚に達したら 409 UPLOAD_LIMIT_REACHED で、R2 に残骸が残らない`, async () => {
     const { tenant, cookie, guest } = await setup()
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < PHOTO_LIMIT_PER_GUEST; i++) {
       await seedPhoto(tenant.id, guest.id, { createdAt: 1000 + i, withFiles: false })
     }
     const res = await upload(tenant.id, cookie)
     expect(res.status).toBe(409)
     expect(await errorCode(res)).toBe('UPLOAD_LIMIT_REACHED')
     expect(await r2KeysOf(tenant.id)).toEqual([])
-    expect(await photoRowCount(tenant.id)).toBe(100)
+    expect(await photoRowCount(tenant.id)).toBe(PHOTO_LIMIT_PER_GUEST)
 
     // 他の参加者は投稿できる
     const other = await makeGuestSession(tenant.id, 'はなこ')
     expect((await upload(tenant.id, other.cookie)).status).toBe(201)
   })
 
-  it('99 枚なら 100 枚目を投稿できる', async () => {
+  it(`${PHOTO_LIMIT_PER_GUEST - 1} 枚なら ${PHOTO_LIMIT_PER_GUEST} 枚目を投稿できる`, async () => {
     const { tenant, cookie, guest } = await setup()
-    for (let i = 0; i < 99; i++) {
+    for (let i = 0; i < PHOTO_LIMIT_PER_GUEST - 1; i++) {
       await seedPhoto(tenant.id, guest.id, { createdAt: 1000 + i, withFiles: false })
     }
     expect((await upload(tenant.id, cookie)).status).toBe(201)

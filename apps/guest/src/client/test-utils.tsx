@@ -36,7 +36,7 @@ export const config = { 'GET /api/config': () => json({ contactEmail: 'help@exam
 export function meResponse(nickname: string | null, termsAgreed = true) {
   return {
     tenant: { id: 't1', name: '〇〇家・△△家 結婚式', eventDate: '2026-10-31', phase: 'joining' },
-    me: { id: 'g1', nickname, termsAgreed, photoCount: 0, photoLimit: 100 },
+    me: { id: 'g1', nickname, termsAgreed, photoCount: 0, photoLimit: 500 },
   }
 }
 

@@ -19,8 +19,8 @@ export const DISPLAY_MAX_EDGE_PX = 1600
 export const THUMB_MAX_BYTES = 512 * KB
 /** 一覧用画像の長辺（px） */
 export const THUMB_MAX_EDGE_PX = 480
-/** 1 人あたりの投稿枚数の上限 */
-export const PHOTO_LIMIT_PER_GUEST = 100
+/** 1 人あたりの投稿枚数の上限（D-40） */
+export const PHOTO_LIMIT_PER_GUEST = 500
 /** 1 回の操作で選んで投稿できる枚数（D-39、仮置き）。送信は 1 枚ずつ順に行う */
 export const PHOTO_BATCH_MAX = 20
 

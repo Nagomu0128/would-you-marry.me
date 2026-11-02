@@ -37,7 +37,7 @@ guest Worker（`https://would-you-marry.me`）と admin Worker（`https://admin.
 | `VALIDATION_ERROR` | 400 | 入力が不正（`fields` に詳細） |
 | `FILE_TOO_LARGE` | 413 | ファイルサイズの上限超過 |
 | `UNSUPPORTED_FILE_TYPE` | 415 | 受け付けない形式 |
-| `UPLOAD_LIMIT_REACHED` | 409 | 投稿枚数の上限（100 枚）に達している |
+| `UPLOAD_LIMIT_REACHED` | 409 | 投稿枚数の上限（500 枚）に達している |
 | `COUPLE_LINK_INVALID` | 403 | 新郎新婦用 URL が無効、または入場の手続きの有効期限切れ |
 | `PASSCODE_INVALID` | 401 | パスコードが違う（`remainingAttempts` を返す） |
 | `PASSCODE_LOCKED` | 429 | 入力回数の上限に達した（`retryAfterSeconds` を返す） |
@@ -199,7 +199,7 @@ type RankedPhoto = Photo & { rank: number } // 1 から順に振る（同数で�
 
 処理:
 
-1. 期間・停止・ニックネームを確認し、投稿枚数が 100 枚未満かを確認する（`UPLOAD_LIMIT_REACHED`）
+1. 期間・停止・ニックネームを確認し、投稿枚数が 500 枚未満かを確認する（`UPLOAD_LIMIT_REACHED`）
 2. ファイルの先頭のバイト列で形式を確認する（`UNSUPPORTED_FILE_TYPE`）。サイズを確認する（`FILE_TOO_LARGE`）
 3. オリジナルからメタデータを取り除く（再圧縮しない）
    - JPEG: EXIF は向き（Orientation）だけを残す。XMP、IPTC などのメタデータは削除する。色を正しく表示するため ICC プロファイルは残す

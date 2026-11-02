@@ -17,7 +17,7 @@
 | `TERMS_NOT_AGREED` | 利用規約とプライバシーポリシーへの同意が必要です | 同左 | SG-02 / SC-01 |
 | `FILE_TOO_LARGE` | 写真のサイズが大きすぎます（10MB まで） | — | SG-07 |
 | `UNSUPPORTED_FILE_TYPE` | この形式の写真は投稿できません（JPEG・PNG のみ） | — | SG-07 |
-| `UPLOAD_LIMIT_REACHED` | 投稿できる枚数（100 枚）に達しました | — | SG-07 |
+| `UPLOAD_LIMIT_REACHED` | 投稿できる枚数（500 枚）に達しました | — | SG-07 |
 | `COUPLE_LINK_INVALID` | — | この URL は使えなくなっています。管理者にお問い合わせください | SC-E1 |
 | `PASSCODE_INVALID` | — | パスコードが違います（あと {remainingAttempts} 回） | SC-01 |
 | `PASSCODE_LOCKED` | — | 入力できる回数を超えました。約 {minutes} 分後にお試しください | SC-01 |

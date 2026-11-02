@@ -41,7 +41,7 @@ const guestErrors = {
   NICKNAME_TAKEN: 'この名前は使われています。別の名前を入力してください',
   FILE_TOO_LARGE: '写真のサイズが大きすぎます（10MB まで）',
   UNSUPPORTED_FILE_TYPE: 'この形式の写真は投稿できません（JPEG・PNG のみ）',
-  UPLOAD_LIMIT_REACHED: '投稿できる枚数（100 枚）に達しました',
+  UPLOAD_LIMIT_REACHED: '投稿できる枚数（500 枚）に達しました',
 } as const
 
 /** 新郎新婦向けのエラー文言（messages.md「エラー」） */

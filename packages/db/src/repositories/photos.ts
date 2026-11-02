@@ -28,7 +28,7 @@ export type InsertPhotoResult = { inserted: true; photo: Photo } | { inserted: f
  * 1 つの `INSERT ... SELECT ... WHERE (SELECT COUNT(*) ...) < ?` で行うので、
  * 同時に投稿しても上限を超えない。
  * 参加者がこのテナントにいない場合も登録されない。
- * @param limit 1 人あたりの上限（100 枚。packages/shared の定数を渡す）
+ * @param limit 1 人あたりの上限（500 枚。packages/shared の定数を渡す）
  * @returns 登録できなかった（上限に達している）ときは `{ inserted: false }`
  */
 export async function insertPhotoWithLimit(

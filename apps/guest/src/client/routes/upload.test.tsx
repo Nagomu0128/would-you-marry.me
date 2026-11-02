@@ -83,7 +83,7 @@ const submitButton = () => screen.getByRole('button', { name: '投稿する' })
 describe('SG-07 フォトアップロード', () => {
   it('残り枚数を出し、カメラ用の入力には capture を付ける', async () => {
     setup(12)
-    expect(await screen.findByText('あと 88 枚投稿できます')).toBeInTheDocument()
+    expect(await screen.findByText('あと 488 枚投稿できます')).toBeInTheDocument()
     expect(screen.getByTestId('camera-input')).toHaveAttribute('capture', 'environment')
     expect(screen.getByTestId('camera-input')).toHaveAttribute('accept', 'image/*')
     expect(screen.getByTestId('choose-input')).toHaveAttribute('accept', 'image/jpeg,image/png')
@@ -126,7 +126,7 @@ describe('SG-07 フォトアップロード', () => {
     )
 
     await userEvent.setup().click(screen.getByRole('button', { name: '続けて投稿する' }))
-    expect(await screen.findByText('あと 87 枚投稿できます')).toBeInTheDocument()
+    expect(await screen.findByText('あと 487 枚投稿できます')).toBeInTheDocument()
     expect(screen.queryByAltText('選んだ写真')).not.toBeInTheDocument()
   })
 
@@ -166,7 +166,7 @@ describe('SG-07 フォトアップロード', () => {
     await user.click(await screen.findByRole('button', { name: '投稿する' }))
     await waitFor(() => expect(lastXhr()).toBeDefined())
     act(() => lastXhr()?.respond(409, { error: { code: 'UPLOAD_LIMIT_REACHED', message: 'x' } }))
-    expect(await screen.findByText('投稿できる枚数（100 枚）に達しました')).toBeInTheDocument()
+    expect(await screen.findByText('投稿できる枚数（500 枚）に達しました')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '写真を選ぶ' })).toBeDisabled()
   })
 
@@ -183,8 +183,8 @@ describe('SG-07 フォトアップロード', () => {
   })
 
   it('上限に達しているときは選ぶボタンが押せず、理由を出す', async () => {
-    setup(100)
-    expect(await screen.findByText('投稿できる枚数（100 枚）に達しました')).toBeInTheDocument()
+    setup(500)
+    expect(await screen.findByText('投稿できる枚数（500 枚）に達しました')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '撮影する' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '写真を選ぶ' })).toBeDisabled()
   })
@@ -263,7 +263,7 @@ describe('SG-07 フォトアップロード', () => {
   })
 
   it('残りの投稿枚数を超えては選べない', async () => {
-    setup(95)
+    setup(495)
     await pickMany(jpegs(8))
     expect(
       await screen.findByText('投稿できるのはあと 5 枚のため、5 枚を加えました'),
@@ -308,7 +308,7 @@ describe('SG-07 フォトアップロード', () => {
     await user.click(screen.getByRole('button', { name: '1 枚目の写真を外す' }))
     expect(screen.getByRole('button', { name: '写真を選ぶ' })).toHaveFocus()
     expect(screen.queryByRole('button', { name: '投稿する' })).not.toBeInTheDocument()
-    expect(screen.getByText('あと 88 枚投稿できます')).toBeInTheDocument()
+    expect(screen.getByText('あと 488 枚投稿できます')).toBeInTheDocument()
   })
 
   it('外した写真の object URL を手放し、縮小中に外された写真の結果は捨てる', async () => {
@@ -361,7 +361,7 @@ describe('SG-07 フォトアップロード', () => {
     expect(statusesOnScreen()).toEqual(['sent', 'sending', 'waiting'])
     expect(screen.getByText('送信済み')).toBeInTheDocument()
     // 送れた分だけ、あとの残り枚数が減る
-    expect(screen.getByText('あと 87 枚投稿できます')).toBeInTheDocument()
+    expect(screen.getByText('あと 487 枚投稿できます')).toBeInTheDocument()
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '33')
     act(() => second.progress(100, 100))
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '67')
@@ -397,7 +397,7 @@ describe('SG-07 フォトアップロード', () => {
     // 重ねに使わない 1 枚の URL は手放している。続けて投稿すると残りも手放す
     expect(URL.revokeObjectURL).toHaveBeenCalled()
     await user.click(screen.getByRole('button', { name: '続けて投稿する' }))
-    expect(await screen.findByText('あと 84 枚投稿できます')).toBeInTheDocument()
+    expect(await screen.findByText('あと 484 枚投稿できます')).toBeInTheDocument()
     expect(document.querySelector('.mount-pile')).toBeNull()
     expect(vi.mocked(URL.revokeObjectURL).mock.calls.length).toBe(
       vi.mocked(URL.createObjectURL).mock.calls.length,
@@ -419,7 +419,7 @@ describe('SG-07 フォトアップロード', () => {
     expect(await screen.findByText('2 枚の写真を投稿しました')).toBeInTheDocument()
     expect(await screen.findByText('2 枚を送信できませんでした')).toBeInTheDocument()
     expect(screen.getByText('2 枚を選んでいます')).toBeInTheDocument()
-    expect(screen.getByText('あと 86 枚投稿できます')).toBeInTheDocument()
+    expect(screen.getByText('あと 486 枚投稿できます')).toBeInTheDocument()
     expect(statusesOnScreen()).toEqual(['failed', 'failed'])
     expect(screen.getAllByText('送信失敗')).toHaveLength(2)
     expect(screen.queryByText('寿')).not.toBeInTheDocument()
@@ -461,13 +461,13 @@ describe('SG-07 フォトアップロード', () => {
   })
 
   it('途中で投稿の上限に達したら、残りは送らず、上限の表示にする', async () => {
-    setup(98)
+    setup(498)
     const user = userEvent.setup()
     await pickMany(jpegs(2))
     await user.click(await screen.findByRole('button', { name: '2 枚を投稿する' }))
     await respondAt(1, 201, ok)
     await respondAt(2, 409, { error: { code: 'UPLOAD_LIMIT_REACHED', message: 'x' } })
-    expect(await screen.findByText('投稿できる枚数（100 枚）に達しました')).toBeInTheDocument()
+    expect(await screen.findByText('投稿できる枚数（500 枚）に達しました')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '写真を選ぶ' })).toBeDisabled()
     expect(itemElements()).toHaveLength(0)
     expect(FakeXhr.instances).toHaveLength(2)
