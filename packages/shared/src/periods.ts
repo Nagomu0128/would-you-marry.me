@@ -1,14 +1,15 @@
 // テナントの期間（docs/spec/tenant-periods.md）
 // 日本時間（UTC+9、夏時間なし）で判定する。Intl に頼らず算術で計算する
 
+// viewing / couple_only は既存 API との互換性のため残す。現在は返さない。
 export type TenantPhase = 'preparation' | 'joining' | 'viewing' | 'couple_only' | 'expired'
 
 export type PhaseBoundaries = {
   /** 参加受付期間の開始（D の 0:00） */
   joiningStart: Date
-  /** 閲覧期間の開始（D + 2 日の 0:00） */
+  /** 参加受付終了。互換性のため残す境界（deletionAt と同じ） */
   viewingStart: Date
-  /** 新郎新婦閲覧期間の開始（addMonths(D, 3) + 1 日の 0:00） */
+  /** 互換性のため残す境界（deletionAt と同じ） */
   coupleOnlyStart: Date
   /** 削除（expired）の開始（addMonths(D, 6) + 1 日の 0:00） */
   deletionAt: Date
@@ -97,8 +98,8 @@ export function addMonths(date: string, n: number): string {
 export function getPhaseBoundaries(eventDate: string): PhaseBoundaries {
   return {
     joiningStart: jstMidnight(eventDate),
-    viewingStart: jstMidnight(addDays(eventDate, 2)),
-    coupleOnlyStart: jstMidnight(addDays(addMonths(eventDate, 3), 1)),
+    viewingStart: jstMidnight(addDays(addMonths(eventDate, 6), 1)),
+    coupleOnlyStart: jstMidnight(addDays(addMonths(eventDate, 6), 1)),
     deletionAt: jstMidnight(addDays(addMonths(eventDate, 6), 1)),
   }
 }
@@ -108,9 +109,7 @@ export function getTenantPhase(eventDate: string, now: Date): TenantPhase {
   const b = getPhaseBoundaries(eventDate)
   const t = now.getTime()
   if (t < b.joiningStart.getTime()) return 'preparation'
-  if (t < b.viewingStart.getTime()) return 'joining'
-  if (t < b.coupleOnlyStart.getTime()) return 'viewing'
-  if (t < b.deletionAt.getTime()) return 'couple_only'
+  if (t < b.deletionAt.getTime()) return 'joining'
   return 'expired'
 }
 

@@ -28,7 +28,7 @@ export function eventDateOffset(days: number): string {
   return addDays(toJstDateString(new Date()), days)
 }
 
-/** 開催日ごとの期間: 今日 = 参加受付期間、10 日前 = 閲覧期間、10 日後 = 準備期間、120 日前 = 新郎新婦閲覧期間 */
+/** 開催日のオフセット。viewing / coupleOnly は旧期間の回帰確認用で、現在はどちらも参加受付・利用期間 */
 export const EVENT = {
   joining: 0,
   viewing: -10,

@@ -248,11 +248,6 @@ describe('(b) 他テナントのセッション', () => {
 describe('(c) 期間外・停止中・削除済み', () => {
   const guestCases = [
     ['停止中', { suspended: true }, 'TENANT_SUSPENDED'],
-    [
-      '閲覧期間の後（新郎新婦閲覧期間）',
-      { eventDate: eventDateOffset(EVENT.coupleOnly) },
-      'PERIOD_ENDED',
-    ],
     ['期限切れ', { eventDate: eventDateOffset(EVENT.expired) }, 'PERIOD_ENDED'],
     ['準備期間', { eventDate: eventDateOffset(EVENT.preparation) }, 'PERIOD_ENDED'],
     ['データ削除済み', { deleted: true }, 'TENANT_NOT_FOUND'],
@@ -317,7 +312,7 @@ describe('(c) 期間外・停止中・削除済み', () => {
     const { makeJoinToken } = await import('./helpers')
     const cases = [
       [{ suspended: true }, 'TENANT_SUSPENDED'],
-      [{ eventDate: eventDateOffset(EVENT.viewing) }, 'OUTSIDE_JOINING_PERIOD'],
+      [{ eventDate: eventDateOffset(EVENT.expired) }, 'OUTSIDE_JOINING_PERIOD'],
       [{ eventDate: eventDateOffset(EVENT.preparation) }, 'OUTSIDE_JOINING_PERIOD'],
       [{ deleted: true }, 'TENANT_NOT_FOUND'],
     ] as const

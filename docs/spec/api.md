@@ -127,7 +127,7 @@ type RankedPhoto = Photo & { rank: number } // 1 から順に振る（同数で�
 パスはすべて `/api/t/:tenantId` で始まる。共通の確認:
 
 - `wym_g_{tenantId}` のセッションが有効（なければ `UNAUTHENTICATED`）
-- テナントが停止中でない（`TENANT_SUSPENDED`）、参加受付期間か閲覧期間（`PERIOD_ENDED`）
+- テナントが停止中でない（`TENANT_SUSPENDED`）、参加受付・利用期間（開催日から6か月後の日付いっぱい）（`PERIOD_ENDED`）
 - `me` 系以外はニックネーム登録済み（`NICKNAME_REQUIRED`）
 
 | メソッド | パス | 内容 | 関連 |
@@ -342,8 +342,8 @@ HEIC は、早期検証（[architecture.md](../design/architecture.md#早めに�
   "tenant": { "…": "…" },
   "boundaries": {
     "joiningStart": "2026-10-30T15:00:00.000Z",
-    "viewingStart": "2026-11-01T15:00:00.000Z",
-    "coupleOnlyStart": "2027-01-31T15:00:00.000Z",
+    "viewingStart": "2027-04-30T15:00:00.000Z",
+    "coupleOnlyStart": "2027-04-30T15:00:00.000Z",
     "deletionAt": "2027-04-30T15:00:00.000Z"
   }
 }

@@ -10,7 +10,7 @@
 | `UNAUTHENTICATED` | 受付でお渡しした QR コードを読み取ってください | 管理者からお知らせした URL を開いてください | SG-E1 / SC-E1 |
 | `TENANT_NOT_FOUND` | この結婚式のページは見つかりませんでした | 同左 | SG-E1 / SC-E1 |
 | `TENANT_SUSPENDED` | 現在ご利用いただけません。しばらくしてからお試しください | 同左 | SG-E1 / SC-E1 |
-| `OUTSIDE_JOINING_PERIOD` | 参加の受付期間ではありません。受付は結婚式の当日と翌日です | — | SG-E1 |
+| `OUTSIDE_JOINING_PERIOD` | 参加の受付期間ではありません。受付は結婚式の当日から 6 か月後までです | — | SG-E1 |
 | `PERIOD_ENDED` | 公開期間が終了しました。ご参加ありがとうございました | 公開期間が終了しました。ご利用ありがとうございました | SG-E1 / SC-E1 |
 | `JOIN_TOKEN_INVALID` | この QR コードは使えなくなっています。会場のスタッフにお問い合わせください | — | SG-E1 |
 | `NICKNAME_TAKEN` | この名前は使われています。別の名前を入力してください | — | SG-02 |

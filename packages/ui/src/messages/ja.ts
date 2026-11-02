@@ -35,7 +35,7 @@ const sameForBoth = {
 const guestErrors = {
   ...sameForBoth,
   UNAUTHENTICATED: '受付でお渡しした QR コードを読み取ってください',
-  OUTSIDE_JOINING_PERIOD: '参加の受付期間ではありません。受付は結婚式の当日と翌日です',
+  OUTSIDE_JOINING_PERIOD: '参加の受付期間ではありません。受付は結婚式の当日から 6 か月後までです',
   PERIOD_ENDED: '公開期間が終了しました。ご参加ありがとうございました',
   JOIN_TOKEN_INVALID: 'この QR コードは使えなくなっています。会場のスタッフにお問い合わせください',
   NICKNAME_TAKEN: 'この名前は使われています。別の名前を入力してください',
